@@ -1,0 +1,15 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        PHP_BASE_IMAGE: ${PHP_BASE_IMAGE:-php:8.4-cli-bookworm}
+        LATTICE_EXT_REPO: ${LATTICE_EXT_REPO:-mdcpepper/lattice}
+        LATTICE_EXT_TAG: ${LATTICE_EXT_TAG:-latest}
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    volumes:
+      - ./:/app
+    working_dir: /app
+    command: ["/usr/local/bin/start-laravel"]
