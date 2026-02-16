@@ -1,0 +1,66 @@
+name: Tests
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Prepare Composer cache directories
+        run: mkdir -p .composer-cache vendor
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            .composer-cache
+            vendor
+          key: ${{ runner.os }}-php84-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php84-composer-
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build test image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          load: true
+          tags: lattice-laravel-demo-test:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Run test suite
+        run: |
+          docker run --rm \
+            --user "$(id -u):$(id -g)" \
+            --volume "$PWD:/app" \
+            --volume "$PWD/.composer-cache:/tmp/composer-cache" \
+            --workdir /app \
+            --env APP_ENV=testing \
+            --env DB_CONNECTION=sqlite \
+            --env DB_DATABASE=/app/database/database.sqlite \
+            --env COMPOSER_CACHE_DIR=/tmp/composer-cache \
+            --env COMPOSER_HOME=/tmp/composer-home \
+            lattice-laravel-demo-test:latest \
+            sh -lc '
+              set -eu
+              cp .env.example .env
+              mkdir -p database
+              touch database/database.sqlite
+              composer install --no-interaction --prefer-dist --optimize-autoloader
+              php artisan key:generate --force --ansi
+              php artisan config:clear --ansi
+              php artisan test --ansi
+            '
