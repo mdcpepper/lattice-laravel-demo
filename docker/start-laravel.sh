@@ -15,9 +15,29 @@ if ! grep -Eq '^APP_KEY=base64:' .env; then
     php artisan key:generate --force --ansi
 fi
 
-mkdir -p database
-touch database/database.sqlite
+db_connection="${DB_CONNECTION:-}"
+if [ -z "${db_connection}" ] && [ -f .env ]; then
+    db_connection="$(grep -E '^DB_CONNECTION=' .env | tail -n 1 | cut -d '=' -f 2- | tr -d '"' | tr -d "'")"
+fi
+
+if [ "${db_connection}" = "sqlite" ]; then
+    db_database="${DB_DATABASE:-}"
+    if [ -z "${db_database}" ] && [ -f .env ]; then
+        db_database="$(grep -E '^DB_DATABASE=' .env | tail -n 1 | cut -d '=' -f 2- | tr -d '"' | tr -d "'")"
+    fi
+
+    sqlite_path="${db_database:-database/database.sqlite}"
+
+    if [ "${sqlite_path}" != ":memory:" ] && [ ! -f "${sqlite_path}" ]; then
+        mkdir -p "$(dirname "${sqlite_path}")"
+        touch "${sqlite_path}"
+    fi
+fi
+
+if [ -d vendor/filament ] && [ ! -f public/css/filament/filament/app.css ]; then
+    php artisan filament:assets --ansi
+fi
 
 php artisan migrate --force --graceful --ansi
 
-exec php -S 0.0.0.0:8080 -t /app/public /app/public/index.php
+exec php artisan serve --host=0.0.0.0 --port=8080

@@ -7,6 +7,8 @@ services:
         PHP_BASE_IMAGE: ${PHP_BASE_IMAGE:-php:8.4-cli-bookworm}
         LATTICE_EXT_REPO: ${LATTICE_EXT_REPO:-mdcpepper/lattice}
         LATTICE_EXT_TAG: ${LATTICE_EXT_TAG:-latest}
+        HOST_UID: ${HOST_UID:-1000}
+        HOST_GID: ${HOST_GID:-1000}
     ports:
       - "${APP_PORT:-8080}:8080"
     user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
@@ -14,3 +16,33 @@ services:
       - ./:/app
     working_dir: /app
     command: ["/usr/local/bin/start-laravel"]
+
+  queue:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        PHP_BASE_IMAGE: ${PHP_BASE_IMAGE:-php:8.4-cli-bookworm}
+        LATTICE_EXT_REPO: ${LATTICE_EXT_REPO:-mdcpepper/lattice}
+        LATTICE_EXT_TAG: ${LATTICE_EXT_TAG:-latest}
+        HOST_UID: ${HOST_UID:-1000}
+        HOST_GID: ${HOST_GID:-1000}
+    user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
+    volumes:
+      - ./:/app
+    working_dir: /app
+    command: ["php", "artisan", "queue:listen", "--tries=1", "--timeout=0"]
+
+  node:
+    image: node:current-bookworm-slim
+    working_dir: /app
+    user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
+    volumes:
+      - ./:/app
+    environment:
+      VITE_HMR_HOST: ${VITE_HMR_HOST:-localhost}
+      VITE_PORT: ${VITE_PORT:-5173}
+    ports:
+      - "${VITE_PORT:-5173}:5173"
+    command:
+      ["sh", "-lc", "npm install && npm run dev -- --host 0.0.0.0 --port 5173"]
