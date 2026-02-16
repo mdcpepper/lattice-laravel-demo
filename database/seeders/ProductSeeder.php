@@ -6,16 +6,18 @@ use App\Models\Category;
 use App\Models\Product;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
-use GuzzleHttp\Client;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use GuzzleHttp\Client;
 use RuntimeException;
 use Spatie\Tags\Tag;
 
 class ProductSeeder extends Seeder
 {
+    use DummyJsonSeeder;
+
     /**
      * Run the database seeds.
      */
@@ -51,14 +53,6 @@ class ProductSeeder extends Seeder
         $this->upsertProducts($seedableProducts);
         $this->syncCategoryTimestampsFromProducts($seedableProducts);
         $this->syncProductTags($seedableProducts);
-    }
-
-    private function makeClient(): Client
-    {
-        return new Client([
-            "base_uri" => "https://dummyjson.com/",
-            "timeout" => 10,
-        ]);
     }
 
     /**
