@@ -38,6 +38,7 @@ class ProductsTable
             ->filters([
                 SelectFilter::make("tags_array")
                     ->label("Tags")
+                    ->searchable()
                     ->options(function (): array {
                         return Tag::query()
                             ->whereNull("type")
