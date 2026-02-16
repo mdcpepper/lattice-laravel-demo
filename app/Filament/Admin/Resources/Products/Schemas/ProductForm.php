@@ -2,11 +2,12 @@
 
 namespace App\Filament\Admin\Resources\Products\Schemas;
 
-use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Schemas\Schema;
+use Spatie\Tags\Tag;
 
 class ProductForm
 {
@@ -18,10 +19,26 @@ class ProductForm
             Select::make("category_id")
                 ->relationship("category", "name")
                 ->required(),
+            TagsInput::make("tags_array")
+                ->label("Tags")
+                ->trim()
+                ->suggestions(function (): array {
+                    return Tag::query()
+                        ->get()
+                        ->map(
+                            fn(Tag $tag): string => $tag->getTranslation(
+                                "name",
+                                "en",
+                            ),
+                        )
+                        ->filter(fn(string $name): bool => $name !== "")
+                        ->unique()
+                        ->sort()
+                        ->values()
+                        ->all();
+                }),
             TextInput::make("stock")->required()->numeric(),
             TextInput::make("price")->required()->numeric()->prefix("£"),
-            FileUpload::make("image_url")->image()->required(),
-            FileUpload::make("thumb_url")->image()->required(),
         ]);
     }
 }
