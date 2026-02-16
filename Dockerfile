@@ -12,7 +12,7 @@ ENV COMPOSER_ALLOW_SUPERUSER=1
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates curl git jq libicu-dev libsqlite3-dev libzip-dev unzip zlib1g-dev \
-    && docker-php-ext-install intl pdo_sqlite zip \
+    && docker-php-ext-install bcmath intl pdo_sqlite zip \
     && rm -rf /var/lib/apt/lists/*
 
 RUN set -eux; \
