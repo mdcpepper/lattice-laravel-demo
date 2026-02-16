@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\Promotions\Schemas;
 
+use App\Enums\PromotionType;
 use App\Enums\QualificationOp;
 use App\Enums\QualificationRuleKind;
 use App\Enums\SimpleDiscountKind;
@@ -25,7 +26,7 @@ class PromotionForm
 
                 Select::make("promotion_type")
                     ->label("Type")
-                    ->options(["direct_discount" => "Direct Discount"])
+                    ->options(PromotionType::asSelectOptions())
                     ->required()
                     ->live(),
 
@@ -55,7 +56,7 @@ class PromotionForm
             Section::make("Discount")
                 ->visible(
                     fn(Get $get): bool => $get("promotion_type") ===
-                        "direct_discount",
+                        PromotionType::DirectDiscount->value,
                 )
                 ->schema([
                     Select::make("discount_kind")

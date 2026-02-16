@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\Promotions\Pages;
 
+use App\Enums\PromotionType;
 use App\Enums\QualificationContext;
 use App\Filament\Admin\Resources\Promotions\Concerns\BuildsPromotionFormData;
 use App\Filament\Admin\Resources\Promotions\PromotionResource;
@@ -24,9 +25,8 @@ class CreatePromotion extends CreateRecord
     {
         return DB::transaction(
             fn(): Promotion => match ($data["promotion_type"]) {
-                "direct_discount" => $this->buildDirectDiscountPromotion(
-                    $data,
-                ),
+                PromotionType::DirectDiscount->value
+                    => $this->buildDirectDiscountPromotion($data),
             },
         );
     }

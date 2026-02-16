@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\Promotions\Pages;
 
+use App\Enums\PromotionType;
 use App\Enums\QualificationContext;
 use App\Enums\QualificationRuleKind;
 use App\Enums\SimpleDiscountKind;
@@ -47,7 +48,8 @@ class EditPromotion extends EditRecord
         $promotionable = $promotion->promotionable;
 
         $data["promotion_type"] = match (get_class($promotionable)) {
-            DirectDiscountPromotion::class => "direct_discount",
+            DirectDiscountPromotion::class => PromotionType::DirectDiscount
+                ->value,
         };
 
         $rawBudget = $promotion->getRawOriginal("monetary_budget");
@@ -134,10 +136,8 @@ class EditPromotion extends EditRecord
         /** @var Promotion $record */
         return DB::transaction(
             fn(): Promotion => match ($data["promotion_type"]) {
-                "direct_discount" => $this->updateDirectDiscountPromotion(
-                    $record,
-                    $data,
-                ),
+                PromotionType::DirectDiscount->value
+                    => $this->updateDirectDiscountPromotion($record, $data),
             },
         );
     }
