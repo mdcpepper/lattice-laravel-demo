@@ -1,3 +1,6 @@
+fmt:
+    docker compose run --rm app ./vendor/bin/pint
+
 test:
     docker compose run --rm app php artisan test
 

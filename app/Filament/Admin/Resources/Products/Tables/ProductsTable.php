@@ -2,6 +2,8 @@
 
 namespace App\Filament\Admin\Resources\Products\Tables;
 
+use App\Models\Product;
+use App\Services\ProductQualificationChecker;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -16,7 +18,12 @@ class ProductsTable
 {
     public static function configure(Table $table): Table
     {
+        $checker = resolve(ProductQualificationChecker::class);
+
         return $table
+            ->modifyQueryUsing(
+                fn (Builder $query): Builder => $query->with('tags'),
+            )
             ->columns([
                 ImageColumn::make('thumb_url')->label('Image'),
                 TextColumn::make('name')->searchable(),
@@ -26,6 +33,16 @@ class ProductsTable
                 TextColumn::make('tags_array')
                     ->label('Tags')
                     ->listWithLineBreaks(),
+                TextColumn::make('qualifying_promotions')
+                    ->label('Qualifying Promotions')
+                    ->state(
+                        fn (
+                            Product $record,
+                        ): array => $checker->qualifyingPromotionNames($record),
+                    )
+                    ->listWithLineBreaks()
+                    ->badge()
+                    ->placeholder('None'),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
