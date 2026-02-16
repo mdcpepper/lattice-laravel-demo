@@ -38,7 +38,12 @@ class ProductForm
                         ->all();
                 }),
             TextInput::make("stock")->required()->numeric(),
-            TextInput::make("price")->required()->numeric()->prefix("£"),
+            TextInput::make("price")
+                ->required()
+                ->numeric()
+                ->minValue(0)
+                ->step("0.01")
+                ->prefix("£"),
         ]);
     }
 }
