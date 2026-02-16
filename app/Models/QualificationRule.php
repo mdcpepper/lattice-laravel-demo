@@ -14,15 +14,15 @@ class QualificationRule extends Model
     use HasTags;
 
     protected $fillable = [
-        "qualification_id",
-        "kind",
-        "group_qualification_id",
-        "sort_order",
+        'qualification_id',
+        'kind',
+        'group_qualification_id',
+        'sort_order',
     ];
 
     protected $casts = [
-        "kind" => QualificationRuleKind::class,
-        "sort_order" => "integer",
+        'kind' => QualificationRuleKind::class,
+        'sort_order' => 'integer',
     ];
 
     /**
@@ -38,6 +38,6 @@ class QualificationRule extends Model
      */
     public function groupQualification(): BelongsTo
     {
-        return $this->belongsTo(Qualification::class, "group_qualification_id");
+        return $this->belongsTo(Qualification::class, 'group_qualification_id');
     }
 }

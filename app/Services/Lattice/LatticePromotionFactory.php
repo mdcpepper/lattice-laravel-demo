@@ -4,10 +4,15 @@ declare(strict_types=1);
 
 namespace App\Services\Lattice;
 
+use App\Contracts\Discount as DiscountContract;
+use App\Enums\MixAndMatchDiscountKind;
 use App\Enums\QualificationOp;
 use App\Enums\QualificationRuleKind;
 use App\Enums\SimpleDiscountKind;
 use App\Models\DirectDiscountPromotion as DirectDiscountPromotionModel;
+use App\Models\MixAndMatchDiscount as MixAndMatchDiscountModel;
+use App\Models\MixAndMatchPromotion as MixAndMatchPromotionModel;
+use App\Models\MixAndMatchSlot as MixAndMatchSlotModel;
 use App\Models\Promotion as PromotionModel;
 use App\Models\Qualification as QualificationModel;
 use App\Models\QualificationRule as QualificationRuleModel;
@@ -18,6 +23,9 @@ use Lattice\Discount\SimpleDiscount;
 use Lattice\Money;
 use Lattice\Promotions\Budget;
 use Lattice\Promotions\DirectDiscountPromotion;
+use Lattice\Promotions\MixAndMatch\Discount as LatticeMixAndMatchDiscount;
+use Lattice\Promotions\MixAndMatch\Slot as LatticeMixAndMatchSlot;
+use Lattice\Promotions\MixAndMatchPromotion as LatticeMixAndMatchPromotion;
 use Lattice\Promotions\Promotion as LatticePromotion;
 use Lattice\Qualification;
 use Lattice\Qualification\BoolOp;
@@ -31,14 +39,14 @@ class LatticePromotionFactory
         $promotionable = $promotion->promotionable;
 
         return match (true) {
-            $promotionable instanceof DirectDiscountPromotionModel
-                => $this->makeDirectDiscountPromotion(
+            $promotionable instanceof DirectDiscountPromotionModel => $this->makeDirectDiscountPromotion(
                 $promotion,
                 $promotionable,
             ),
+            $promotionable instanceof MixAndMatchPromotionModel => $this->makeMixAndMatchPromotion($promotion, $promotionable),
             default => throw new RuntimeException(
                 sprintf(
-                    "Unsupported promotionable type [%s].",
+                    'Unsupported promotionable type [%s].',
                     $promotion->promotionable_type ??
                         get_debug_type($promotionable),
                 ),
@@ -52,16 +60,16 @@ class LatticePromotionFactory
     ): DirectDiscountPromotion {
         $discount = $directPromotion->discount;
 
-        if (!$discount instanceof SimpleDiscountModel) {
+        if (! $discount instanceof SimpleDiscountModel) {
             throw new RuntimeException(
-                "Direct discount promotion is missing its simple discount relation.",
+                'Direct discount promotion is missing its simple discount relation.',
             );
         }
 
         /** @var Collection<int, QualificationModel> $qualificationIndex */
         $qualificationIndex = $promotion->qualifications
-            ->keyBy("id")
-            ->map(fn($qualification): QualificationModel => $qualification);
+            ->keyBy('id')
+            ->map(fn ($qualification): QualificationModel => $qualification);
 
         $rootQualification = $this->resolveRootQualification(
             $promotion,
@@ -79,11 +87,85 @@ class LatticePromotionFactory
         );
     }
 
+    private function makeMixAndMatchPromotion(
+        PromotionModel $promotion,
+        MixAndMatchPromotionModel $mixAndMatchPromotion,
+    ): LatticeMixAndMatchPromotion {
+        $discount = $mixAndMatchPromotion->discount;
+
+        if (! $discount instanceof MixAndMatchDiscountModel) {
+            throw new RuntimeException(
+                'Mix and match promotion is missing its discount relation.',
+            );
+        }
+
+        /** @var Collection<int, QualificationModel> $qualificationIndex */
+        $qualificationIndex = $promotion->qualifications
+            ->keyBy('id')
+            ->map(fn ($qualification): QualificationModel => $qualification);
+
+        $slots = $mixAndMatchPromotion->slots
+            ->sortBy('sort_order')
+            ->values()
+            ->map(
+                fn (
+                    MixAndMatchSlotModel $slot,
+                ): LatticeMixAndMatchSlot => new LatticeMixAndMatchSlot(
+                    reference: $slot,
+                    qualification: $this->makeQualification(
+                        $this->resolveSlotQualification($promotion, $slot),
+                        $qualificationIndex,
+                    ),
+                    min: (int) $slot->min,
+                    max: is_null($slot->max) ? null : (int) $slot->max,
+                ),
+            )
+            ->all();
+
+        return new LatticeMixAndMatchPromotion(
+            reference: $promotion,
+            slots: $slots,
+            discount: $this->makeMixAndMatchDiscount($discount),
+            budget: $this->makeBudget($promotion),
+        );
+    }
+
+    private function resolveSlotQualification(
+        PromotionModel $promotion,
+        MixAndMatchSlotModel $slot,
+    ): QualificationModel {
+        $slotQualification = $slot->relationLoaded('qualification')
+            ? $slot->qualification
+            : null;
+
+        if ($slotQualification instanceof QualificationModel) {
+            return $slotQualification;
+        }
+
+        $qualification = $promotion->qualifications->first(
+            fn (QualificationModel $candidate): bool => $candidate->context ===
+                'primary' &&
+                $candidate->qualifiable_type === $slot->getMorphClass() &&
+                (int) $candidate->qualifiable_id === (int) $slot->getKey(),
+        );
+
+        if ($qualification instanceof QualificationModel) {
+            return $qualification;
+        }
+
+        throw new RuntimeException(
+            sprintf(
+                'Mix and match slot [%d] is missing its primary qualification.',
+                $slot->getKey(),
+            ),
+        );
+    }
+
     private function resolveRootQualification(
         PromotionModel $promotion,
         DirectDiscountPromotionModel $directPromotion,
     ): QualificationModel {
-        $directQualification = $directPromotion->relationLoaded("qualification")
+        $directQualification = $directPromotion->relationLoaded('qualification')
             ? $directPromotion->qualification
             : null;
 
@@ -92,8 +174,8 @@ class LatticePromotionFactory
         }
 
         $qualification = $promotion->qualifications->first(
-            fn(QualificationModel $candidate): bool => $candidate->context ===
-                "primary" &&
+            fn (QualificationModel $candidate): bool => $candidate->context ===
+                'primary' &&
                 $candidate->qualifiable_type ===
                     $directPromotion->getMorphClass() &&
                 (int) $candidate->qualifiable_id ===
@@ -105,22 +187,22 @@ class LatticePromotionFactory
         }
 
         throw new RuntimeException(
-            "Direct discount promotion is missing its primary qualification.",
+            'Direct discount promotion is missing its primary qualification.',
         );
     }
 
     /**
-     * @param Collection<int, QualificationModel> $qualificationIndex
+     * @param  Collection<int, QualificationModel>  $qualificationIndex
      */
     private function makeQualification(
         QualificationModel $qualification,
         Collection $qualificationIndex,
     ): Qualification {
-        $rules = $qualification->rules->sortBy("sort_order")->values()->all();
+        $rules = $qualification->rules->sortBy('sort_order')->values()->all();
 
         /** @var Rule[] $latticeRules */
         $latticeRules = array_map(
-            fn(QualificationRuleModel $rule): Rule => $this->makeRule(
+            fn (QualificationRuleModel $rule): Rule => $this->makeRule(
                 $rule,
                 $qualificationIndex,
             ),
@@ -134,7 +216,7 @@ class LatticePromotionFactory
     }
 
     /**
-     * @param Collection<int, QualificationModel> $qualificationIndex
+     * @param  Collection<int, QualificationModel>  $qualificationIndex
      */
     private function makeRule(
         QualificationRuleModel $rule,
@@ -168,7 +250,7 @@ class LatticePromotionFactory
     }
 
     /**
-     * @param Collection<int, QualificationModel> $qualificationIndex
+     * @param  Collection<int, QualificationModel>  $qualificationIndex
      */
     private function resolveGroupedQualification(
         QualificationRuleModel $rule,
@@ -178,7 +260,7 @@ class LatticePromotionFactory
 
         if (is_null($groupQualificationId)) {
             throw new RuntimeException(
-                "Group qualification rule is missing group_qualification_id.",
+                'Group qualification rule is missing group_qualification_id.',
             );
         }
 
@@ -191,7 +273,7 @@ class LatticePromotionFactory
         }
 
         if (
-            $rule->relationLoaded("groupQualification") &&
+            $rule->relationLoaded('groupQualification') &&
             $rule->groupQualification instanceof QualificationModel
         ) {
             return $rule->groupQualification;
@@ -199,7 +281,7 @@ class LatticePromotionFactory
 
         throw new RuntimeException(
             sprintf(
-                "Unable to resolve grouped qualification [%d].",
+                'Unable to resolve grouped qualification [%d].',
                 $groupQualificationId,
             ),
         );
@@ -211,7 +293,7 @@ class LatticePromotionFactory
     private function ruleTags(QualificationRuleModel $rule): array
     {
         return $rule->tags
-            ->map(fn($tag): string => (string) $tag->name)
+            ->map(fn ($tag): string => (string) $tag->name)
             ->values()
             ->all();
     }
@@ -228,8 +310,7 @@ class LatticePromotionFactory
             SimpleDiscountKind::PercentageOff => SimpleDiscount::percentageOff(
                 Percentage::fromDecimal($this->normalizedPercentage($discount)),
             ),
-            SimpleDiscountKind::AmountOverride
-                => SimpleDiscount::amountOverride(
+            SimpleDiscountKind::AmountOverride => SimpleDiscount::amountOverride(
                 $this->discountAmount($discount),
             ),
             SimpleDiscountKind::AmountOff => SimpleDiscount::amountOff(
@@ -238,27 +319,60 @@ class LatticePromotionFactory
         };
     }
 
-    private function normalizedPercentage(SimpleDiscountModel $discount): float
+    private function makeMixAndMatchDiscount(
+        MixAndMatchDiscountModel $discount,
+    ): LatticeMixAndMatchDiscount {
+        $kind =
+            $discount->kind instanceof MixAndMatchDiscountKind
+                ? $discount->kind
+                : MixAndMatchDiscountKind::from((string) $discount->kind);
+
+        return match ($kind) {
+            MixAndMatchDiscountKind::PercentageOffAllItems => LatticeMixAndMatchDiscount::percentageOffAllItems(
+                Percentage::fromDecimal($this->normalizedPercentage($discount)),
+            ),
+            MixAndMatchDiscountKind::AmountOffEachItem => LatticeMixAndMatchDiscount::amountOffEachItem(
+                $this->discountAmount($discount),
+            ),
+            MixAndMatchDiscountKind::OverrideEachItem => LatticeMixAndMatchDiscount::overrideEachItem(
+                $this->discountAmount($discount),
+            ),
+            MixAndMatchDiscountKind::AmountOffTotal => LatticeMixAndMatchDiscount::amountOffTotal(
+                $this->discountAmount($discount),
+            ),
+            MixAndMatchDiscountKind::OverrideTotal => LatticeMixAndMatchDiscount::overrideTotal(
+                $this->discountAmount($discount),
+            ),
+            MixAndMatchDiscountKind::PercentageOffCheapest => LatticeMixAndMatchDiscount::percentageOffCheapest(
+                Percentage::fromDecimal($this->normalizedPercentage($discount)),
+            ),
+            MixAndMatchDiscountKind::OverrideCheapest => LatticeMixAndMatchDiscount::overrideCheapest(
+                $this->discountAmount($discount),
+            ),
+        };
+    }
+
+    private function normalizedPercentage(DiscountContract $discount): float
     {
-        $percentage = $discount->percentage;
+        $percentage = $discount->discountPercentage();
 
         if (is_null($percentage)) {
             throw new RuntimeException(
-                "Percentage discount is missing percentage value.",
+                'Percentage discount is missing percentage value.',
             );
         }
 
         return ((float) $percentage) / 100;
     }
 
-    private function discountAmount(SimpleDiscountModel $discount): Money
+    private function discountAmount(DiscountContract $discount): Money
     {
-        $amount = $discount->amount;
-        $currency = $discount->amount_currency;
+        $amount = $discount->discountAmount();
+        $currency = $discount->discountAmountCurrency();
 
         if (is_null($amount) || is_null($currency)) {
             throw new RuntimeException(
-                "Amount discount is missing amount and/or amount_currency.",
+                'Amount discount is missing amount and/or amount_currency.',
             );
         }
 
@@ -268,17 +382,17 @@ class LatticePromotionFactory
     private function makeBudget(PromotionModel $promotion): Budget
     {
         $applicationBudget = $promotion->application_budget;
-        $monetaryBudget = $promotion->getRawOriginal("monetary_budget");
+        $monetaryBudget = $promotion->getRawOriginal('monetary_budget');
 
         if (is_null($applicationBudget) && is_null($monetaryBudget)) {
             return Budget::unlimited();
         }
 
-        if (!is_null($applicationBudget) && is_null($monetaryBudget)) {
+        if (! is_null($applicationBudget) && is_null($monetaryBudget)) {
             return Budget::withApplicationLimit((int) $applicationBudget);
         }
 
-        if (is_null($applicationBudget) && !is_null($monetaryBudget)) {
+        if (is_null($applicationBudget) && ! is_null($monetaryBudget)) {
             return Budget::withMonetaryLimit(
                 new Money((int) $monetaryBudget, $this->defaultCurrency()),
             );
@@ -292,7 +406,7 @@ class LatticePromotionFactory
 
     private function defaultCurrency(): string
     {
-        return (string) config("money.defaultCurrency", "GBP");
+        return (string) config('money.defaultCurrency', 'GBP');
     }
 
     private function mapQualificationOp(QualificationOp|string $op): BoolOp

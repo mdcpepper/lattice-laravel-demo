@@ -2,13 +2,16 @@
 
 namespace App\Filament\Admin\Resources\Promotions\Pages;
 
+use App\Enums\MixAndMatchDiscountKind;
 use App\Enums\PromotionType;
 use App\Enums\QualificationContext;
+use App\Enums\QualificationOp;
 use App\Enums\QualificationRuleKind;
 use App\Enums\SimpleDiscountKind;
 use App\Filament\Admin\Resources\Promotions\Concerns\BuildsPromotionFormData;
 use App\Filament\Admin\Resources\Promotions\PromotionResource;
 use App\Models\DirectDiscountPromotion;
+use App\Models\MixAndMatchPromotion;
 use App\Models\Promotion;
 use App\Models\Qualification;
 use Filament\Actions\DeleteAction;
@@ -39,43 +42,77 @@ class EditPromotion extends EditRecord
         /** @var Promotion $promotion */
         $promotion = $this->record;
 
-        $promotion->load([
-            "promotionable.discount",
-            "promotionable.qualification.rules.tags",
-            "qualifications.rules.tags",
-        ]);
+        $promotion->load(['promotionable', 'qualifications.rules.tags']);
 
         $promotionable = $promotion->promotionable;
 
-        $data["promotion_type"] = match (get_class($promotionable)) {
+        if ($promotionable instanceof DirectDiscountPromotion) {
+            $promotionable->load(['discount', 'qualification.rules.tags']);
+        }
+
+        if ($promotionable instanceof MixAndMatchPromotion) {
+            $promotionable->load([
+                'discount',
+                'slots.qualification.rules.tags',
+            ]);
+        }
+
+        $data['promotion_type'] = match (get_class($promotionable)) {
             DirectDiscountPromotion::class => PromotionType::DirectDiscount
                 ->value,
+            MixAndMatchPromotion::class => PromotionType::MixAndMatch->value,
         };
 
-        $rawBudget = $promotion->getRawOriginal("monetary_budget");
+        $rawBudget = $promotion->getRawOriginal('monetary_budget');
 
-        $data["monetary_budget"] =
+        $data['monetary_budget'] =
             $rawBudget !== null
-                ? number_format((float) $rawBudget / 100, 2, ".", "")
+                ? number_format((float) $rawBudget / 100, 2, '.', '')
                 : null;
 
         if ($promotionable instanceof DirectDiscountPromotion) {
             $discount = $promotionable->discount;
 
-            $data["discount_kind"] = $discount->kind->value;
-            $data["discount_percentage"] = $discount->percentage;
-            $data["discount_amount"] =
+            $data['discount_kind'] = $discount->kind->value;
+            $data['discount_percentage'] = $discount->percentage;
+            $data['discount_amount'] =
                 $discount->amount !== null
-                    ? number_format((float) $discount->amount / 100, 2, ".", "")
+                    ? number_format((float) $discount->amount / 100, 2, '.', '')
                     : null;
 
             $rootQual = $promotionable->qualification;
 
-            $data["qualification_op"] = $rootQual->op->value;
-            $data["qualification_rules"] = $this->flattenRules(
+            $data['qualification_op'] = $rootQual->op->value;
+            $data['qualification_rules'] = $this->flattenRules(
                 $rootQual,
                 $promotion,
             );
+        }
+
+        if ($promotionable instanceof MixAndMatchPromotion) {
+            $discount = $promotionable->discount;
+
+            $data['discount_kind'] = $discount->kind->value;
+            $data['discount_percentage'] = $discount->percentage;
+            $data['discount_amount'] =
+                $discount->amount !== null
+                    ? number_format((float) $discount->amount / 100, 2, '.', '')
+                    : null;
+
+            $data['slots'] = [];
+
+            foreach ($promotionable->slots->sortBy('sort_order') as $slot) {
+                $rootQual = $slot->qualification;
+
+                $data['slots'][] = [
+                    'min' => $slot->min,
+                    'max' => $slot->max,
+                    'qualification_op' => $rootQual?->op?->value ?? QualificationOp::And->value,
+                    'qualification_rules' => $rootQual instanceof Qualification
+                            ? $this->flattenRules($rootQual, $promotion)
+                            : [],
+                ];
+            }
         }
 
         return $data;
@@ -90,37 +127,37 @@ class EditPromotion extends EditRecord
     ): array {
         $rules = [];
 
-        foreach ($rootQual->rules->sortBy("sort_order") as $rule) {
+        foreach ($rootQual->rules->sortBy('sort_order') as $rule) {
             if ($rule->kind === QualificationRuleKind::Group) {
                 $groupQual = $promotion->qualifications->firstWhere(
-                    "id",
+                    'id',
                     $rule->group_qualification_id,
                 );
 
                 $subRules = [];
 
-                foreach ($groupQual->rules->sortBy("sort_order") as $subRule) {
+                foreach ($groupQual->rules->sortBy('sort_order') as $subRule) {
                     $subRules[] = [
-                        "kind" => $subRule->kind->value,
-                        "tags" => $subRule->tags
-                            ->pluck("name")
+                        'kind' => $subRule->kind->value,
+                        'tags' => $subRule->tags
+                            ->pluck('name')
                             ->values()
                             ->all(),
                     ];
                 }
 
                 $rules[] = [
-                    "kind" => QualificationRuleKind::Group->value,
-                    "tags" => [],
-                    "group_op" => $groupQual->op->value,
-                    "group_rules" => $subRules,
+                    'kind' => QualificationRuleKind::Group->value,
+                    'tags' => [],
+                    'group_op' => $groupQual->op->value,
+                    'group_rules' => $subRules,
                 ];
             } else {
                 $rules[] = [
-                    "kind" => $rule->kind->value,
-                    "tags" => $rule->tags->pluck("name")->values()->all(),
-                    "group_op" => null,
-                    "group_rules" => [],
+                    'kind' => $rule->kind->value,
+                    'tags' => $rule->tags->pluck('name')->values()->all(),
+                    'group_op' => null,
+                    'group_rules' => [],
                 ];
             }
         }
@@ -135,9 +172,9 @@ class EditPromotion extends EditRecord
     {
         /** @var Promotion $record */
         return DB::transaction(
-            fn(): Promotion => match ($data["promotion_type"]) {
-                PromotionType::DirectDiscount->value
-                    => $this->updateDirectDiscountPromotion($record, $data),
+            fn (): Promotion => match ($data['promotion_type']) {
+                PromotionType::DirectDiscount->value => $this->updateDirectDiscountPromotion($record, $data),
+                PromotionType::MixAndMatch->value => $this->updateMixAndMatchPromotion($record, $data),
             },
         );
     }
@@ -150,35 +187,34 @@ class EditPromotion extends EditRecord
         array $data,
     ): Promotion {
         $promotion->update([
-            "name" => $data["name"],
-            "application_budget" =>
-                $data["application_budget"] !== null &&
-                $data["application_budget"] !== ""
-                    ? (int) $data["application_budget"]
+            'name' => $data['name'],
+            'application_budget' => $data['application_budget'] !== null &&
+                $data['application_budget'] !== ''
+                    ? (int) $data['application_budget']
                     : null,
-            "monetary_budget" => $this->parseMonetaryBudget(
-                $data["monetary_budget"] ?? null,
+            'monetary_budget' => $this->parseMonetaryBudget(
+                $data['monetary_budget'] ?? null,
             ),
         ]);
 
-        $promotion->load(["promotionable.discount", "qualifications.rules"]);
+        $promotion->load(['promotionable.discount', 'qualifications.rules']);
 
         $direct = $promotion->promotionable;
         $discount = $direct->discount;
 
-        $kind = SimpleDiscountKind::from($data["discount_kind"]);
-        $discountData = ["kind" => $kind->value];
+        $kind = SimpleDiscountKind::from($data['discount_kind']);
+        $discountData = ['kind' => $kind->value];
 
         if ($kind === SimpleDiscountKind::PercentageOff) {
-            $discountData["percentage"] = $data["discount_percentage"];
-            $discountData["amount"] = null;
-            $discountData["amount_currency"] = null;
+            $discountData['percentage'] = $data['discount_percentage'];
+            $discountData['amount'] = null;
+            $discountData['amount_currency'] = null;
         } else {
-            $discountData["percentage"] = null;
-            $discountData["amount"] = $this->parseAmountToMinor(
-                $data["discount_amount"] ?? null,
+            $discountData['percentage'] = null;
+            $discountData['amount'] = $this->parseAmountToMinor(
+                $data['discount_amount'] ?? null,
             );
-            $discountData["amount_currency"] = "GBP";
+            $discountData['amount_currency'] = 'GBP';
         }
 
         $discount->update($discountData);
@@ -191,17 +227,119 @@ class EditPromotion extends EditRecord
         $promotion->qualifications()->delete();
 
         $root = $direct->qualification()->create([
-            "promotion_id" => $promotion->id,
-            "context" => QualificationContext::Primary->value,
-            "op" => $data["qualification_op"],
-            "sort_order" => 0,
+            'promotion_id' => $promotion->id,
+            'context' => QualificationContext::Primary->value,
+            'op' => $data['qualification_op'],
+            'sort_order' => 0,
         ]);
 
         $this->createQualificationRules(
             $root,
-            $data["qualification_rules"] ?? [],
+            $data['qualification_rules'] ?? [],
             $promotion,
         );
+
+        return $promotion;
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    private function updateMixAndMatchPromotion(
+        Promotion $promotion,
+        array $data,
+    ): Promotion {
+        $promotion->update([
+            'name' => $data['name'],
+            'application_budget' => $data['application_budget'] !== null &&
+                $data['application_budget'] !== ''
+                    ? (int) $data['application_budget']
+                    : null,
+            'monetary_budget' => $this->parseMonetaryBudget(
+                $data['monetary_budget'] ?? null,
+            ),
+        ]);
+
+        $promotion->load([
+            'promotionable.discount',
+            'promotionable.slots.qualification.rules',
+            'qualifications.rules',
+        ]);
+
+        $mixAndMatch = $promotion->promotionable;
+        $discount = $mixAndMatch->discount;
+
+        $kind = MixAndMatchDiscountKind::from($data['discount_kind']);
+        $discountData = ['kind' => $kind->value];
+
+        if (
+            in_array($kind->value, MixAndMatchDiscountKind::percentageTypes())
+        ) {
+            $discountData['percentage'] = $data['discount_percentage'] ?? null;
+            $discountData['amount'] = null;
+            $discountData['amount_currency'] = null;
+        } elseif (
+            in_array($kind->value, MixAndMatchDiscountKind::amountTypes())
+        ) {
+            $amount = $this->parseAmountToMinor(
+                $data['discount_amount'] ?? null,
+            );
+
+            $discountData['percentage'] = null;
+            $discountData['amount'] = $amount;
+            $discountData['amount_currency'] = $amount !== null ? 'GBP' : null;
+        } else {
+            $discountData['percentage'] = null;
+            $discountData['amount'] = null;
+            $discountData['amount_currency'] = null;
+        }
+
+        $discount->update($discountData);
+
+        foreach ($promotion->qualifications as $qualification) {
+            foreach ($qualification->rules as $rule) {
+                $rule->delete();
+            }
+        }
+
+        $promotion->qualifications()->delete();
+        $mixAndMatch->slots()->delete();
+
+        $slots = $data['slots'] ?? [];
+
+        if (! is_array($slots)) {
+            $slots = [];
+        }
+
+        foreach (array_values($slots) as $sortOrder => $slotData) {
+            if (! is_array($slotData)) {
+                continue;
+            }
+
+            $slot = $mixAndMatch->slots()->create([
+                'min' => (int) ($slotData['min'] ?? 1),
+                'max' => isset($slotData['max']) && $slotData['max'] !== ''
+                        ? (int) $slotData['max']
+                        : null,
+                'sort_order' => $sortOrder,
+            ]);
+
+            $root = $slot->qualification()->create([
+                'promotion_id' => $promotion->id,
+                'context' => QualificationContext::Primary->value,
+                'op' => $slotData['qualification_op'] ??
+                    QualificationOp::And->value,
+                'sort_order' => 0,
+            ]);
+
+            $this->createQualificationRules(
+                $root,
+                is_array($slotData['qualification_rules'] ?? null)
+                    ? $slotData['qualification_rules']
+                    : [],
+                $promotion,
+            );
+        }
 
         return $promotion;
     }

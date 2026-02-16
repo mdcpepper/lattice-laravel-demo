@@ -12,10 +12,10 @@ class Product extends Model
     use HasTags;
 
     protected $casts = [
-        "price" => MoneyIntegerCast::class . ":GBP",
+        'price' => MoneyIntegerCast::class.':GBP',
     ];
 
-    protected $fillable = ["name"];
+    protected $fillable = ['name'];
 
     /**
      * @return BelongsTo<Category, Product>
@@ -31,8 +31,8 @@ class Product extends Model
     public function getTagsArrayAttribute(): array
     {
         return $this->tags
-            ->map(fn($tag): string => $tag->getTranslation("name", "en"))
-            ->filter(fn(string $name): bool => $name !== "")
+            ->map(fn ($tag): string => $tag->getTranslation('name', 'en'))
+            ->filter(fn (string $name): bool => $name !== '')
             ->values()
             ->all();
     }

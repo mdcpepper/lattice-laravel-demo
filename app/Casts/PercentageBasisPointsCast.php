@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 class PercentageBasisPointsCast implements CastsAttributes
 {
     /**
-     * @param array<string, mixed> $attributes
+     * @param  array<string, mixed>  $attributes
      */
     public function get(
         Model $model,
@@ -27,7 +27,7 @@ class PercentageBasisPointsCast implements CastsAttributes
     }
 
     /**
-     * @param array<string, mixed> $attributes
+     * @param  array<string, mixed>  $attributes
      */
     public function set(
         Model $model,
@@ -35,7 +35,7 @@ class PercentageBasisPointsCast implements CastsAttributes
         mixed $value,
         array $attributes,
     ): ?int {
-        if (is_null($value) || $value === "") {
+        if (is_null($value) || $value === '') {
             return null;
         }
 

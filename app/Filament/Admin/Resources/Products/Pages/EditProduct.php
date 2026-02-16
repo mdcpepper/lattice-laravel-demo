@@ -18,36 +18,36 @@ class EditProduct extends EditRecord
 
     protected function mutateFormDataBeforeFill(array $data): array
     {
-        $data["tags_array"] = $this->getRecord()->tags_array;
+        $data['tags_array'] = $this->getRecord()->tags_array;
 
         if ($this->getRecord()->price instanceof Money) {
-            $data["price"] = $this->getRecord()->price->formatByDecimal();
+            $data['price'] = $this->getRecord()->price->formatByDecimal();
         }
 
         return $data;
     }
 
     /**
-     * @param Model&HasTags $record
+     * @param  Model&HasTags  $record
      */
     protected function handleRecordUpdate(Model $record, array $data): Model
     {
-        $hasTags = array_key_exists("tags_array", $data);
-        $hasPrice = array_key_exists("price", $data);
+        $hasTags = array_key_exists('tags_array', $data);
+        $hasPrice = array_key_exists('price', $data);
 
         $tags =
-            $hasTags && is_array($data["tags_array"])
-                ? $data["tags_array"]
+            $hasTags && is_array($data['tags_array'])
+                ? $data['tags_array']
                 : [];
 
-        if ($hasPrice && is_scalar($data["price"])) {
-            $data["price"] = (int) Money::parseByDecimal(
-                (string) $data["price"],
-                "GBP",
+        if ($hasPrice && is_scalar($data['price'])) {
+            $data['price'] = (int) Money::parseByDecimal(
+                (string) $data['price'],
+                'GBP',
             )->getAmount();
         }
 
-        unset($data["tags_array"]);
+        unset($data['tags_array']);
 
         $record->forceFill($data);
         $record->save();

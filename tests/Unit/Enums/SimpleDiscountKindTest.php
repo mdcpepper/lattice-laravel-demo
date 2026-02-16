@@ -4,7 +4,7 @@ namespace Tests\Unit\Enums;
 
 use App\Enums\SimpleDiscountKind;
 
-test("asSelectOptions", function (): void {
+test('asSelectOptions', function (): void {
     $expected = [
         SimpleDiscountKind::PercentageOff
             ->value => SimpleDiscountKind::PercentageOff->name(),

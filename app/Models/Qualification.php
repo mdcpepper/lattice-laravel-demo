@@ -13,18 +13,18 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 class Qualification extends Model
 {
     protected $fillable = [
-        "promotion_id",
-        "qualifiable_type",
-        "qualifiable_id",
-        "parent_qualification_id",
-        "context",
-        "op",
-        "sort_order",
+        'promotion_id',
+        'qualifiable_type',
+        'qualifiable_id',
+        'parent_qualification_id',
+        'context',
+        'op',
+        'sort_order',
     ];
 
     protected $casts = [
-        "op" => QualificationOp::class,
-        "sort_order" => "integer",
+        'op' => QualificationOp::class,
+        'sort_order' => 'integer',
     ];
 
     /**
@@ -48,7 +48,7 @@ class Qualification extends Model
      */
     public function parent(): BelongsTo
     {
-        return $this->belongsTo(self::class, "parent_qualification_id");
+        return $this->belongsTo(self::class, 'parent_qualification_id');
     }
 
     /**
@@ -56,7 +56,7 @@ class Qualification extends Model
      */
     public function children(): HasMany
     {
-        return $this->hasMany(self::class, "parent_qualification_id");
+        return $this->hasMany(self::class, 'parent_qualification_id');
     }
 
     /**
@@ -74,7 +74,7 @@ class Qualification extends Model
     {
         return $this->hasMany(
             QualificationRule::class,
-            "group_qualification_id",
+            'group_qualification_id',
         );
     }
 }

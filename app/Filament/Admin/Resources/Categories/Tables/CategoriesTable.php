@@ -14,13 +14,13 @@ class CategoriesTable
     {
         return $table
             ->columns([
-                TextColumn::make("name")->searchable(),
-                TextColumn::make("slug"),
-                TextColumn::make("created_at")
+                TextColumn::make('name')->searchable(),
+                TextColumn::make('slug'),
+                TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make("updated_at")
+                TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
