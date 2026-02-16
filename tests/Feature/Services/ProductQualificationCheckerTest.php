@@ -1,0 +1,242 @@
+<?php
+
+namespace Tests\Unit\Services;
+
+use App\Enums\MixAndMatchDiscountKind;
+use App\Enums\QualificationContext;
+use App\Enums\QualificationOp;
+use App\Enums\QualificationRuleKind;
+use App\Enums\SimpleDiscountKind;
+use App\Models\DirectDiscountPromotion;
+use App\Models\MixAndMatchDiscount;
+use App\Models\MixAndMatchPromotion;
+use App\Models\Product;
+use App\Models\Promotion;
+use App\Models\SimpleDiscount;
+use App\Services\ProductQualificationChecker;
+
+describe('direct discount promotion', function (): void {
+    beforeEach(function (): void {
+        buildDirectDiscountPromotion('10% Off');
+        $this->checker = app(ProductQualificationChecker::class);
+    });
+
+    it('matches a product with eligible + vip tags', function (): void {
+        $product = Product::factory()->create();
+        $product->syncTags(['eligible', 'vip']);
+
+        expect($this->checker->qualifyingPromotionNames($product))->toBe([
+            '10% Off',
+        ]);
+    });
+
+    it(
+        'matches a product with eligible tag but no blocked tag (HasNone passes)',
+        function (): void {
+            $product = Product::factory()->create();
+            $product->syncTags(['eligible']);
+
+            expect($this->checker->qualifyingPromotionNames($product))->toBe([
+                '10% Off',
+            ]);
+        },
+    );
+
+    it('does not match a product missing the eligible tag', function (): void {
+        $product = Product::factory()->create();
+        $product->syncTags(['vip']);
+
+        expect($this->checker->qualifyingPromotionNames($product))->toBeEmpty();
+    });
+
+    it(
+        'does not match a product with eligible + blocked but no vip (group OR fails)',
+        function (): void {
+            $product = Product::factory()->create();
+            $product->syncTags(['eligible', 'blocked']);
+
+            expect(
+                $this->checker->qualifyingPromotionNames($product),
+            )->toBeEmpty();
+        },
+    );
+
+    it('does not match a product with no tags', function (): void {
+        $product = Product::factory()->create();
+
+        expect($this->checker->qualifyingPromotionNames($product))->toBeEmpty();
+    });
+});
+
+describe('mix and match promotion', function (): void {
+    beforeEach(function (): void {
+        buildMixAndMatchPromotion('Buy 2 Get 1');
+
+        $this->checker = app(ProductQualificationChecker::class);
+    });
+
+    it('matches a product qualifying for slot A', function (): void {
+        $product = Product::factory()->create();
+        $product->syncTags(['category-a']);
+
+        expect($this->checker->qualifyingPromotionNames($product))->toBe([
+            'Buy 2 Get 1',
+        ]);
+    });
+
+    it('matches a product qualifying for slot B', function (): void {
+        $product = Product::factory()->create();
+        $product->syncTags(['category-b']);
+
+        expect($this->checker->qualifyingPromotionNames($product))->toBe([
+            'Buy 2 Get 1',
+        ]);
+    });
+
+    it('does not match a product that fits neither slot', function (): void {
+        $product = Product::factory()->create();
+        $product->syncTags(['category-c']);
+
+        expect($this->checker->qualifyingPromotionNames($product))->toBeEmpty();
+    });
+});
+
+it(
+    'returns multiple promotion names when a product qualifies for several',
+    function (): void {
+        buildDirectDiscountPromotion('10% Off');
+        buildMixAndMatchPromotion('Buy 2 Get 1');
+
+        $product = Product::factory()->create();
+        $product->syncTags(['eligible', 'category-a']);
+
+        $checker = app(ProductQualificationChecker::class);
+        $names = $checker->qualifyingPromotionNames($product);
+
+        expect($names)
+            ->toContain('10% Off')
+            ->toContain('Buy 2 Get 1')
+            ->toHaveCount(2);
+    },
+);
+
+it('returns empty array when there are no promotions', function (): void {
+    $product = Product::factory()->create();
+    $product->syncTags(['eligible', 'vip']);
+
+    $checker = app(ProductQualificationChecker::class);
+
+    expect($checker->qualifyingPromotionNames($product))->toBeEmpty();
+});
+
+// AND(has_all([eligible]), group(OR(has_any([vip]), has_none([blocked]))))
+function buildDirectDiscountPromotion(string $name = '10% Off'): Promotion
+{
+    $discount = SimpleDiscount::query()->create([
+        'kind' => SimpleDiscountKind::PercentageOff,
+        'percentage' => 1000,
+    ]);
+
+    $direct = DirectDiscountPromotion::query()->create([
+        'simple_discount_id' => $discount->id,
+    ]);
+
+    $promotion = Promotion::query()->create([
+        'name' => $name,
+        'promotionable_type' => $direct->getMorphClass(),
+        'promotionable_id' => $direct->id,
+    ]);
+
+    $root = $direct->qualification()->create([
+        'promotion_id' => $promotion->id,
+        'context' => QualificationContext::Primary->value,
+        'op' => QualificationOp::And,
+        'sort_order' => 0,
+    ]);
+
+    $hasAllRule = $root->rules()->create([
+        'kind' => QualificationRuleKind::HasAll,
+        'sort_order' => 0,
+    ]);
+
+    $hasAllRule->syncTags(['eligible']);
+
+    $group = $promotion->qualifications()->create([
+        'parent_qualification_id' => $root->id,
+        'context' => QualificationContext::Group->value,
+        'op' => QualificationOp::Or,
+        'sort_order' => 0,
+    ]);
+
+    $root->rules()->create([
+        'kind' => QualificationRuleKind::Group,
+        'group_qualification_id' => $group->id,
+        'sort_order' => 1,
+    ]);
+
+    $hasAnyRule = $group->rules()->create([
+        'kind' => QualificationRuleKind::HasAny,
+        'sort_order' => 0,
+    ]);
+
+    $hasAnyRule->syncTags(['vip']);
+
+    $hasNoneRule = $group->rules()->create([
+        'kind' => QualificationRuleKind::HasNone,
+        'sort_order' => 1,
+    ]);
+
+    $hasNoneRule->syncTags(['blocked']);
+
+    return $promotion;
+}
+
+function buildMixAndMatchPromotion(string $name = 'Buy 2 Get 1'): Promotion
+{
+    $discount = MixAndMatchDiscount::query()->create([
+        'kind' => MixAndMatchDiscountKind::PercentageOffAllItems,
+        'percentage' => 1000,
+    ]);
+
+    $mixAndMatch = MixAndMatchPromotion::query()->create([
+        'mix_and_match_discount_id' => $discount->id,
+    ]);
+
+    $promotion = Promotion::query()->create([
+        'name' => $name,
+        'promotionable_type' => $mixAndMatch->getMorphClass(),
+        'promotionable_id' => $mixAndMatch->id,
+    ]);
+
+    $slotA = $mixAndMatch->slots()->create(['min' => 1, 'sort_order' => 0]);
+
+    $slotAQual = $slotA->qualification()->create([
+        'promotion_id' => $promotion->id,
+        'context' => QualificationContext::Primary->value,
+        'op' => QualificationOp::And,
+        'sort_order' => 0,
+    ]);
+
+    $ruleA = $slotAQual
+        ->rules()
+        ->create(['kind' => QualificationRuleKind::HasAny, 'sort_order' => 0]);
+
+    $ruleA->syncTags(['category-a']);
+
+    $slotB = $mixAndMatch->slots()->create(['min' => 1, 'sort_order' => 1]);
+
+    $slotBQual = $slotB->qualification()->create([
+        'promotion_id' => $promotion->id,
+        'context' => QualificationContext::Primary->value,
+        'op' => QualificationOp::And,
+        'sort_order' => 0,
+    ]);
+
+    $ruleB = $slotBQual
+        ->rules()
+        ->create(['kind' => QualificationRuleKind::HasAny, 'sort_order' => 0]);
+
+    $ruleB->syncTags(['category-b']);
+
+    return $promotion;
+}
