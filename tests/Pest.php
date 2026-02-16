@@ -13,12 +13,12 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 |
 */
 
-pest()->extend(Tests\TestCase::class)->in("Unit");
+pest()->extend(Tests\TestCase::class)->in('Unit');
 
 pest()
     ->extend(Tests\TestCase::class)
     ->use(RefreshDatabase::class)
-    ->in("Feature");
+    ->in('Feature');
 
 /*
 |--------------------------------------------------------------------------
@@ -31,7 +31,7 @@ pest()
 |
 */
 
-expect()->extend("toBeOne", function () {
+expect()->extend('toBeOne', function () {
     return $this->toBe(1);
 });
 

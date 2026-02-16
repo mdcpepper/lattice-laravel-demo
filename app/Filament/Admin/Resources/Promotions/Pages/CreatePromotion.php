@@ -2,10 +2,13 @@
 
 namespace App\Filament\Admin\Resources\Promotions\Pages;
 
+use App\Enums\PromotionType;
 use App\Enums\QualificationContext;
+use App\Enums\QualificationOp;
 use App\Filament\Admin\Resources\Promotions\Concerns\BuildsPromotionFormData;
 use App\Filament\Admin\Resources\Promotions\PromotionResource;
 use App\Models\DirectDiscountPromotion;
+use App\Models\MixAndMatchPromotion;
 use App\Models\Promotion;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Database\Eloquent\Model;
@@ -23,10 +26,9 @@ class CreatePromotion extends CreateRecord
     protected function handleRecordCreation(array $data): Model
     {
         return DB::transaction(
-            fn(): Promotion => match ($data["promotion_type"]) {
-                "direct_discount" => $this->buildDirectDiscountPromotion(
-                    $data,
-                ),
+            fn (): Promotion => match ($data['promotion_type']) {
+                PromotionType::DirectDiscount->value => $this->buildDirectDiscountPromotion($data),
+                PromotionType::MixAndMatch->value => $this->buildMixAndMatchPromotion($data),
             },
         );
     }
@@ -39,35 +41,97 @@ class CreatePromotion extends CreateRecord
         $discount = $this->createSimpleDiscount($data);
 
         $direct = DirectDiscountPromotion::query()->create([
-            "simple_discount_id" => $discount->id,
+            'simple_discount_id' => $discount->id,
         ]);
 
         $promotion = Promotion::query()->create([
-            "name" => $data["name"],
-            "application_budget" =>
-                $data["application_budget"] !== null &&
-                $data["application_budget"] !== ""
-                    ? (int) $data["application_budget"]
+            'name' => $data['name'],
+            'application_budget' => $data['application_budget'] !== null &&
+                $data['application_budget'] !== ''
+                    ? (int) $data['application_budget']
                     : null,
-            "monetary_budget" => $this->parseMonetaryBudget(
-                $data["monetary_budget"] ?? null,
+            'monetary_budget' => $this->parseMonetaryBudget(
+                $data['monetary_budget'] ?? null,
             ),
-            "promotionable_type" => $direct->getMorphClass(),
-            "promotionable_id" => $direct->id,
+            'promotionable_type' => $direct->getMorphClass(),
+            'promotionable_id' => $direct->id,
         ]);
 
         $root = $direct->qualification()->create([
-            "promotion_id" => $promotion->id,
-            "context" => QualificationContext::Primary->value,
-            "op" => $data["qualification_op"],
-            "sort_order" => 0,
+            'promotion_id' => $promotion->id,
+            'context' => QualificationContext::Primary->value,
+            'op' => $data['qualification_op'],
+            'sort_order' => 0,
         ]);
 
         $this->createQualificationRules(
             $root,
-            $data["qualification_rules"] ?? [],
+            $data['qualification_rules'] ?? [],
             $promotion,
         );
+
+        return $promotion;
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    private function buildMixAndMatchPromotion(array $data): Promotion
+    {
+        $discount = $this->createMixAndMatchDiscount($data);
+
+        $mixAndMatch = MixAndMatchPromotion::query()->create([
+            'mix_and_match_discount_id' => $discount->id,
+        ]);
+
+        $promotion = Promotion::query()->create([
+            'name' => $data['name'],
+            'application_budget' => $data['application_budget'] !== null &&
+                $data['application_budget'] !== ''
+                    ? (int) $data['application_budget']
+                    : null,
+            'monetary_budget' => $this->parseMonetaryBudget(
+                $data['monetary_budget'] ?? null,
+            ),
+            'promotionable_type' => $mixAndMatch->getMorphClass(),
+            'promotionable_id' => $mixAndMatch->id,
+        ]);
+
+        $slots = $data['slots'] ?? [];
+
+        if (! is_array($slots)) {
+            $slots = [];
+        }
+
+        foreach (array_values($slots) as $sortOrder => $slotData) {
+            if (! is_array($slotData)) {
+                continue;
+            }
+
+            $slot = $mixAndMatch->slots()->create([
+                'min' => (int) ($slotData['min'] ?? 1),
+                'max' => isset($slotData['max']) && $slotData['max'] !== ''
+                        ? (int) $slotData['max']
+                        : null,
+                'sort_order' => $sortOrder,
+            ]);
+
+            $root = $slot->qualification()->create([
+                'promotion_id' => $promotion->id,
+                'context' => QualificationContext::Primary->value,
+                'op' => $slotData['qualification_op'] ??
+                    QualificationOp::And->value,
+                'sort_order' => 0,
+            ]);
+
+            $this->createQualificationRules(
+                $root,
+                is_array($slotData['qualification_rules'] ?? null)
+                    ? $slotData['qualification_rules']
+                    : [],
+                $promotion,
+            );
+        }
 
         return $promotion;
     }

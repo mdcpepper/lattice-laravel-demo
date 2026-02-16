@@ -19,7 +19,7 @@ class PromotionResource extends Resource
 {
     protected static ?string $model = Promotion::class;
 
-    protected static string|UnitEnum|null $navigationGroup = "Shop";
+    protected static string|UnitEnum|null $navigationGroup = 'Shop';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedPercentBadge;
 
@@ -36,16 +36,16 @@ class PromotionResource extends Resource
     public static function getRelations(): array
     {
         return [
-                //
-            ];
+            //
+        ];
     }
 
     public static function getPages(): array
     {
         return [
-            "index" => ListPromotions::route("/"),
-            "create" => CreatePromotion::route("/create"),
-            "edit" => EditPromotion::route("/{record}/edit"),
+            'index' => ListPromotions::route('/'),
+            'create' => CreatePromotion::route('/create'),
+            'edit' => EditPromotion::route('/{record}/edit'),
         ];
     }
 }

@@ -25,10 +25,10 @@ class CustomerSeeder extends Seeder
 
         $customers->each(function (array $customer): void {
             Customer::query()->updateOrCreate(
-                ["email" => $customer["email"]],
+                ['email' => $customer['email']],
                 [
-                    "name" => $customer["name"],
-                    "password" => $customer["password"],
+                    'name' => $customer['name'],
+                    'password' => $customer['password'],
                 ],
             );
         });
@@ -39,7 +39,7 @@ class CustomerSeeder extends Seeder
      */
     private function fetchCustomers(Client $client): Collection
     {
-        $response = $client->request("GET", "users?limit=0");
+        $response = $client->request('GET', 'users?limit=0');
 
         /** @var mixed $payload */
         $payload = json_decode(
@@ -48,27 +48,27 @@ class CustomerSeeder extends Seeder
             flags: JSON_THROW_ON_ERROR,
         );
 
-        $customers = $payload["users"] ?? null;
+        $customers = $payload['users'] ?? null;
 
-        if (!is_array($customers)) {
+        if (! is_array($customers)) {
             throw new RuntimeException(
-                "DummyJson users response did not include a valid users array.",
+                'DummyJson users response did not include a valid users array.',
             );
         }
 
         $customers = collect($customers)
             ->map(
-                fn(mixed $customer): ?array => $this->normalizeCustomer(
+                fn (mixed $customer): ?array => $this->normalizeCustomer(
                     $customer,
                 ),
             )
             ->filter()
-            ->unique("email")
+            ->unique('email')
             ->values();
 
         if ($customers->isEmpty()) {
             throw new RuntimeException(
-                "DummyJson users response did not include valid customer rows.",
+                'DummyJson users response did not include valid customer rows.',
             );
         }
 
@@ -80,18 +80,18 @@ class CustomerSeeder extends Seeder
      */
     private function normalizeCustomer(mixed $customer): ?array
     {
-        if (!is_array($customer)) {
+        if (! is_array($customer)) {
             return null;
         }
 
-        $firstName = $customer["firstName"] ?? null;
-        $lastName = $customer["lastName"] ?? null;
-        $email = $customer["email"] ?? null;
+        $firstName = $customer['firstName'] ?? null;
+        $lastName = $customer['lastName'] ?? null;
+        $email = $customer['email'] ?? null;
 
         if (
-            !is_string($firstName) ||
-            !is_string($lastName) ||
-            !is_string($email)
+            ! is_string($firstName) ||
+            ! is_string($lastName) ||
+            ! is_string($email)
         ) {
             return null;
         }
@@ -100,14 +100,14 @@ class CustomerSeeder extends Seeder
         $lastName = trim($lastName);
         $email = trim($email);
 
-        if ($firstName === "" || $lastName === "" || $email === "") {
+        if ($firstName === '' || $lastName === '' || $email === '') {
             return null;
         }
 
         return [
-            "name" => "{$firstName} {$lastName}",
-            "email" => $email,
-            "password" => self::DEFAULT_PASSWORD_HASH,
+            'name' => "{$firstName} {$lastName}",
+            'email' => $email,
+            'password' => self::DEFAULT_PASSWORD_HASH,
         ];
     }
 }

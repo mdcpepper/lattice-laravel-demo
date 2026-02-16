@@ -9,8 +9,8 @@ trait DummyJsonSeeder
     protected function makeClient(): Client
     {
         return new Client([
-            "base_uri" => "https://dummyjson.com/",
-            "timeout" => 10,
+            'base_uri' => 'https://dummyjson.com/',
+            'timeout' => 10,
         ]);
     }
 }

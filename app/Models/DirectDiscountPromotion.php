@@ -2,20 +2,21 @@
 
 namespace App\Models;
 
+use App\Enums\QualificationContext;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 
 class DirectDiscountPromotion extends Model
 {
-    protected $fillable = ["simple_discount_id"];
+    protected $fillable = ['simple_discount_id'];
 
     /**
      * @return BelongsTo<SimpleDiscount, DirectDiscountPromotion>
      */
     public function discount(): BelongsTo
     {
-        return $this->belongsTo(SimpleDiscount::class, "simple_discount_id");
+        return $this->belongsTo(SimpleDiscount::class, 'simple_discount_id');
     }
 
     /**
@@ -23,14 +24,14 @@ class DirectDiscountPromotion extends Model
      */
     public function promotion(): MorphOne
     {
-        return $this->morphOne(Promotion::class, "promotionable");
+        return $this->morphOne(Promotion::class, 'promotionable');
     }
 
     public function qualification(): MorphOne
     {
-        return $this->morphOne(Qualification::class, "qualifiable")->where(
-            "context",
-            "primary",
+        return $this->morphOne(Qualification::class, 'qualifiable')->where(
+            'context',
+            QualificationContext::Primary->value,
         );
     }
 }

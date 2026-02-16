@@ -14,8 +14,8 @@ class CustomersTable
     {
         return $table
             ->columns([
-                TextColumn::make("name")->searchable(),
-                TextColumn::make("email")->searchable(),
+                TextColumn::make('name')->searchable(),
+                TextColumn::make('email')->searchable(),
             ])
             ->filters([
                 //

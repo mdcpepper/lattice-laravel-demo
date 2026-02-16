@@ -18,35 +18,35 @@ class ProductsTable
     {
         return $table
             ->columns([
-                ImageColumn::make("thumb_url")->label("Image"),
-                TextColumn::make("name")->searchable(),
-                TextColumn::make("category.name")->searchable(),
-                TextColumn::make("stock")->numeric()->sortable(),
-                TextColumn::make("price")->money()->sortable(),
-                TextColumn::make("tags_array")
-                    ->label("Tags")
+                ImageColumn::make('thumb_url')->label('Image'),
+                TextColumn::make('name')->searchable(),
+                TextColumn::make('category.name')->searchable(),
+                TextColumn::make('stock')->numeric()->sortable(),
+                TextColumn::make('price')->money()->sortable(),
+                TextColumn::make('tags_array')
+                    ->label('Tags')
                     ->listWithLineBreaks(),
-                TextColumn::make("created_at")
+                TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make("updated_at")
+                TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                SelectFilter::make("tags_array")
-                    ->label("Tags")
+                SelectFilter::make('tags_array')
+                    ->label('Tags')
                     ->searchable()
                     ->options(function (): array {
                         return Tag::query()
-                            ->whereNull("type")
+                            ->whereNull('type')
                             ->get()
                             ->mapWithKeys(function (Tag $tag): array {
-                                $name = $tag->getTranslation("name", "en");
+                                $name = $tag->getTranslation('name', 'en');
 
-                                if ($name === "") {
+                                if ($name === '') {
                                     return [];
                                 }
 
@@ -56,13 +56,13 @@ class ProductsTable
                             ->all();
                     })
                     ->multiple()
-                    ->attribute(fn(): string => "id")
+                    ->attribute(fn (): string => 'id')
                     ->query(function (Builder $query, array $data): Builder {
-                        $tagIds = collect($data["values"] ?? [])
+                        $tagIds = collect($data['values'] ?? [])
                             ->filter(
-                                fn(mixed $value): bool => is_numeric($value),
+                                fn (mixed $value): bool => is_numeric($value),
                             )
-                            ->map(fn(mixed $value): int => (int) $value)
+                            ->map(fn (mixed $value): int => (int) $value)
                             ->values()
                             ->all();
 
@@ -71,10 +71,10 @@ class ProductsTable
                         }
 
                         return $query->whereHas(
-                            "tags",
-                            fn(Builder $tagQuery): Builder => $tagQuery
-                                ->whereNull("tags.type")
-                                ->whereIn("tags.id", $tagIds),
+                            'tags',
+                            fn (Builder $tagQuery): Builder => $tagQuery
+                                ->whereNull('tags.type')
+                                ->whereIn('tags.id', $tagIds),
                         );
                     }),
             ])

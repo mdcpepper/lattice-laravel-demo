@@ -13,30 +13,30 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 class Promotion extends Model
 {
     protected $casts = [
-        "monetary_budget" => MoneyIntegerCast::class . ":GBP",
+        'monetary_budget' => MoneyIntegerCast::class.':GBP',
     ];
 
     protected $fillable = [
-        "name",
-        "application_budget",
-        "monetary_budget",
-        "promotionable_type",
-        "promotionable_id",
+        'name',
+        'application_budget',
+        'monetary_budget',
+        'promotionable_type',
+        'promotionable_id',
     ];
 
     /**
-     * @param Builder<Promotion> $query
+     * @param  Builder<Promotion>  $query
      * @return Builder<Promotion>
      */
     public function scopeWithGraph(Builder $query): Builder
     {
         return $query->with([
-            "promotionable" => function (MorphTo $morphTo): void {
+            'promotionable' => function (MorphTo $morphTo): void {
                 $morphTo->morphWith(self::promotionableGraph());
             },
-            "qualifications.parent",
-            "qualifications.children",
-            "qualifications.rules.tags",
+            'qualifications.parent',
+            'qualifications.children',
+            'qualifications.rules.tags',
         ]);
     }
 
@@ -47,8 +47,12 @@ class Promotion extends Model
     {
         return [
             DirectDiscountPromotion::class => [
-                "discount",
-                "qualification.rules.tags",
+                'discount',
+                'qualification.rules.tags',
+            ],
+            MixAndMatchPromotion::class => [
+                'discount',
+                'slots.qualification.rules.tags',
             ],
         ];
     }
@@ -72,8 +76,8 @@ class Promotion extends Model
     public function primaryQualification(): HasOne
     {
         return $this->hasOne(Qualification::class)
-            ->whereNull("qualifiable_type")
-            ->whereNull("qualifiable_id")
-            ->where("context", QualificationContext::Primary->value);
+            ->whereNull('qualifiable_type')
+            ->whereNull('qualifiable_id')
+            ->where('context', QualificationContext::Primary->value);
     }
 }

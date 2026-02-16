@@ -4,13 +4,13 @@ namespace App\Models;
 
 use App\Casts\PercentageBasisPointsCast;
 use App\Contracts\Discount as DiscountContract;
-use App\Enums\SimpleDiscountKind;
+use App\Enums\MixAndMatchDiscountKind;
 use Illuminate\Database\Eloquent\Model;
 
-class SimpleDiscount extends Model implements DiscountContract
+class MixAndMatchDiscount extends Model implements DiscountContract
 {
     protected $casts = [
-        'kind' => SimpleDiscountKind::class,
+        'kind' => MixAndMatchDiscountKind::class,
         'percentage' => PercentageBasisPointsCast::class,
     ];
 
