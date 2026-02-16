@@ -13,6 +13,8 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 |
 */
 
+pest()->extend(Tests\TestCase::class)->in("Unit");
+
 pest()
     ->extend(Tests\TestCase::class)
     ->use(RefreshDatabase::class)
