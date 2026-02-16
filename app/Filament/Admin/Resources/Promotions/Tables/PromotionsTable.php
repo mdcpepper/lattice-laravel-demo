@@ -4,17 +4,33 @@ namespace App\Filament\Admin\Resources\Promotions\Tables;
 
 use App\Models\DirectDiscountPromotion;
 use App\Models\MixAndMatchPromotion;
+use App\Models\Promotion;
+use App\Services\PromotionDiscount\PromotionDiscountFormatter;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class PromotionsTable
 {
     public static function configure(Table $table): Table
     {
+        $discountFormatter = resolve(PromotionDiscountFormatter::class);
+
         return $table
+            ->modifyQueryUsing(
+                fn (Builder $query): Builder => $query->with([
+                    'promotionable' => function (MorphTo $morphTo): void {
+                        $morphTo->morphWith([
+                            DirectDiscountPromotion::class => ['discount'],
+                            MixAndMatchPromotion::class => ['discount'],
+                        ]);
+                    },
+                ]),
+            )
             ->columns([
                 TextColumn::make('name')->searchable()->sortable(),
 
@@ -27,6 +43,15 @@ class PromotionsTable
                             default => $state,
                         },
                     ),
+
+                TextColumn::make('discount_configuration')
+                    ->label('Discount')
+                    ->state(
+                        fn (
+                            Promotion $record,
+                        ): ?string => $discountFormatter->format($record),
+                    )
+                    ->placeholder('Unknown'),
 
                 TextColumn::make('application_budget')
                     ->label('App. Budget')
