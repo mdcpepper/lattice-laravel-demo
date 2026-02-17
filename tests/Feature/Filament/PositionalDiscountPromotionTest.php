@@ -18,12 +18,12 @@ use Livewire\Livewire;
 
 beforeEach(function (): void {
     $user = User::factory()->create();
-    $team = Team::factory()->create();
+    $this->team = Team::factory()->create();
 
-    $team->members()->attach($user);
+    $this->team->members()->attach($user);
 
     Filament::setCurrentPanel('admin');
-    Filament::setTenant($team, isQuiet: true);
+    Filament::setTenant($this->team, isQuiet: true);
 
     $this->actingAs($user);
 });
@@ -121,6 +121,7 @@ it(
 
         $promotion = Promotion::query()->create([
             'name' => 'Edit Positional',
+            'team_id' => $this->team->id,
             'promotionable_type' => $positional->getMorphClass(),
             'promotionable_id' => $positional->id,
         ]);
@@ -172,6 +173,7 @@ it('stores edited 1-based positions as 0-based values', function (): void {
 
     $promotion = Promotion::query()->create([
         'name' => 'Update Positional',
+        'team_id' => $this->team->id,
         'promotionable_type' => $positional->getMorphClass(),
         'promotionable_id' => $positional->id,
     ]);

@@ -19,12 +19,12 @@ use Livewire\Livewire;
 
 beforeEach(function (): void {
     $user = User::factory()->create();
-    $team = Team::factory()->create();
+    $this->team = Team::factory()->create();
 
-    $team->members()->attach($user);
+    $this->team->members()->attach($user);
 
     Filament::setCurrentPanel('admin');
-    Filament::setTenant($team, isQuiet: true);
+    Filament::setTenant($this->team, isQuiet: true);
 
     $this->actingAs($user);
 });
@@ -243,6 +243,7 @@ it('can load an existing promotion into the edit form', function (): void {
         'name' => 'Edit Me',
         'application_budget' => 50,
         'monetary_budget' => 10000,
+        'team_id' => $this->team->id,
         'promotionable_type' => $mixAndMatch->getMorphClass(),
         'promotionable_id' => $mixAndMatch->id,
     ]);
@@ -297,6 +298,7 @@ it('can update a promotion name and budget', function (): void {
 
     $promotion = Promotion::query()->create([
         'name' => 'Original Name',
+        'team_id' => $this->team->id,
         'promotionable_type' => $mixAndMatch->getMorphClass(),
         'promotionable_id' => $mixAndMatch->id,
     ]);
@@ -356,6 +358,7 @@ it('can update qualification rules replacing old ones', function (): void {
 
     $promotion = Promotion::query()->create([
         'name' => 'Rule Swap',
+        'team_id' => $this->team->id,
         'promotionable_type' => $mixAndMatch->getMorphClass(),
         'promotionable_id' => $mixAndMatch->id,
     ]);
@@ -439,6 +442,7 @@ it(
 
         $promotion = Promotion::query()->create([
             'name' => 'Tag Cleanup',
+            'team_id' => $this->team->id,
             'promotionable_type' => $mixAndMatch->getMorphClass(),
             'promotionable_id' => $mixAndMatch->id,
         ]);

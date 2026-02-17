@@ -9,6 +9,7 @@ use App\Enums\SimpleDiscountKind;
 use App\Models\PositionalDiscountPromotion;
 use App\Models\Promotion;
 use App\Models\SimpleDiscount;
+use App\Models\Team;
 use App\Services\Lattice\LatticePromotionFactory;
 use Illuminate\Support\Facades\DB;
 use Lattice\Item;
@@ -19,6 +20,8 @@ use Lattice\Product;
 use Lattice\StackBuilder;
 
 beforeEach(function (): void {
+    $this->team = Team::factory()->create();
+
     $this->discount = SimpleDiscount::query()->create([
         'kind' => SimpleDiscountKind::PercentageOff,
         'percentage' => 100.0,
@@ -38,6 +41,7 @@ beforeEach(function (): void {
         'name' => 'BOGOF',
         'application_budget' => 100,
         'monetary_budget' => 5000_00,
+        'team_id' => $this->team->id,
         'promotionable_type' => $this->positional->getMorphClass(),
         'promotionable_id' => $this->positional->id,
     ]);

@@ -20,12 +20,12 @@ use Livewire\Livewire;
 
 beforeEach(function (): void {
     $user = User::factory()->create();
-    $team = Team::factory()->create();
+    $this->team = Team::factory()->create();
 
-    $team->members()->attach($user);
+    $this->team->members()->attach($user);
 
     Filament::setCurrentPanel('admin');
-    Filament::setTenant($team, isQuiet: true);
+    Filament::setTenant($this->team, isQuiet: true);
 
     $this->actingAs($user);
 });
@@ -46,6 +46,7 @@ it('can see promotions in the table', function (): void {
 
     $promotion = Promotion::query()->create([
         'name' => 'Visible Promo',
+        'team_id' => $this->team->id,
         'promotionable_type' => $direct->getMorphClass(),
         'promotionable_id' => $direct->id,
     ]);
@@ -67,6 +68,7 @@ it('shows formatted discount configuration in the table', function (): void {
 
     Promotion::query()->create([
         'name' => 'Direct Promo',
+        'team_id' => $this->team->id,
         'promotionable_type' => $directPromotionable->getMorphClass(),
         'promotionable_id' => $directPromotionable->id,
     ]);
@@ -83,6 +85,7 @@ it('shows formatted discount configuration in the table', function (): void {
 
     Promotion::query()->create([
         'name' => 'Mix Promo',
+        'team_id' => $this->team->id,
         'promotionable_type' => $mixPromotionable->getMorphClass(),
         'promotionable_id' => $mixPromotionable->id,
     ]);
@@ -102,6 +105,7 @@ it('shows formatted discount configuration in the table', function (): void {
 
     Promotion::query()->create([
         'name' => 'Tiered Promo',
+        'team_id' => $this->team->id,
         'promotionable_type' => $tieredPromotionable->getMorphClass(),
         'promotionable_id' => $tieredPromotionable->id,
     ]);

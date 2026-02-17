@@ -19,12 +19,12 @@ use Livewire\Livewire;
 
 beforeEach(function (): void {
     $user = User::factory()->create();
-    $team = Team::factory()->create();
+    $this->team = Team::factory()->create();
 
-    $team->members()->attach($user);
+    $this->team->members()->attach($user);
 
     Filament::setCurrentPanel('admin');
-    Filament::setTenant($team, isQuiet: true);
+    Filament::setTenant($this->team, isQuiet: true);
 
     $this->actingAs($user);
 });
@@ -125,6 +125,7 @@ it(
             'name' => 'Edit Tiered',
             'application_budget' => 10,
             'monetary_budget' => 2000,
+            'team_id' => $this->team->id,
             'promotionable_type' => $tiered->getMorphClass(),
             'promotionable_id' => $tiered->id,
         ]);
@@ -181,6 +182,7 @@ it(
 
         $promotion = Promotion::query()->create([
             'name' => 'Initial Tiered',
+            'team_id' => $this->team->id,
             'promotionable_type' => $tiered->getMorphClass(),
             'promotionable_id' => $tiered->id,
         ]);
