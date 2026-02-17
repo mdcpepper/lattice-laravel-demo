@@ -13,12 +13,12 @@ class PromotionRedemption extends Model
     use HasFactory, HasRouteUlid;
 
     protected $fillable = [
-        "promotion_id",
-        "promotion_stack_id",
-        "original_price",
-        "original_price_currency",
-        "final_price",
-        "final_price_currency",
+        'promotion_id',
+        'promotion_stack_id',
+        'original_price',
+        'original_price_currency',
+        'final_price',
+        'final_price_currency',
     ];
 
     /**
@@ -27,8 +27,8 @@ class PromotionRedemption extends Model
     public function casts(): array
     {
         return [
-            "original_price" => MoneyIntegerCast::class . ":GBP",
-            "final_price" => MoneyIntegerCast::class . ":GBP",
+            'original_price' => MoneyIntegerCast::class.':GBP',
+            'final_price' => MoneyIntegerCast::class.':GBP',
         ];
     }
 
@@ -53,12 +53,12 @@ class PromotionRedemption extends Model
         PromotionStack $stack,
     ): self {
         return self::query()->create([
-            "promotion_id" => $application->promotion->reference->id,
-            "promotion_stack_id" => $stack->id,
-            "original_price" => $application->originalPrice->amount,
-            "original_price_currency" => $application->originalPrice->currency,
-            "final_price" => $application->finalPrice->amount,
-            "final_price_currency" => $application->finalPrice->currency,
+            'promotion_id' => $application->promotion->reference->id,
+            'promotion_stack_id' => $stack->id,
+            'original_price' => $application->originalPrice->amount,
+            'original_price_currency' => $application->originalPrice->currency,
+            'final_price' => $application->finalPrice->amount,
+            'final_price_currency' => $application->finalPrice->currency,
         ]);
     }
 }

@@ -8,8 +8,8 @@ use App\Enums\SimpleDiscountKind;
 use App\Models\DirectDiscountPromotion;
 use App\Models\Promotion;
 use App\Models\PromotionRedemption;
-use App\Models\SimpleDiscount;
 use App\Models\PromotionStack;
+use App\Models\SimpleDiscount;
 use App\Models\Team;
 use App\Services\Lattice\Promotions\LatticePromotionFactory;
 use Lattice\Item;
@@ -18,46 +18,46 @@ use Lattice\LayerOutput;
 use Lattice\Money;
 use Lattice\StackBuilder;
 
-it("saves promotion redemptions from a Lattice receipt", function (): void {
+it('saves promotion redemptions from a Lattice receipt', function (): void {
     $team = Team::factory()->create();
     $stack = PromotionStack::factory()->for($team)->create();
 
     $product = \App\Models\Product::factory()
         ->for($team)
-        ->create(["price" => 5_00]);
+        ->create(['price' => 5_00]);
 
-    $product->syncTags(["sale"]);
-    $product->load("tags");
+    $product->syncTags(['sale']);
+    $product->load('tags');
 
     $discount = SimpleDiscount::query()->create([
-        "kind" => SimpleDiscountKind::PercentageOff,
-        "percentage" => 10.0,
+        'kind' => SimpleDiscountKind::PercentageOff,
+        'percentage' => 10.0,
     ]);
 
     $direct = DirectDiscountPromotion::query()->create([
-        "simple_discount_id" => $discount->id,
+        'simple_discount_id' => $discount->id,
     ]);
 
     $promotion = Promotion::query()->create([
-        "name" => "10% Off Sale Items",
-        "team_id" => $team->id,
-        "promotionable_type" => $direct->getMorphClass(),
-        "promotionable_id" => $direct->id,
+        'name' => '10% Off Sale Items',
+        'team_id' => $team->id,
+        'promotionable_type' => $direct->getMorphClass(),
+        'promotionable_id' => $direct->id,
     ]);
 
     $qualification = $direct->qualification()->create([
-        "promotion_id" => $promotion->id,
-        "context" => "primary",
-        "op" => QualificationOp::And,
-        "sort_order" => 0,
+        'promotion_id' => $promotion->id,
+        'context' => 'primary',
+        'op' => QualificationOp::And,
+        'sort_order' => 0,
     ]);
 
     $rule = $qualification->rules()->create([
-        "kind" => QualificationRuleKind::HasAny,
-        "sort_order" => 0,
+        'kind' => QualificationRuleKind::HasAny,
+        'sort_order' => 0,
     ]);
 
-    $rule->syncTags(["sale"]);
+    $rule->syncTags(['sale']);
 
     $promotion = Promotion::query()->withGraph()->findOrFail($promotion->id);
 
@@ -66,7 +66,7 @@ it("saves promotion redemptions from a Lattice receipt", function (): void {
     $latticeProduct = new \Lattice\Product(
         reference: $product,
         name: $product->name,
-        price: new Money((int) $product->price->getAmount(), "GBP"),
+        price: new Money((int) $product->price->getAmount(), 'GBP'),
         tags: $product->tags_array,
     );
 
@@ -75,11 +75,11 @@ it("saves promotion redemptions from a Lattice receipt", function (): void {
         product: $latticeProduct,
     );
 
-    $stackBuilder = new StackBuilder();
+    $stackBuilder = new StackBuilder;
 
     $layer = $stackBuilder->addLayer(
         new Layer(
-            reference: "root",
+            reference: 'root',
             output: LayerOutput::passThrough(),
             promotions: [$latticePromotion],
         ),
@@ -90,7 +90,7 @@ it("saves promotion redemptions from a Lattice receipt", function (): void {
     $receipt = $stackBuilder->build()->process([$latticeItem]);
 
     $redemptions = collect($receipt->promotionApplications)->map(
-        fn($application) => PromotionRedemption::createFromApplication(
+        fn ($application) => PromotionRedemption::createFromApplication(
             $application,
             $stack,
         ),
@@ -114,12 +114,12 @@ it("saves promotion redemptions from a Lattice receipt", function (): void {
         ->and((int) $redemption->final_price->getAmount())
         ->toBe(450);
 
-    $this->assertDatabaseHas("promotion_redemptions", [
-        "promotion_id" => $promotion->id,
-        "promotion_stack_id" => $stack->id,
-        "original_price" => 500,
-        "original_price_currency" => "GBP",
-        "final_price" => 450,
-        "final_price_currency" => "GBP",
+    $this->assertDatabaseHas('promotion_redemptions', [
+        'promotion_id' => $promotion->id,
+        'promotion_stack_id' => $stack->id,
+        'original_price' => 500,
+        'original_price_currency' => 'GBP',
+        'final_price' => 450,
+        'final_price_currency' => 'GBP',
     ]);
 });

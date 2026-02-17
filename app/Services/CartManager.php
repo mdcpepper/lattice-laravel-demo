@@ -33,7 +33,16 @@ class CartManager
 
     public function addItem(Cart $cart, Product $product): CartItem
     {
-        return $cart->items()->create(['product_id' => $product->id]);
+        $amount = $product->price->getAmount();
+        $currency = $product->price->getCurrency()->getCode();
+
+        return $cart->items()->create([
+            'product_id' => $product->id,
+            'subtotal' => $amount,
+            'subtotal_currency' => $currency,
+            'total' => $amount,
+            'total_currency' => $currency,
+        ]);
     }
 
     public function removeItem(CartItem $item): void
