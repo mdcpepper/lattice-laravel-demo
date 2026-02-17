@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature\Filament;
+namespace Tests\Feature\Filament\Promotions;
 
 use App\Enums\PromotionType;
 use App\Enums\QualificationContext;

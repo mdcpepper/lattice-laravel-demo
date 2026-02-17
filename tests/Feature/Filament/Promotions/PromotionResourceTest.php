@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature\Filament;
+namespace Tests\Feature\Filament\Promotions;
 
 use App\Enums\MixAndMatchDiscountKind;
 use App\Enums\SimpleDiscountKind;

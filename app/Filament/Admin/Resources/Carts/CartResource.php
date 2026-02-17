@@ -21,7 +21,7 @@ class CartResource extends Resource
 {
     protected static ?string $model = Cart::class;
 
-    protected static string|UnitEnum|null $navigationGroup = "Shop";
+    protected static string|UnitEnum|null $navigationGroup = 'Shop';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedShoppingCart;
 
@@ -43,10 +43,10 @@ class CartResource extends Resource
     public static function getPages(): array
     {
         return [
-            "index" => ManageCarts::route("/"),
-            "create" => CreateCart::route("/create"),
-            "view" => ViewCart::route("/{record}"),
-            "edit" => EditCart::route("/{record}/edit"),
+            'index' => ManageCarts::route('/'),
+            'create' => CreateCart::route('/create'),
+            'view' => ViewCart::route('/{record}'),
+            'edit' => EditCart::route('/{record}/edit'),
         ];
     }
 }

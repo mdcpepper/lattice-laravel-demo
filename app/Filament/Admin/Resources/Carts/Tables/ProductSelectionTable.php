@@ -13,17 +13,17 @@ class ProductSelectionTable
     public static function configure(Table $table): Table
     {
         return $table
-            ->query(fn() => Product::query())
+            ->query(fn () => Product::query())
             ->columns([
-                ImageColumn::make("thumb_url")->label("Image"),
-                TextColumn::make("name")->searchable()->sortable(),
-                TextColumn::make("category.name")->searchable()->sortable(),
-                TextColumn::make("price")->money()->sortable(),
-                TextColumn::make("stock")->numeric()->sortable(),
+                ImageColumn::make('thumb_url')->label('Image'),
+                TextColumn::make('name')->searchable()->sortable(),
+                TextColumn::make('category.name')->searchable()->sortable(),
+                TextColumn::make('price')->money()->sortable(),
+                TextColumn::make('stock')->numeric()->sortable(),
             ])
             ->filters([
-                SelectFilter::make("category")
-                    ->relationship("category", "name")
+                SelectFilter::make('category')
+                    ->relationship('category', 'name')
                     ->searchable()
                     ->preload(),
             ]);

@@ -11,13 +11,13 @@ class CartForm
     public static function configure(Schema $schema): Schema
     {
         return $schema->components([
-            Select::make("customer_id")
-                ->relationship("customer", "name")
+            Select::make('customer_id')
+                ->relationship('customer', 'name')
                 ->searchable()
                 ->preload()
                 ->nullable(),
 
-            TextInput::make("email")->email()->nullable(),
+            TextInput::make('email')->email()->nullable(),
         ]);
     }
 }

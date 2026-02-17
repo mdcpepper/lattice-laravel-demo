@@ -21,36 +21,36 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class ItemsRelationManager extends RelationManager
 {
-    protected static string $relationship = "items";
+    protected static string $relationship = 'items';
 
     public function table(Table $table): Table
     {
         return $table
-            ->recordTitleAttribute("ulid")
+            ->recordTitleAttribute('ulid')
             ->columns([
-                TextColumn::make("ulid")
-                    ->label("ID")
-                    ->fontFamily("mono")
+                TextColumn::make('ulid')
+                    ->label('ID')
+                    ->fontFamily('mono')
                     ->searchable(),
 
-                TextColumn::make("product.name")->searchable(),
+                TextColumn::make('product.name')->searchable(),
 
-                TextColumn::make("product.price")->money()->sortable(),
+                TextColumn::make('product.price')->money()->sortable(),
 
-                TextColumn::make("created_at")
+                TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([TrashedFilter::make()])
             ->headerActions([
-                Action::make("addItem")
-                    ->label("Add item(s)")
+                Action::make('addItem')
+                    ->label('Add item(s)')
                     ->slideOver()
-                    ->modalHeading("Add item(s)")
-                    ->modalSubmitActionLabel("Add to cart")
+                    ->modalHeading('Add item(s)')
+                    ->modalSubmitActionLabel('Add to cart')
                     ->schema([
-                        TableSelect::make("product_id")
+                        TableSelect::make('product_id')
                             ->tableConfiguration(ProductSelectionTable::class)
                             ->hiddenLabel()
                             ->multiple()
@@ -60,27 +60,27 @@ class ItemsRelationManager extends RelationManager
                         array $data,
                         RelationManager $livewire,
                     ): void {
-                        foreach ($data["product_id"] as $productId) {
+                        foreach ($data['product_id'] as $productId) {
                             $livewire->getRelationship()->create([
-                                "product_id" => $productId,
+                                'product_id' => $productId,
                             ]);
                         }
                     }),
             ])
             ->recordActions([
-                DeleteAction::make()->label("Remove"),
+                DeleteAction::make()->label('Remove'),
                 ForceDeleteAction::make(),
                 RestoreAction::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make()->label("Remove selected"),
+                    DeleteBulkAction::make()->label('Remove selected'),
                     ForceDeleteBulkAction::make(),
                     RestoreBulkAction::make(),
                 ]),
             ])
             ->modifyQueryUsing(
-                fn(Builder $query) => $query->withoutGlobalScopes([
+                fn (Builder $query) => $query->withoutGlobalScopes([
                     SoftDeletingScope::class,
                 ]),
             );

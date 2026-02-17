@@ -13,28 +13,28 @@ class CartsTable
     {
         return $table
             ->columns([
-                TextColumn::make("ulid")
-                    ->label("ID")
+                TextColumn::make('ulid')
+                    ->label('ID')
                     ->searchable()
-                    ->fontFamily("mono"),
+                    ->fontFamily('mono'),
 
-                TextColumn::make("customer.name")
-                    ->placeholder("-")
+                TextColumn::make('customer.name')
+                    ->placeholder('-')
                     ->searchable(),
 
-                TextColumn::make("email")->placeholder("-")->searchable(),
+                TextColumn::make('email')->placeholder('-')->searchable(),
 
-                TextColumn::make("items_count")
-                    ->label("Items")
-                    ->counts("items")
+                TextColumn::make('items_count')
+                    ->label('Items')
+                    ->counts('items')
                     ->sortable(),
 
-                TextColumn::make("created_at")
+                TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
 
-                TextColumn::make("updated_at")
+                TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
