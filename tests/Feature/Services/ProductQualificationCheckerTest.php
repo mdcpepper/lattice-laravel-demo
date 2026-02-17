@@ -10,6 +10,7 @@ use App\Enums\SimpleDiscountKind;
 use App\Models\DirectDiscountPromotion;
 use App\Models\MixAndMatchDiscount;
 use App\Models\MixAndMatchPromotion;
+use App\Models\PositionalDiscountPromotion;
 use App\Models\Product;
 use App\Models\Promotion;
 use App\Models\SimpleDiscount;
@@ -38,6 +39,59 @@ describe('direct discount promotion', function (): void {
 
             expect($this->checker->qualifyingPromotionNames($product))->toBe([
                 '10% Off',
+            ]);
+        },
+    );
+
+    it('does not match a product missing the eligible tag', function (): void {
+        $product = Product::factory()->create();
+        $product->syncTags(['vip']);
+
+        expect($this->checker->qualifyingPromotionNames($product))->toBeEmpty();
+    });
+
+    it(
+        'does not match a product with eligible + blocked but no vip (group OR fails)',
+        function (): void {
+            $product = Product::factory()->create();
+            $product->syncTags(['eligible', 'blocked']);
+
+            expect(
+                $this->checker->qualifyingPromotionNames($product),
+            )->toBeEmpty();
+        },
+    );
+
+    it('does not match a product with no tags', function (): void {
+        $product = Product::factory()->create();
+
+        expect($this->checker->qualifyingPromotionNames($product))->toBeEmpty();
+    });
+});
+
+describe('positional discount promotion', function (): void {
+    beforeEach(function (): void {
+        buildPositionalDiscountPromotion('BOGOF Drinks');
+        $this->checker = app(ProductQualificationChecker::class);
+    });
+
+    it('matches a product with eligible + vip tags', function (): void {
+        $product = Product::factory()->create();
+        $product->syncTags(['eligible', 'vip']);
+
+        expect($this->checker->qualifyingPromotionNames($product))->toBe([
+            'BOGOF Drinks',
+        ]);
+    });
+
+    it(
+        'matches a product with eligible tag but no blocked tag (HasNone passes)',
+        function (): void {
+            $product = Product::factory()->create();
+            $product->syncTags(['eligible']);
+
+            expect($this->checker->qualifyingPromotionNames($product))->toBe([
+                'BOGOF Drinks',
             ]);
         },
     );
@@ -148,6 +202,70 @@ function buildDirectDiscountPromotion(string $name = '10% Off'): Promotion
     ]);
 
     $root = $direct->qualification()->create([
+        'promotion_id' => $promotion->id,
+        'context' => QualificationContext::Primary->value,
+        'op' => QualificationOp::And,
+        'sort_order' => 0,
+    ]);
+
+    $hasAllRule = $root->rules()->create([
+        'kind' => QualificationRuleKind::HasAll,
+        'sort_order' => 0,
+    ]);
+
+    $hasAllRule->syncTags(['eligible']);
+
+    $group = $promotion->qualifications()->create([
+        'parent_qualification_id' => $root->id,
+        'context' => QualificationContext::Group->value,
+        'op' => QualificationOp::Or,
+        'sort_order' => 0,
+    ]);
+
+    $root->rules()->create([
+        'kind' => QualificationRuleKind::Group,
+        'group_qualification_id' => $group->id,
+        'sort_order' => 1,
+    ]);
+
+    $hasAnyRule = $group->rules()->create([
+        'kind' => QualificationRuleKind::HasAny,
+        'sort_order' => 0,
+    ]);
+
+    $hasAnyRule->syncTags(['vip']);
+
+    $hasNoneRule = $group->rules()->create([
+        'kind' => QualificationRuleKind::HasNone,
+        'sort_order' => 1,
+    ]);
+
+    $hasNoneRule->syncTags(['blocked']);
+
+    return $promotion;
+}
+
+// AND(has_all([eligible]), group(OR(has_any([vip]), has_none([blocked]))))
+function buildPositionalDiscountPromotion(
+    string $name = 'BOGOF Drinks',
+): Promotion {
+    $discount = SimpleDiscount::query()->create([
+        'kind' => SimpleDiscountKind::PercentageOff,
+        'percentage' => 1000,
+    ]);
+
+    $positional = PositionalDiscountPromotion::query()->create([
+        'simple_discount_id' => $discount->id,
+        'size' => 2,
+    ]);
+
+    $promotion = Promotion::query()->create([
+        'name' => $name,
+        'promotionable_type' => $positional->getMorphClass(),
+        'promotionable_id' => $positional->id,
+    ]);
+
+    $root = $positional->qualification()->create([
         'promotion_id' => $promotion->id,
         'context' => QualificationContext::Primary->value,
         'op' => QualificationOp::And,
