@@ -10,6 +10,7 @@ use App\Models\MixAndMatchDiscount;
 use App\Models\MixAndMatchPromotion;
 use App\Models\MixAndMatchSlot;
 use App\Models\Promotion;
+use App\Models\Team;
 use App\Services\Lattice\LatticePromotionFactory;
 use Illuminate\Support\Facades\DB;
 use Lattice\Item;
@@ -20,6 +21,8 @@ use Lattice\Product;
 use Lattice\StackBuilder;
 
 beforeEach(function (): void {
+    $this->team = Team::factory()->create();
+
     $this->discount = MixAndMatchDiscount::query()->create([
         'kind' => MixAndMatchDiscountKind::OverrideTotal,
         'amount' => 380,
@@ -34,6 +37,7 @@ beforeEach(function (): void {
         'name' => '£3.80 Meal Deal',
         'application_budget' => 100,
         'monetary_budget' => 5000_00,
+        'team_id' => $this->team->id,
         'promotionable_type' => $this->mixAndMatch->getMorphClass(),
         'promotionable_id' => $this->mixAndMatch->id,
     ]);
@@ -233,6 +237,7 @@ it('can be turned into a Lattice Graph', function (): void {
         'name' => '£3.80 Meal Deal',
         'application_budget' => 100,
         'monetary_budget' => 5000_00,
+        'team_id' => $this->team->id,
         'promotionable_type' => $mixAndMatch->getMorphClass(),
         'promotionable_id' => $mixAndMatch->id,
     ]);

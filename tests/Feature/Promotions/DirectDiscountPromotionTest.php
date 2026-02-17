@@ -9,6 +9,7 @@ use App\Enums\SimpleDiscountKind;
 use App\Models\DirectDiscountPromotion;
 use App\Models\Promotion;
 use App\Models\SimpleDiscount;
+use App\Models\Team;
 use App\Services\Lattice\LatticePromotionFactory;
 use Illuminate\Support\Facades\DB;
 use Lattice\Item;
@@ -19,6 +20,8 @@ use Lattice\Product;
 use Lattice\StackBuilder;
 
 beforeEach(function (): void {
+    $this->team = Team::factory()->create();
+
     $this->discount = SimpleDiscount::query()->create([
         'kind' => SimpleDiscountKind::PercentageOff,
         'percentage' => 10.0,
@@ -32,6 +35,7 @@ beforeEach(function (): void {
         'name' => '10% Off Eligible Items',
         'application_budget' => 100,
         'monetary_budget' => 5000_00,
+        'team_id' => $this->team->id,
         'promotionable_type' => $this->direct->getMorphClass(),
         'promotionable_id' => $this->direct->id,
     ]);

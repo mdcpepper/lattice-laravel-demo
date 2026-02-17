@@ -2,7 +2,7 @@ fmt:
     docker compose run --rm app ./vendor/bin/pint
 
 test:
-    docker compose run --rm app php artisan test
+    docker compose run --rm app php artisan test --parallel
 
 artisan *args='':
     docker compose run --rm app php artisan {{ args }}

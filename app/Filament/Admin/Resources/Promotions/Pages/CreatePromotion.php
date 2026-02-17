@@ -12,9 +12,11 @@ use App\Models\MixAndMatchPromotion;
 use App\Models\PositionalDiscountPromotion;
 use App\Models\Promotion;
 use App\Models\TieredThresholdPromotion;
+use Filament\Facades\Filament;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use RuntimeException;
 
 class CreatePromotion extends CreateRecord
 {
@@ -52,6 +54,7 @@ class CreatePromotion extends CreateRecord
         ]);
 
         $promotion = Promotion::query()->create([
+            'team_id' => $this->currentTeamId(),
             'name' => $data['name'],
             'application_budget' => $data['application_budget'] !== null &&
                 $data['application_budget'] !== ''
@@ -114,6 +117,7 @@ class CreatePromotion extends CreateRecord
         ]);
 
         $promotion = Promotion::query()->create([
+            'team_id' => $this->currentTeamId(),
             'name' => $data['name'],
             'application_budget' => $data['application_budget'] !== null &&
                 $data['application_budget'] !== ''
@@ -154,6 +158,7 @@ class CreatePromotion extends CreateRecord
         ]);
 
         $promotion = Promotion::query()->create([
+            'team_id' => $this->currentTeamId(),
             'name' => $data['name'],
             'application_budget' => $data['application_budget'] !== null &&
                 $data['application_budget'] !== ''
@@ -213,6 +218,7 @@ class CreatePromotion extends CreateRecord
         $tieredThreshold = TieredThresholdPromotion::query()->create();
 
         $promotion = Promotion::query()->create([
+            'team_id' => $this->currentTeamId(),
             'name' => $data['name'],
             'application_budget' => $data['application_budget'] !== null &&
                 $data['application_budget'] !== ''
@@ -276,5 +282,18 @@ class CreatePromotion extends CreateRecord
         }
 
         return $promotion;
+    }
+
+    private function currentTeamId(): int
+    {
+        $tenant = Filament::getTenant();
+
+        if ($tenant === null) {
+            throw new RuntimeException(
+                'A tenant must be selected to create promotions.',
+            );
+        }
+
+        return (int) $tenant->getKey();
     }
 }

@@ -17,10 +17,9 @@ return new class extends Migration
             $table->ulid('ulid')->unique();
             $table
                 ->foreignIdFor(Team::class)
-                ->nullable()
                 ->constrained()
                 ->cascadeOnUpdate()
-                ->nullOnDelete();
+                ->cascadeOnDelete();
             $table->string('name');
             $table->string('email');
             $table->timestamp('email_verified_at')->nullable();

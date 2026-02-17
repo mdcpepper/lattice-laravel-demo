@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\HasRouteUlid;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
@@ -12,6 +13,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
  */
 class Customer extends Authenticatable
 {
+    use HasFactory;
     use HasRouteUlid;
 
     protected $fillable = ['team_id', 'name', 'email'];

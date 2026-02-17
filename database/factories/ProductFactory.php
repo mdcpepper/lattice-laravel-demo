@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Category;
+use App\Models\Team;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -15,10 +16,13 @@ class ProductFactory extends Factory
      */
     public function definition(): array
     {
+        $team = Team::factory();
+
         return [
+            'team_id' => $team,
             'name' => fake()->words(3, true),
             'description' => fake()->sentence(),
-            'category_id' => Category::factory(),
+            'category_id' => Category::factory()->for($team),
             'stock' => fake()->numberBetween(0, 100),
             'price' => fake()->numberBetween(100, 10000),
             'image_url' => fake()->imageUrl(),

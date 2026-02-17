@@ -62,5 +62,5 @@ jobs:
               composer install --no-interaction --prefer-dist --optimize-autoloader
               php artisan key:generate --force --ansi
               php artisan config:clear --ansi
-              php artisan test --ansi
+              ./vendor/bin/pest --ci
             '

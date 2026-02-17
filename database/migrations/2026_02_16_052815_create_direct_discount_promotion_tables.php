@@ -18,10 +18,9 @@ return new class extends Migration
             $table->ulid('ulid')->unique();
             $table
                 ->foreignIdFor(Team::class)
-                ->nullable()
                 ->constrained()
                 ->cascadeOnUpdate()
-                ->nullOnDelete();
+                ->cascadeOnDelete();
             $table->string('name');
             $table->morphs('promotionable');
             $table->unsignedInteger('application_budget')->nullable();
