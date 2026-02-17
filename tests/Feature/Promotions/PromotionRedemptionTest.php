@@ -5,6 +5,8 @@ namespace Tests\Feature\Promotions;
 use App\Enums\QualificationOp;
 use App\Enums\QualificationRuleKind;
 use App\Enums\SimpleDiscountKind;
+use App\Models\Cart;
+use App\Models\CartItem;
 use App\Models\DirectDiscountPromotion;
 use App\Models\Promotion;
 use App\Models\PromotionRedemption;
@@ -28,6 +30,14 @@ it('saves promotion redemptions from a Lattice receipt', function (): void {
 
     $product->syncTags(['sale']);
     $product->load('tags');
+
+    $cart = Cart::factory()->for($team)->create();
+    $cartItem = CartItem::factory()->for($cart)->for($product)->create([
+        'subtotal' => 500,
+        'subtotal_currency' => 'GBP',
+        'total' => 500,
+        'total_currency' => 'GBP',
+    ]);
 
     $discount = SimpleDiscount::query()->create([
         'kind' => SimpleDiscountKind::PercentageOff,
@@ -89,10 +99,12 @@ it('saves promotion redemptions from a Lattice receipt', function (): void {
 
     $receipt = $stackBuilder->build()->process([$latticeItem]);
 
-    $redemptions = collect($receipt->promotionApplications)->map(
-        fn ($application) => PromotionRedemption::createFromApplication(
+    $redemptions = collect($receipt->promotionApplications)->values()->map(
+        fn ($application, int $index) => PromotionRedemption::createFromApplication(
             $application,
             $stack,
+            $cartItem,
+            $index,
         ),
     );
 
@@ -117,6 +129,9 @@ it('saves promotion redemptions from a Lattice receipt', function (): void {
     $this->assertDatabaseHas('promotion_redemptions', [
         'promotion_id' => $promotion->id,
         'promotion_stack_id' => $stack->id,
+        'redeemable_type' => CartItem::class,
+        'redeemable_id' => $cartItem->id,
+        'sort_order' => 0,
         'original_price' => 500,
         'original_price_currency' => 'GBP',
         'final_price' => 450,

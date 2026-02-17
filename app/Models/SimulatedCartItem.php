@@ -10,14 +10,18 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class CartItem extends Model
+class SimulatedCartItem extends Model
 {
+    /** @use HasFactory<\Database\Factories\SimulatedCartItemFactory> */
     use HasFactory;
+
     use HasRouteUlid;
     use SoftDeletes;
 
     protected $fillable = [
-        'cart_id',
+        'simulation_run_id',
+        'simulated_cart_id',
+        'cart_item_id',
         'product_id',
         'subtotal',
         'subtotal_currency',
@@ -37,15 +41,31 @@ class CartItem extends Model
     }
 
     /**
-     * @return BelongsTo<Cart, CartItem>
+     * @return BelongsTo<SimulationRun, SimulatedCartItem>
      */
-    public function cart(): BelongsTo
+    public function simulationRun(): BelongsTo
     {
-        return $this->belongsTo(Cart::class);
+        return $this->belongsTo(SimulationRun::class);
     }
 
     /**
-     * @return BelongsTo<Product, CartItem>
+     * @return BelongsTo<SimulatedCart, SimulatedCartItem>
+     */
+    public function simulatedCart(): BelongsTo
+    {
+        return $this->belongsTo(SimulatedCart::class);
+    }
+
+    /**
+     * @return BelongsTo<CartItem, SimulatedCartItem>
+     */
+    public function cartItem(): BelongsTo
+    {
+        return $this->belongsTo(CartItem::class);
+    }
+
+    /**
+     * @return BelongsTo<Product, SimulatedCartItem>
      */
     public function product(): BelongsTo
     {
@@ -53,7 +73,7 @@ class CartItem extends Model
     }
 
     /**
-     * @return MorphMany<PromotionRedemption, CartItem>
+     * @return MorphMany<PromotionRedemption, SimulatedCartItem>
      */
     public function redemptions(): MorphMany
     {
