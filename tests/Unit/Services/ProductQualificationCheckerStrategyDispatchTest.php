@@ -87,6 +87,6 @@ function seedCheckerPromotions(
     Collection $promotions,
 ): void {
     (function (Collection $promotions): void {
-        $this->promotions = $promotions;
+        $this->promotionsByScope = ['all' => $promotions];
     })->call($checker, $promotions);
 }
