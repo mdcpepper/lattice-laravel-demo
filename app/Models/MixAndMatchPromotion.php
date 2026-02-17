@@ -8,6 +8,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 
+/**
+ * @property int $mix_and_match_discount_id
+ */
 class MixAndMatchPromotion extends Model
 {
     protected $fillable = ['mix_and_match_discount_id'];

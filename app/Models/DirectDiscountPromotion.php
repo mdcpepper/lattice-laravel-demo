@@ -7,6 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 
+/**
+ * @property int $simple_discount_id
+ */
 class DirectDiscountPromotion extends Model
 {
     protected $fillable = ['simple_discount_id'];

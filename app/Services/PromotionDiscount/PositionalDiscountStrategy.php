@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Services\PromotionDiscount;
 
-use App\Models\DirectDiscountPromotion;
+use App\Models\PositionalDiscountPromotion;
 use App\Models\Promotion;
 
-class DirectDiscountStrategy implements PromotionDiscountStrategy
+class PositionalDiscountStrategy implements PromotionDiscountStrategy
 {
     use SimpleDiscountStrategy;
 
     public function supports(Promotion $promotion): bool
     {
-        return $promotion->promotionable instanceof DirectDiscountPromotion;
+        return $promotion->promotionable instanceof PositionalDiscountPromotion;
     }
 }
