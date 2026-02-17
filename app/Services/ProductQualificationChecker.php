@@ -11,8 +11,8 @@ use Illuminate\Support\Collection;
 
 class ProductQualificationChecker
 {
-    /** @var Collection<int, Promotion>|null */
-    private ?Collection $promotions = null;
+    /** @var array<int|string, Collection<int, Promotion>> */
+    private array $promotionsByScope = [];
 
     /**
      * @param  array<int, PromotionQualificationStrategy>  $promotionQualificationStrategies
@@ -21,12 +21,16 @@ class ProductQualificationChecker
         private readonly array $promotionQualificationStrategies,
     ) {}
 
-    /** @return string[] */
-    public function qualifyingPromotionNames(Product $product): array
-    {
+    /**
+     * @return string[]
+     */
+    public function qualifyingPromotionNames(
+        Product $product,
+        ?int $teamId = null,
+    ): array {
         $productTagNames = $this->productTagNames($product);
 
-        return $this->getPromotions()
+        return $this->getPromotions($teamId)
             ->filter(
                 fn (Promotion $promotion): bool => $this->qualifiesForPromotion(
                     $productTagNames,
@@ -37,14 +41,53 @@ class ProductQualificationChecker
             ->toArray();
     }
 
-    /** @return Collection<int, Promotion> */
-    private function getPromotions(): Collection
+    /**
+     * @param  Collection<int, Promotion>  $promotions
+     */
+    public function qualifiesForAnyPromotion(
+        Product $product,
+        Collection $promotions,
+    ): bool {
+        $productTagNames = $this->productTagNames($product);
+
+        return $promotions->contains(
+            fn (Promotion $promotion): bool => $this->qualifiesForPromotion(
+                $productTagNames,
+                $promotion,
+            ),
+        );
+    }
+
+    public function hasAnyQualifyingPromotion(
+        Product $product,
+        ?int $teamId = null,
+    ): bool {
+        return $this->qualifiesForAnyPromotion(
+            $product,
+            $this->getPromotions($teamId),
+        );
+    }
+
+    /**
+     * @return Collection<int, Promotion>
+     */
+    private function getPromotions(?int $teamId = null): Collection
     {
-        if ($this->promotions === null) {
-            $this->promotions = Promotion::withGraph()->get();
+        $scopeKey = $teamId ?? 'all';
+
+        if (! array_key_exists($scopeKey, $this->promotionsByScope)) {
+            $promotionQuery = Promotion::query();
+
+            if ($teamId !== null) {
+                $promotionQuery->where('team_id', $teamId);
+            }
+
+            $this->promotionsByScope[$scopeKey] = $promotionQuery
+                ->withGraph()
+                ->get();
         }
 
-        return $this->promotions;
+        return $this->promotionsByScope[$scopeKey];
     }
 
     /** @return string[] */

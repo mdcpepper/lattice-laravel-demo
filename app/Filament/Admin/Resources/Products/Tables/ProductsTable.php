@@ -7,18 +7,19 @@ use App\Services\ProductQualificationChecker;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Facades\Filament;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Spatie\Tags\Tag;
 
 class ProductsTable
 {
     public static function configure(Table $table): Table
     {
         $checker = resolve(ProductQualificationChecker::class);
+        $tenantKey = Filament::getTenant()?->getKey();
+        $teamId = is_numeric($tenantKey) ? (int) $tenantKey : null;
 
         return $table
             ->modifyQueryUsing(
@@ -38,7 +39,10 @@ class ProductsTable
                     ->state(
                         fn (
                             Product $record,
-                        ): array => $checker->qualifyingPromotionNames($record),
+                        ): array => $checker->qualifyingPromotionNames(
+                            $record,
+                            $teamId,
+                        ),
                     )
                     ->listWithLineBreaks()
                     ->badge()
@@ -53,47 +57,8 @@ class ProductsTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                SelectFilter::make('tags_array')
-                    ->label('Tags')
-                    ->searchable()
-                    ->options(function (): array {
-                        return Tag::query()
-                            ->whereNull('type')
-                            ->get()
-                            ->mapWithKeys(function (Tag $tag): array {
-                                $name = $tag->getTranslation('name', 'en');
-
-                                if ($name === '') {
-                                    return [];
-                                }
-
-                                return [(string) $tag->id => $name];
-                            })
-                            ->sort(SORT_NATURAL | SORT_FLAG_CASE)
-                            ->all();
-                    })
-                    ->multiple()
-                    ->attribute(fn (): string => 'id')
-                    ->query(function (Builder $query, array $data): Builder {
-                        $tagIds = collect($data['values'] ?? [])
-                            ->filter(
-                                fn (mixed $value): bool => is_numeric($value),
-                            )
-                            ->map(fn (mixed $value): int => (int) $value)
-                            ->values()
-                            ->all();
-
-                        if ($tagIds === []) {
-                            return $query;
-                        }
-
-                        return $query->whereHas(
-                            'tags',
-                            fn (Builder $tagQuery): Builder => $tagQuery
-                                ->whereNull('tags.type')
-                                ->whereIn('tags.id', $tagIds),
-                        );
-                    }),
+                ProductTagsFilter::make(),
+                QualifyingPromotionsFilter::make($checker, $teamId),
             ])
             ->recordActions([EditAction::make()])
             ->toolbarActions([
