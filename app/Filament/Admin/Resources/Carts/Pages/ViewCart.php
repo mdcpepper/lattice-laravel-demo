@@ -3,15 +3,15 @@
 namespace App\Filament\Admin\Resources\Carts\Pages;
 
 use App\Filament\Admin\Resources\Carts\CartResource;
-use Filament\Actions\CreateAction;
-use Filament\Resources\Pages\ListRecords;
+use Filament\Actions\EditAction;
+use Filament\Resources\Pages\ViewRecord;
 
-class ManageCarts extends ListRecords
+class ViewCart extends ViewRecord
 {
     protected static string $resource = CartResource::class;
 
     protected function getHeaderActions(): array
     {
-        return [CreateAction::make()];
+        return [EditAction::make()];
     }
 }
