@@ -16,7 +16,15 @@ class Product extends Model
         'price' => MoneyIntegerCast::class.':GBP',
     ];
 
-    protected $fillable = ['name'];
+    protected $fillable = ['team_id', 'name'];
+
+    /**
+     * @return BelongsTo<Team, Product>
+     */
+    public function team(): BelongsTo
+    {
+        return $this->belongsTo(Team::class);
+    }
 
     /**
      * @return BelongsTo<Category, Product>

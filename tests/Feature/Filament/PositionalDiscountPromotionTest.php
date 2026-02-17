@@ -11,11 +11,21 @@ use App\Filament\Admin\Resources\Promotions\Pages\EditPromotion;
 use App\Models\PositionalDiscountPromotion;
 use App\Models\Promotion;
 use App\Models\SimpleDiscount;
+use App\Models\Team;
 use App\Models\User;
+use Filament\Facades\Filament;
 use Livewire\Livewire;
 
 beforeEach(function (): void {
-    $this->actingAs(User::factory()->create());
+    $user = User::factory()->create();
+    $team = Team::factory()->create();
+
+    $team->members()->attach($user);
+
+    Filament::setCurrentPanel('admin');
+    Filament::setTenant($team, isQuiet: true);
+
+    $this->actingAs($user);
 });
 
 it(

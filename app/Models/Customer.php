@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
 /**
@@ -10,5 +11,13 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
  */
 class Customer extends Authenticatable
 {
-    protected $fillable = ['name', 'email'];
+    protected $fillable = ['team_id', 'name', 'email'];
+
+    /**
+     * @return BelongsTo<Team, Customer>
+     */
+    public function team(): BelongsTo
+    {
+        return $this->belongsTo(Team::class);
+    }
 }

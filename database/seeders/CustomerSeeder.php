@@ -20,13 +20,18 @@ class CustomerSeeder extends Seeder
     public function run(): void
     {
         $client = $this->makeClient();
+        $team = $this->getDefaultTeam();
 
         $customers = $this->fetchCustomers($client);
 
-        $customers->each(function (array $customer): void {
+        $customers->each(function (array $customer) use ($team): void {
             Customer::query()->updateOrCreate(
-                ['email' => $customer['email']],
                 [
+                    'team_id' => $team->id,
+                    'email' => $customer['email'],
+                ],
+                [
+                    'team_id' => $team->id,
                     'name' => $customer['name'],
                     'password' => $customer['password'],
                 ],

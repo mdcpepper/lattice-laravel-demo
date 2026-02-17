@@ -6,6 +6,7 @@ use App\Enums\QualificationContext;
 use Cknow\Money\Casts\MoneyIntegerCast;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
@@ -17,6 +18,7 @@ class Promotion extends Model
     ];
 
     protected $fillable = [
+        'team_id',
         'name',
         'application_budget',
         'monetary_budget',
@@ -68,6 +70,14 @@ class Promotion extends Model
     public function promotionable(): MorphTo
     {
         return $this->morphTo();
+    }
+
+    /**
+     * @return BelongsTo<Team, Promotion>
+     */
+    public function team(): BelongsTo
+    {
+        return $this->belongsTo(Team::class);
     }
 
     /**

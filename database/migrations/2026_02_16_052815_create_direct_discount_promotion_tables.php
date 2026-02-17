@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\SimpleDiscountKind;
+use App\Models\Team;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -14,6 +15,12 @@ return new class extends Migration
     {
         Schema::create('promotions', function (Blueprint $table): void {
             $table->id();
+            $table
+                ->foreignIdFor(Team::class)
+                ->nullable()
+                ->constrained()
+                ->cascadeOnUpdate()
+                ->nullOnDelete();
             $table->string('name');
             $table->morphs('promotionable');
             $table->unsignedInteger('application_budget')->nullable();
