@@ -5,10 +5,13 @@ namespace App\Models;
 use App\Casts\PercentageBasisPointsCast;
 use App\Contracts\Discount as DiscountContract;
 use App\Enums\MixAndMatchDiscountKind;
+use App\Models\Concerns\HasRouteUlid;
 use Illuminate\Database\Eloquent\Model;
 
 class MixAndMatchDiscount extends Model implements DiscountContract
 {
+    use HasRouteUlid;
+
     protected $casts = [
         'kind' => MixAndMatchDiscountKind::class,
         'percentage' => PercentageBasisPointsCast::class,

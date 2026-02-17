@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\QualificationContext;
+use App\Models\Concerns\HasRouteUlid;
 use Cknow\Money\Casts\MoneyIntegerCast;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -13,6 +14,8 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class Promotion extends Model
 {
+    use HasRouteUlid;
+
     protected $casts = [
         'monetary_budget' => MoneyIntegerCast::class.':GBP',
     ];

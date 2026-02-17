@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\QualificationContext;
+use App\Models\Concerns\HasRouteUlid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
@@ -12,6 +13,8 @@ use Illuminate\Database\Eloquent\Relations\MorphOne;
  */
 class DirectDiscountPromotion extends Model
 {
+    use HasRouteUlid;
+
     protected $fillable = ['simple_discount_id'];
 
     /**

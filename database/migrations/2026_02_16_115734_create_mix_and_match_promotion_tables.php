@@ -16,6 +16,7 @@ return new class extends Migration
             Blueprint $table,
         ): void {
             $table->id();
+            $table->ulid('ulid')->unique();
             $table->enum('kind', [
                 MixAndMatchDiscountKind::PercentageOffAllItems->value,
                 MixAndMatchDiscountKind::AmountOffEachItem->value,
@@ -35,6 +36,7 @@ return new class extends Migration
             Blueprint $table,
         ): void {
             $table->id();
+            $table->ulid('ulid')->unique();
             $table
                 ->foreignId('mix_and_match_promotion_id')
                 ->constrained('mix_and_match_promotions')
@@ -55,6 +57,7 @@ return new class extends Migration
             Blueprint $table,
         ): void {
             $table->id();
+            $table->ulid('ulid')->unique();
             $table
                 ->foreignId('mix_and_match_discount_id')
                 ->constrained('mix_and_match_discounts')

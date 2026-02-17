@@ -140,7 +140,7 @@ it(
             ]);
 
         $component = Livewire::test(EditPromotion::class, [
-            'record' => $promotion->id,
+            'record' => $promotion->getRouteKey(),
         ])
             ->assertSet(
                 'data.promotion_type',
@@ -188,7 +188,9 @@ it('stores edited 1-based positions as 0-based values', function (): void {
         'sort_order' => 0,
     ]);
 
-    Livewire::test(EditPromotion::class, ['record' => $promotion->id])
+    Livewire::test(EditPromotion::class, [
+        'record' => $promotion->getRouteKey(),
+    ])
         ->fillForm([
             'name' => 'Updated Positional',
             'promotion_type' => PromotionType::PositionalDiscount->value,

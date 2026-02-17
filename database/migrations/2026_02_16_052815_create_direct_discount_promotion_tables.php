@@ -15,6 +15,7 @@ return new class extends Migration
     {
         Schema::create('promotions', function (Blueprint $table): void {
             $table->id();
+            $table->ulid('ulid')->unique();
             $table
                 ->foreignIdFor(Team::class)
                 ->nullable()
@@ -30,6 +31,7 @@ return new class extends Migration
 
         Schema::create('simple_discounts', function (Blueprint $table): void {
             $table->id();
+            $table->ulid('ulid')->unique();
             $table->enum('kind', [
                 SimpleDiscountKind::PercentageOff->value,
                 SimpleDiscountKind::AmountOverride->value,
@@ -45,6 +47,7 @@ return new class extends Migration
             Blueprint $table,
         ): void {
             $table->id();
+            $table->ulid('ulid')->unique();
             $table
                 ->foreignId('simple_discount_id')
                 ->constrained('simple_discounts')

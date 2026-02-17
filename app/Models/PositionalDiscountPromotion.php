@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Models\Concerns\HasRouteUlid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -15,6 +16,8 @@ use Illuminate\Database\Eloquent\Relations\MorphOne;
  */
 class PositionalDiscountPromotion extends Model
 {
+    use HasRouteUlid;
+
     protected $fillable = ['size', 'simple_discount_id'];
 
     protected $casts = [

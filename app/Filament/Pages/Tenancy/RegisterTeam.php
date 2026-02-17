@@ -6,6 +6,7 @@ use App\Models\Team;
 use Filament\Forms\Components\TextInput;
 use Filament\Pages\Tenancy\RegisterTenant;
 use Filament\Schemas\Schema;
+use Illuminate\Support\Facades\Auth;
 
 class RegisterTeam extends RegisterTenant
 {
@@ -29,7 +30,7 @@ class RegisterTeam extends RegisterTenant
         /** @var Team $team */
         $team = Team::query()->create($data);
 
-        $userId = auth()->id();
+        $userId = Auth::id();
 
         if ($userId !== null) {
             $team->members()->syncWithoutDetaching([$userId]);

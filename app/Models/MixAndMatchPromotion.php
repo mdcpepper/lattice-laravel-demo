@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\QualificationContext;
+use App\Models\Concerns\HasRouteUlid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -13,6 +14,8 @@ use Illuminate\Database\Eloquent\Relations\MorphOne;
  */
 class MixAndMatchPromotion extends Model
 {
+    use HasRouteUlid;
+
     protected $fillable = ['mix_and_match_discount_id'];
 
     /**

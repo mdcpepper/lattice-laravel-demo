@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('teams', function (Blueprint $table): void {
             $table->id();
+            $table->ulid('ulid')->unique();
             $table->string('name');
             $table->timestamps();
         });

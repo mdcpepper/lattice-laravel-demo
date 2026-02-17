@@ -15,6 +15,7 @@ return new class extends Migration
             Blueprint $table,
         ): void {
             $table->id();
+            $table->ulid('ulid')->unique();
             $table->unsignedSmallInteger('size');
             $table
                 ->foreignId('simple_discount_id')
@@ -28,6 +29,7 @@ return new class extends Migration
             Blueprint $table,
         ): void {
             $table->id();
+            $table->ulid('ulid')->unique();
             $table
                 ->foreignId('positional_discount_promotion_id')
                 ->constrained('positional_discount_promotions')

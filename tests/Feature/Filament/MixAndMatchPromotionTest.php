@@ -261,7 +261,7 @@ it('can load an existing promotion into the edit form', function (): void {
     ]);
 
     $component = Livewire::test(EditPromotion::class, [
-        'record' => $promotion->id,
+        'record' => $promotion->getRouteKey(),
     ])
         ->assertSet('data.name', 'Edit Me')
         ->assertSet('data.promotion_type', PromotionType::MixAndMatch->value)
@@ -314,7 +314,9 @@ it('can update a promotion name and budget', function (): void {
         'sort_order' => 0,
     ]);
 
-    Livewire::test(EditPromotion::class, ['record' => $promotion->id])
+    Livewire::test(EditPromotion::class, [
+        'record' => $promotion->getRouteKey(),
+    ])
         ->fillForm([
             'name' => 'Updated Name',
             'promotion_type' => PromotionType::MixAndMatch->value,
@@ -380,7 +382,9 @@ it('can update qualification rules replacing old ones', function (): void {
 
     $oldRuleId = $oldRule->id;
 
-    Livewire::test(EditPromotion::class, ['record' => $promotion->id])
+    Livewire::test(EditPromotion::class, [
+        'record' => $promotion->getRouteKey(),
+    ])
         ->fillForm([
             'name' => 'Rule Swap',
             'promotion_type' => PromotionType::MixAndMatch->value,
@@ -461,7 +465,9 @@ it(
 
         $oldRuleId = $rule->id;
 
-        Livewire::test(EditPromotion::class, ['record' => $promotion->id])
+        Livewire::test(EditPromotion::class, [
+            'record' => $promotion->getRouteKey(),
+        ])
             ->fillForm([
                 'name' => 'Tag Cleanup',
                 'promotion_type' => PromotionType::MixAndMatch->value,

@@ -14,6 +14,7 @@ return new class extends Migration
     {
         Schema::create('customers', function (Blueprint $table) {
             $table->id();
+            $table->ulid('ulid')->unique();
             $table
                 ->foreignIdFor(Team::class)
                 ->nullable()
