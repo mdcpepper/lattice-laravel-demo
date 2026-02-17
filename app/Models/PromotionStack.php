@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\HasRouteUlid;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -13,7 +14,39 @@ class PromotionStack extends Model
     /** @use HasFactory<\Database\Factories\PromotionStackFactory> */
     use HasFactory, HasRouteUlid;
 
-    protected $fillable = ['team_id', 'name', 'root_layer_reference'];
+    protected $fillable = [
+        'team_id',
+        'name',
+        'root_layer_reference',
+        'active_from',
+        'active_to',
+    ];
+
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'active_from' => 'date',
+            'active_to' => 'date',
+        ];
+    }
+
+    public static function activeForTeam(int $teamId): ?self
+    {
+        $date = now()->toDateString();
+
+        return static::query()
+            ->where('team_id', $teamId)
+            ->whereDate('active_from', '<=', $date)
+            ->where(function (Builder $query) use ($date): void {
+                $query
+                    ->whereNull('active_to')
+                    ->orWhereDate('active_to', '>=', $date);
+            })
+            ->first();
+    }
 
     /**
      * @return BelongsTo<Team, PromotionStack>
@@ -29,5 +62,13 @@ class PromotionStack extends Model
     public function layers(): HasMany
     {
         return $this->hasMany(PromotionLayer::class)->orderBy('sort_order');
+    }
+
+    /**
+     * @return HasMany<Cart, PromotionStack>
+     */
+    public function carts(): HasMany
+    {
+        return $this->hasMany(Cart::class, 'promotion_stack_id');
     }
 }

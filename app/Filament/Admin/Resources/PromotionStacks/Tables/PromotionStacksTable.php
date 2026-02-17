@@ -38,6 +38,13 @@ class PromotionStacksTable
                     ->numeric()
                     ->sortable(),
 
+                TextColumn::make('active_from')->date()->sortable(),
+
+                TextColumn::make('active_to')
+                    ->date()
+                    ->placeholder('Open-ended')
+                    ->sortable(),
+
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -56,7 +63,7 @@ class PromotionStacksTable
                             ->where('team_id', Filament::getTenant()->id)
                             ->count();
 
-                        return "This will simulate {$count} cart(s) through this promotion stack. No actual records will be modified.";
+                        return "This will backtest {$count} cart(s) through this promotion stack. No actual records will be modified.";
                     })
                     ->action(function ($record, Action $action): void {
                         $teamId = Filament::getTenant()->id;

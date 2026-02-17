@@ -30,6 +30,10 @@ class EditPromotionStack extends EditRecord
         /** @var PromotionStack $stack */
         $stack = $this->record;
 
+        if ($data['active_from'] === null) {
+            $data['active_from'] = $stack->created_at->toDateString();
+        }
+
         return $this->populateLayerFormData($stack, $data);
     }
 

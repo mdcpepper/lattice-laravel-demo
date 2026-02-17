@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Product;
+use App\Models\PromotionStack;
 use App\Models\Team;
 use Illuminate\Contracts\Session\Session;
 
@@ -25,7 +26,13 @@ class CartManager
             }
         }
 
-        $cart = Cart::query()->create(['team_id' => $team->id]);
+        $activeStack = PromotionStack::activeForTeam($team->id);
+
+        $cart = Cart::query()->create([
+            'team_id' => $team->id,
+            'promotion_stack_id' => $activeStack?->id,
+        ]);
+
         $session->put('cart_ulid', $cart->ulid);
 
         return $cart;

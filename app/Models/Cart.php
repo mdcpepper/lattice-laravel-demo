@@ -13,7 +13,12 @@ class Cart extends Model
     use HasFactory;
     use HasRouteUlid;
 
-    protected $fillable = ['team_id', 'email', 'customer_id'];
+    protected $fillable = [
+        'team_id',
+        'email',
+        'customer_id',
+        'promotion_stack_id',
+    ];
 
     /**
      * @return BelongsTo<Team, Cart>
@@ -29,6 +34,14 @@ class Cart extends Model
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
+    }
+
+    /**
+     * @return BelongsTo<PromotionStack, Cart>
+     */
+    public function promotionStack(): BelongsTo
+    {
+        return $this->belongsTo(PromotionStack::class);
     }
 
     /**
