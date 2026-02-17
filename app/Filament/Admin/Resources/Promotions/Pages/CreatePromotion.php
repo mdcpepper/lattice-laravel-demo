@@ -9,6 +9,7 @@ use App\Filament\Admin\Resources\Promotions\Concerns\BuildsPromotionFormData;
 use App\Filament\Admin\Resources\Promotions\PromotionResource;
 use App\Models\DirectDiscountPromotion;
 use App\Models\MixAndMatchPromotion;
+use App\Models\PositionalDiscountPromotion;
 use App\Models\Promotion;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Database\Eloquent\Model;
@@ -29,8 +30,74 @@ class CreatePromotion extends CreateRecord
             fn (): Promotion => match ($data['promotion_type']) {
                 PromotionType::DirectDiscount->value => $this->buildDirectDiscountPromotion($data),
                 PromotionType::MixAndMatch->value => $this->buildMixAndMatchPromotion($data),
+                PromotionType::PositionalDiscount->value => $this->buildPositionalDiscountPromotion($data),
             },
         );
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    private function buildPositionalDiscountPromotion(array $data): Promotion
+    {
+        $discount = $this->createSimpleDiscount($data);
+
+        $size = (int) ($data['size'] ?? 1);
+
+        $positional = PositionalDiscountPromotion::query()->create([
+            'simple_discount_id' => $discount->id,
+            'size' => $size,
+        ]);
+
+        $promotion = Promotion::query()->create([
+            'name' => $data['name'],
+            'application_budget' => $data['application_budget'] !== null &&
+                $data['application_budget'] !== ''
+                    ? (int) $data['application_budget']
+                    : null,
+            'monetary_budget' => $this->parseMonetaryBudget(
+                $data['monetary_budget'] ?? null,
+            ),
+            'promotionable_type' => $positional->getMorphClass(),
+            'promotionable_id' => $positional->id,
+        ]);
+
+        $root = $positional->qualification()->create([
+            'promotion_id' => $promotion->id,
+            'context' => QualificationContext::Primary->value,
+            'op' => $data['qualification_op'],
+            'sort_order' => 0,
+        ]);
+
+        $this->createQualificationRules(
+            $root,
+            $data['qualification_rules'] ?? [],
+            $promotion,
+        );
+
+        $positions = $this->normalizeRepeaterRows($data['positions'] ?? []);
+
+        foreach ($positions as $sortOrder => $positionData) {
+            if (
+                ! is_array($positionData) ||
+                ! array_key_exists('position', $positionData)
+            ) {
+                continue;
+            }
+
+            $selectedPosition = (int) $positionData['position'];
+
+            if ($selectedPosition < 1 || $selectedPosition > $size) {
+                continue;
+            }
+
+            $positional->positions()->create([
+                'position' => $selectedPosition - 1,
+                'sort_order' => $sortOrder,
+            ]);
+        }
+
+        return $promotion;
     }
 
     /**

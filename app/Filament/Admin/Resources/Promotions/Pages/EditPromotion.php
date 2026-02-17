@@ -12,6 +12,7 @@ use App\Filament\Admin\Resources\Promotions\Concerns\BuildsPromotionFormData;
 use App\Filament\Admin\Resources\Promotions\PromotionResource;
 use App\Models\DirectDiscountPromotion;
 use App\Models\MixAndMatchPromotion;
+use App\Models\PositionalDiscountPromotion;
 use App\Models\Promotion;
 use App\Models\Qualification;
 use Filament\Actions\DeleteAction;
@@ -57,10 +58,19 @@ class EditPromotion extends EditRecord
             ]);
         }
 
+        if ($promotionable instanceof PositionalDiscountPromotion) {
+            $promotionable->load([
+                'discount',
+                'qualification.rules.tags',
+                'positions',
+            ]);
+        }
+
         $data['promotion_type'] = match (get_class($promotionable)) {
             DirectDiscountPromotion::class => PromotionType::DirectDiscount
                 ->value,
             MixAndMatchPromotion::class => PromotionType::MixAndMatch->value,
+            PositionalDiscountPromotion::class => PromotionType::PositionalDiscount->value,
         };
 
         $rawBudget = $promotion->getRawOriginal('monetary_budget');
@@ -113,6 +123,37 @@ class EditPromotion extends EditRecord
                             : [],
                 ];
             }
+        }
+
+        if ($promotionable instanceof PositionalDiscountPromotion) {
+            $discount = $promotionable->discount;
+
+            $data['size'] = $promotionable->size;
+            $data['discount_kind'] = $discount->kind->value;
+            $data['discount_percentage'] = $discount->percentage;
+            $data['discount_amount'] =
+                $discount->amount !== null
+                    ? number_format((float) $discount->amount / 100, 2, '.', '')
+                    : null;
+
+            $rootQual = $promotionable->qualification;
+
+            $data['qualification_op'] =
+                $rootQual?->op?->value ?? QualificationOp::And->value;
+            $data['qualification_rules'] =
+                $rootQual instanceof Qualification
+                    ? $this->flattenRules($rootQual, $promotion)
+                    : [];
+
+            $data['positions'] = $promotionable->positions
+                ->sortBy('sort_order')
+                ->values()
+                ->map(
+                    fn ($position): array => [
+                        'position' => $position->position + 1,
+                    ],
+                )
+                ->all();
         }
 
         return $data;
@@ -175,6 +216,10 @@ class EditPromotion extends EditRecord
             fn (): Promotion => match ($data['promotion_type']) {
                 PromotionType::DirectDiscount->value => $this->updateDirectDiscountPromotion($record, $data),
                 PromotionType::MixAndMatch->value => $this->updateMixAndMatchPromotion($record, $data),
+                PromotionType::PositionalDiscount->value => $this->updatePositionalDiscountPromotion(
+                    $record,
+                    $data,
+                ),
             },
         );
     }
@@ -339,6 +384,103 @@ class EditPromotion extends EditRecord
                     : [],
                 $promotion,
             );
+        }
+
+        return $promotion;
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    private function updatePositionalDiscountPromotion(
+        Promotion $promotion,
+        array $data,
+    ): Promotion {
+        $promotion->update([
+            'name' => $data['name'],
+            'application_budget' => $data['application_budget'] !== null &&
+                $data['application_budget'] !== ''
+                    ? (int) $data['application_budget']
+                    : null,
+            'monetary_budget' => $this->parseMonetaryBudget(
+                $data['monetary_budget'] ?? null,
+            ),
+        ]);
+
+        $promotion->load([
+            'promotionable.discount',
+            'promotionable.positions',
+            'qualifications.rules',
+        ]);
+
+        $positional = $promotion->promotionable;
+        $discount = $positional->discount;
+        $size = (int) ($data['size'] ?? 1);
+
+        $positional->update([
+            'size' => $size,
+        ]);
+
+        $kind = SimpleDiscountKind::from($data['discount_kind']);
+        $discountData = ['kind' => $kind->value];
+
+        if ($kind === SimpleDiscountKind::PercentageOff) {
+            $discountData['percentage'] = $data['discount_percentage'];
+            $discountData['amount'] = null;
+            $discountData['amount_currency'] = null;
+        } else {
+            $discountData['percentage'] = null;
+            $discountData['amount'] = $this->parseAmountToMinor(
+                $data['discount_amount'] ?? null,
+            );
+            $discountData['amount_currency'] = 'GBP';
+        }
+
+        $discount->update($discountData);
+
+        foreach ($promotion->qualifications as $qualification) {
+            foreach ($qualification->rules as $rule) {
+                $rule->delete();
+            }
+        }
+
+        $promotion->qualifications()->delete();
+
+        $root = $positional->qualification()->create([
+            'promotion_id' => $promotion->id,
+            'context' => QualificationContext::Primary->value,
+            'op' => $data['qualification_op'],
+            'sort_order' => 0,
+        ]);
+
+        $this->createQualificationRules(
+            $root,
+            $data['qualification_rules'] ?? [],
+            $promotion,
+        );
+
+        $positional->positions()->delete();
+
+        $positions = $this->normalizeRepeaterRows($data['positions'] ?? []);
+
+        foreach ($positions as $sortOrder => $positionData) {
+            if (
+                ! is_array($positionData) ||
+                ! array_key_exists('position', $positionData)
+            ) {
+                continue;
+            }
+
+            $selectedPosition = (int) $positionData['position'];
+
+            if ($selectedPosition < 1 || $selectedPosition > $size) {
+                continue;
+            }
+
+            $positional->positions()->create([
+                'position' => $selectedPosition - 1,
+                'sort_order' => $sortOrder,
+            ]);
         }
 
         return $promotion;

@@ -31,6 +31,18 @@ class PromotionForm
                     ->required()
                     ->live(),
 
+                TextInput::make('size')
+                    ->label('Size')
+                    ->numeric()
+                    ->minValue(1)
+                    ->step(1)
+                    ->live()
+                    ->visible(
+                        fn (Get $get): bool => $get('promotion_type') ==
+                            PromotionType::PositionalDiscount->value,
+                    )
+                    ->required(),
+
                 Fieldset::make('Budget')
                     ->contained(false)
                     ->columns([
@@ -43,6 +55,7 @@ class PromotionForm
                             ->label('Applications')
                             ->numeric()
                             ->minValue(1)
+                            ->step(1)
                             ->nullable(),
 
                         TextInput::make('monetary_budget')
@@ -57,6 +70,7 @@ class PromotionForm
             static::directDiscountDetails(),
             static::mixAndMatchDetails(),
             static::mixAndMatchSlots(),
+            static::positionalDiscountPositions(),
 
             Section::make('Qualification Rules')
                 ->visible(
@@ -166,8 +180,14 @@ class PromotionForm
     {
         return Section::make('Discount')
             ->visible(
-                fn (Get $get): bool => $get('promotion_type') ===
-                    PromotionType::DirectDiscount->value,
+                fn (Get $get): bool => in_array(
+                    $get('promotion_type'),
+                    [
+                        PromotionType::DirectDiscount->value,
+                        PromotionType::PositionalDiscount->value,
+                    ],
+                    true,
+                ),
             )
             ->schema([
                 Select::make('discount_kind')
@@ -286,7 +306,6 @@ class PromotionForm
                     ->hiddenLabel('Slots')
                     ->defaultItems(0)
                     ->addActionLabel('Add Slot')
-
                     ->schema([
                         Fieldset::make('Items')
                             ->contained(false)
@@ -311,5 +330,60 @@ class PromotionForm
                         ...static::qualifications(),
                     ]),
             ]);
+    }
+
+    private static function positionalDiscountPositions(): Section
+    {
+        return Section::make('Positions')
+            ->visible(
+                fn (Get $get): bool => PromotionType::PositionalDiscount
+                    ->value === $get('promotion_type'),
+            )
+            ->schema([
+                Repeater::make('positions')
+                    ->hiddenLabel('Positions')
+                    ->defaultItems(0)
+                    ->addActionLabel('Add Position')
+                    ->schema([
+                        Select::make('position')
+                            ->label('Position')
+                            ->disableOptionsWhenSelectedInSiblingRepeaterItems()
+                            ->options(
+                                fn (Get $get): array => self::positionOptions(
+                                    $get('../../size'),
+                                ),
+                            )
+                            ->in(
+                                fn (Get $get): array => array_keys(
+                                    self::positionOptions($get('../../size')),
+                                ),
+                            )
+                            ->required(),
+                    ]),
+            ]);
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    private static function positionOptions(mixed $size): array
+    {
+        if (! is_numeric($size)) {
+            return [];
+        }
+
+        $size = (int) $size;
+
+        if ($size < 1) {
+            return [];
+        }
+
+        $options = [];
+
+        foreach (range(1, $size) as $position) {
+            $options[$position] = (string) $position;
+        }
+
+        return $options;
     }
 }

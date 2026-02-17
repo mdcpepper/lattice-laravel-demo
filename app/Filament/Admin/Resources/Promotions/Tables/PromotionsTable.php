@@ -4,6 +4,7 @@ namespace App\Filament\Admin\Resources\Promotions\Tables;
 
 use App\Models\DirectDiscountPromotion;
 use App\Models\MixAndMatchPromotion;
+use App\Models\PositionalDiscountPromotion;
 use App\Models\Promotion;
 use App\Services\PromotionDiscount\PromotionDiscountFormatter;
 use Filament\Actions\BulkActionGroup;
@@ -27,6 +28,7 @@ class PromotionsTable
                         $morphTo->morphWith([
                             DirectDiscountPromotion::class => ['discount'],
                             MixAndMatchPromotion::class => ['discount'],
+                            PositionalDiscountPromotion::class => ['discount'],
                         ]);
                     },
                 ]),
@@ -40,6 +42,7 @@ class PromotionsTable
                         fn (string $state): string => match ($state) {
                             DirectDiscountPromotion::class => 'Direct Discount',
                             MixAndMatchPromotion::class => 'Mix and Match',
+                            PositionalDiscountPromotion::class => 'Positional Discount',
                             default => $state,
                         },
                     ),

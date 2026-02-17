@@ -6,6 +6,7 @@ enum PromotionType: string
 {
     case DirectDiscount = 'direct_discount';
     case MixAndMatch = 'mix_and_match';
+    case PositionalDiscount = 'positional_discount';
 
     /**
      * @return array<string, string>
@@ -24,7 +25,8 @@ enum PromotionType: string
     public static function hasPromotionQualification(?string $value): bool
     {
         return match ($value) {
-            self::DirectDiscount->value => true,
+            self::DirectDiscount->value,
+            self::PositionalDiscount->value => true,
             self::MixAndMatch->value => false,
             default => false,
         };
@@ -35,6 +37,7 @@ enum PromotionType: string
         return match ($this) {
             self::DirectDiscount => 'Direct Discount',
             self::MixAndMatch => 'Mix and Match',
+            self::PositionalDiscount => 'Positional Discount',
         };
     }
 }

@@ -50,6 +50,11 @@ class Promotion extends Model
                 'discount',
                 'qualification.rules.tags',
             ],
+            PositionalDiscountPromotion::class => [
+                'discount',
+                'qualification.rules.tags',
+                'positions',
+            ],
             MixAndMatchPromotion::class => [
                 'discount',
                 'slots.qualification.rules.tags',
