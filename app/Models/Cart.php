@@ -13,7 +13,7 @@ class Cart extends Model
     use HasFactory;
     use HasRouteUlid;
 
-    protected $fillable = ['team_id', 'session_id', 'email', 'customer_id'];
+    protected $fillable = ['team_id', 'email', 'customer_id'];
 
     /**
      * @return BelongsTo<Team, Cart>

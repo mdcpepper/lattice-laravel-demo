@@ -21,7 +21,6 @@ return new class extends Migration
                 ->constrained()
                 ->cascadeOnUpdate()
                 ->cascadeOnDelete();
-            $table->string('session_id')->index();
             $table->string('email')->nullable();
             $table
                 ->foreignIdFor(Customer::class)

@@ -4,12 +4,6 @@ use App\Models\Cart;
 use App\Models\Customer;
 use App\Models\Team;
 
-it('can be created with a session_id', function (): void {
-    $cart = Cart::factory()->create(['session_id' => 'abc-123']);
-
-    expect($cart->session_id)->toBe('abc-123');
-});
-
 it('has null email and customer_id by default', function (): void {
     $cart = Cart::factory()->create();
 

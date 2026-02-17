@@ -18,7 +18,6 @@ class CartFactory extends Factory
     {
         return [
             'team_id' => Team::factory(),
-            'session_id' => fake()->uuid(),
             'email' => null,
             'customer_id' => null,
         ];
