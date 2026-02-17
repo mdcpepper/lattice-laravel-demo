@@ -3,12 +3,15 @@
 namespace App\Models;
 
 use App\Enums\QualificationContext;
+use App\Models\Concerns\HasRouteUlid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 
 class MixAndMatchSlot extends Model
 {
+    use HasRouteUlid;
+
     protected $fillable = [
         'mix_and_match_promotion_id',
         'min',

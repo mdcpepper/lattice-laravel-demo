@@ -334,7 +334,7 @@ class PromotionForm
 
     private static function positionalDiscountPositions(): Section
     {
-        return Section::make('Positions')
+        return Section::make('Discount Positions')
             ->visible(
                 fn (Get $get): bool => PromotionType::PositionalDiscount
                     ->value === $get('promotion_type'),

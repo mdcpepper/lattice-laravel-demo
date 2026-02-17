@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasRouteUlid;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
 /**
@@ -10,5 +12,15 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
  */
 class Customer extends Authenticatable
 {
-    protected $fillable = ['name', 'email'];
+    use HasRouteUlid;
+
+    protected $fillable = ['team_id', 'name', 'email'];
+
+    /**
+     * @return BelongsTo<Team, Customer>
+     */
+    public function team(): BelongsTo
+    {
+        return $this->belongsTo(Team::class);
+    }
 }

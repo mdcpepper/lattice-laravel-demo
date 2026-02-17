@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\Team;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use GuzzleHttp\Client;
@@ -24,16 +25,15 @@ class ProductSeeder extends Seeder
     public function run(): void
     {
         $client = $this->makeClient();
+        $team = $this->getDefaultTeam();
 
         $categories = $this->fetchCategories($client);
         $products = $this->fetchProducts($client);
 
-        if (! empty($categories) && ! empty($products)) {
-            Category::query()->truncate();
-            Product::query()->truncate();
-        }
-
-        $categoryIdsBySlug = $this->upsertCategoriesAndGetIds($categories);
+        $categoryIdsBySlug = $this->upsertCategoriesAndGetIds(
+            $categories,
+            $team,
+        );
         $categoryTagBySlug = $categories->mapWithKeys(
             fn (array $category): array => [
                 $category['slug'] => Str::lower($category['name']),
@@ -44,6 +44,7 @@ class ProductSeeder extends Seeder
             $products,
             $categoryIdsBySlug,
             $categoryTagBySlug,
+            $team->id,
         );
 
         if ($seedableProducts->isEmpty()) {
@@ -126,16 +127,21 @@ class ProductSeeder extends Seeder
      */
     private function upsertCategoriesAndGetIds(
         Collection $categories,
+        Team $team,
     ): Collection {
-        $categories->each(function (array $category): void {
+        $categories->each(function (array $category) use ($team): void {
             Category::query()->updateOrCreate(
-                ['slug' => $category['slug']],
+                [
+                    'team_id' => $team->id,
+                    'slug' => $category['slug'],
+                ],
                 ['name' => $category['name']],
             );
         });
 
         /** @var Collection<string, int> $categoryIdsBySlug */
         $categoryIdsBySlug = Category::query()
+            ->where('team_id', $team->id)
             ->whereIn('slug', $categories->pluck('slug'))
             ->pluck('id', 'slug');
 
@@ -177,6 +183,7 @@ class ProductSeeder extends Seeder
         array $products,
         Collection $categoryIdsBySlug,
         Collection $categoryTagBySlug,
+        int $teamId,
     ): Collection {
         return collect($products)
             ->map(
@@ -184,6 +191,7 @@ class ProductSeeder extends Seeder
                     $product,
                     $categoryIdsBySlug,
                     $categoryTagBySlug,
+                    $teamId,
                 ),
             )
             ->filter()
@@ -200,6 +208,7 @@ class ProductSeeder extends Seeder
         array $product,
         Collection $categoryIdsBySlug,
         Collection $categoryTagBySlug,
+        int $teamId,
     ): ?array {
         $categorySlug = $product['category'] ?? null;
 
@@ -247,6 +256,7 @@ class ProductSeeder extends Seeder
         return [
             'product' => [
                 'id' => $product['id'],
+                'team_id' => $teamId,
                 'name' => $product['title'],
                 'description' => $product['description'],
                 'category_id' => $categoryId,
@@ -330,6 +340,7 @@ class ProductSeeder extends Seeder
             $productRows,
             ['id'],
             [
+                'team_id',
                 'name',
                 'description',
                 'category_id',

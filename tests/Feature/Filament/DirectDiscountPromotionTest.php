@@ -12,11 +12,21 @@ use App\Filament\Admin\Resources\Promotions\Pages\EditPromotion;
 use App\Models\DirectDiscountPromotion;
 use App\Models\Promotion;
 use App\Models\SimpleDiscount;
+use App\Models\Team;
 use App\Models\User;
+use Filament\Facades\Filament;
 use Livewire\Livewire;
 
 beforeEach(function (): void {
-    $this->actingAs(User::factory()->create());
+    $user = User::factory()->create();
+    $team = Team::factory()->create();
+
+    $team->members()->attach($user);
+
+    Filament::setCurrentPanel('admin');
+    Filament::setTenant($team, isQuiet: true);
+
+    $this->actingAs($user);
 });
 
 it(
@@ -219,7 +229,9 @@ it('can load an existing promotion into the edit form', function (): void {
         'sort_order' => 0,
     ]);
 
-    Livewire::test(EditPromotion::class, ['record' => $promotion->id])
+    Livewire::test(EditPromotion::class, [
+        'record' => $promotion->getRouteKey(),
+    ])
         ->assertSet('data.name', 'Edit Me')
         ->assertSet('data.promotion_type', 'direct_discount')
         ->assertSet('data.application_budget', 50)
@@ -255,7 +267,9 @@ it('can update a promotion name and budget', function (): void {
         'sort_order' => 0,
     ]);
 
-    Livewire::test(EditPromotion::class, ['record' => $promotion->id])
+    Livewire::test(EditPromotion::class, [
+        'record' => $promotion->getRouteKey(),
+    ])
         ->fillForm([
             'name' => 'Updated Name',
             'promotion_type' => 'direct_discount',
@@ -309,7 +323,9 @@ it('can update qualification rules replacing old ones', function (): void {
 
     $oldRuleId = $oldRule->id;
 
-    Livewire::test(EditPromotion::class, ['record' => $promotion->id])
+    Livewire::test(EditPromotion::class, [
+        'record' => $promotion->getRouteKey(),
+    ])
         ->fillForm([
             'name' => 'Rule Swap',
             'promotion_type' => 'direct_discount',
@@ -377,7 +393,9 @@ it(
 
         $oldRuleId = $rule->id;
 
-        Livewire::test(EditPromotion::class, ['record' => $promotion->id])
+        Livewire::test(EditPromotion::class, [
+            'record' => $promotion->getRouteKey(),
+        ])
             ->fillForm([
                 'name' => 'Tag Cleanup',
                 'promotion_type' => 'direct_discount',

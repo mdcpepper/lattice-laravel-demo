@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('qualifications', function (Blueprint $table): void {
             $table->id();
+            $table->ulid('ulid')->unique();
             $table
                 ->foreignId('promotion_id')
                 ->constrained('promotions')
@@ -42,6 +43,7 @@ return new class extends Migration
             Blueprint $table,
         ): void {
             $table->id();
+            $table->ulid('ulid')->unique();
             $table
                 ->foreignId('qualification_id')
                 ->constrained('qualifications')

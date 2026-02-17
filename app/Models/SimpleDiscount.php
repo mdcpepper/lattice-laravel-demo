@@ -5,10 +5,13 @@ namespace App\Models;
 use App\Casts\PercentageBasisPointsCast;
 use App\Contracts\Discount as DiscountContract;
 use App\Enums\SimpleDiscountKind;
+use App\Models\Concerns\HasRouteUlid;
 use Illuminate\Database\Eloquent\Model;
 
 class SimpleDiscount extends Model implements DiscountContract
 {
+    use HasRouteUlid;
+
     protected $casts = [
         'kind' => SimpleDiscountKind::class,
         'percentage' => PercentageBasisPointsCast::class,

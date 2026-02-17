@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\QualificationRuleKind;
+use App\Models\Concerns\HasRouteUlid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Spatie\Tags\HasTags;
 
 class QualificationRule extends Model
 {
-    use HasTags;
+    use HasRouteUlid, HasTags;
 
     protected $fillable = [
         'qualification_id',

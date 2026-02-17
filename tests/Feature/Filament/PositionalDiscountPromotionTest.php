@@ -11,11 +11,21 @@ use App\Filament\Admin\Resources\Promotions\Pages\EditPromotion;
 use App\Models\PositionalDiscountPromotion;
 use App\Models\Promotion;
 use App\Models\SimpleDiscount;
+use App\Models\Team;
 use App\Models\User;
+use Filament\Facades\Filament;
 use Livewire\Livewire;
 
 beforeEach(function (): void {
-    $this->actingAs(User::factory()->create());
+    $user = User::factory()->create();
+    $team = Team::factory()->create();
+
+    $team->members()->attach($user);
+
+    Filament::setCurrentPanel('admin');
+    Filament::setTenant($team, isQuiet: true);
+
+    $this->actingAs($user);
 });
 
 it(
@@ -130,7 +140,7 @@ it(
             ]);
 
         $component = Livewire::test(EditPromotion::class, [
-            'record' => $promotion->id,
+            'record' => $promotion->getRouteKey(),
         ])
             ->assertSet(
                 'data.promotion_type',
@@ -178,7 +188,9 @@ it('stores edited 1-based positions as 0-based values', function (): void {
         'sort_order' => 0,
     ]);
 
-    Livewire::test(EditPromotion::class, ['record' => $promotion->id])
+    Livewire::test(EditPromotion::class, [
+        'record' => $promotion->getRouteKey(),
+    ])
         ->fillForm([
             'name' => 'Updated Positional',
             'promotion_type' => PromotionType::PositionalDiscount->value,
