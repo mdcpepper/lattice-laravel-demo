@@ -2,12 +2,14 @@
 
 namespace Tests\Feature\Services;
 
+use App\Events\CartRecalculationRequested;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Product;
 use App\Models\Team;
 use App\Services\CartManager;
 use Illuminate\Contracts\Session\Session;
+use Illuminate\Support\Facades\Event;
 
 describe('currentCart()', function (): void {
     it(
@@ -72,6 +74,8 @@ describe('currentCart()', function (): void {
 
 describe('addItem()', function (): void {
     it('creates a CartItem for the given product', function (): void {
+        Event::fake();
+
         $cart = Cart::factory()->create();
         $product = Product::factory()->create();
         $manager = app(CartManager::class);
@@ -84,11 +88,19 @@ describe('addItem()', function (): void {
             ->toBe($cart->id)
             ->and($item->product_id)
             ->toBe($product->id);
+
+        Event::assertDispatched(
+            CartRecalculationRequested::class,
+            fn (CartRecalculationRequested $event): bool => $event->cartId ===
+                $cart->id,
+        );
     });
 
     it(
         'creates two rows when the same product is added twice',
         function (): void {
+            Event::fake();
+
             $cart = Cart::factory()->create();
             $product = Product::factory()->create();
             $manager = app(CartManager::class);
@@ -97,12 +109,31 @@ describe('addItem()', function (): void {
             $manager->addItem($cart, $product);
 
             expect($cart->items()->count())->toBe(2);
+
+            Event::assertDispatchedTimes(CartRecalculationRequested::class, 2);
+        },
+    );
+
+    it(
+        'can skip auto-recalculation dispatch when requested',
+        function (): void {
+            Event::fake();
+
+            $cart = Cart::factory()->create();
+            $product = Product::factory()->create();
+            $manager = app(CartManager::class);
+
+            $manager->addItem($cart, $product, requestRecalculation: false);
+
+            Event::assertNotDispatched(CartRecalculationRequested::class);
         },
     );
 });
 
 describe('removeItem()', function (): void {
     it('soft-deletes the item', function (): void {
+        Event::fake();
+
         $item = CartItem::factory()->create();
         $manager = app(CartManager::class);
 
@@ -114,9 +145,17 @@ describe('removeItem()', function (): void {
             ->toBeNull()
             ->and(CartItem::withTrashed()->find($item->id))
             ->not->toBeNull();
+
+        Event::assertDispatched(
+            CartRecalculationRequested::class,
+            fn (CartRecalculationRequested $event): bool => $event->cartId ===
+                $item->cart_id,
+        );
     });
 
     it('re-adding after removal creates a fresh row', function (): void {
+        Event::fake();
+
         $cart = Cart::factory()->create();
         $product = Product::factory()->create();
         $manager = app(CartManager::class);
@@ -132,5 +171,20 @@ describe('removeItem()', function (): void {
             ->toBeNull()
             ->and($cart->items()->count())
             ->toBe(1);
+    });
+
+    it('can dispatch recalculation manually', function (): void {
+        Event::fake();
+
+        $cart = Cart::factory()->create();
+        $manager = app(CartManager::class);
+
+        $manager->requestRecalculation($cart);
+
+        Event::assertDispatched(
+            CartRecalculationRequested::class,
+            fn (CartRecalculationRequested $event): bool => $event->cartId ===
+                $cart->id,
+        );
     });
 });

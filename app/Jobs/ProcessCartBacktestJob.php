@@ -90,15 +90,15 @@ class ProcessCartBacktestJob implements ShouldQueue
             $product = $item->product;
             $applications = $applicationsByCartItemId[$item->id] ?? [];
 
-            $subtotal = (int) $product->price->getAmount();
+            $price = (int) $product->price->getAmount();
             $currency = $product->price->getCurrency()->getCode();
 
-            $total =
+            $offerPrice =
                 count($applications) > 0
                     ? end($applications)->finalPrice->amount
-                    : $subtotal;
+                    : $price;
 
-            $totalCurrency =
+            $offerPriceCurrency =
                 count($applications) > 0
                     ? end($applications)->finalPrice->currency
                     : $currency;
@@ -108,10 +108,10 @@ class ProcessCartBacktestJob implements ShouldQueue
                 'backtested_cart_id' => $simulatedCart->id,
                 'cart_item_id' => $item->id,
                 'product_id' => $product->id,
-                'subtotal' => $subtotal,
-                'subtotal_currency' => $currency,
-                'total' => $total,
-                'total_currency' => $totalCurrency,
+                'price' => $price,
+                'price_currency' => $currency,
+                'offer_price' => $offerPrice,
+                'offer_price_currency' => $offerPriceCurrency,
             ]);
 
             foreach ($applications as $index => $application) {

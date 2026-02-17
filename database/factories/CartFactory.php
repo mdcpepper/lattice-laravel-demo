@@ -20,6 +20,10 @@ class CartFactory extends Factory
             'team_id' => Team::factory(),
             'email' => null,
             'customer_id' => null,
+            'subtotal' => 0,
+            'subtotal_currency' => 'GBP',
+            'total' => 0,
+            'total_currency' => 'GBP',
         ];
     }
 

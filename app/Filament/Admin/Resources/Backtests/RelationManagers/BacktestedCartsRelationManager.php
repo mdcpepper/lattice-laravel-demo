@@ -4,10 +4,12 @@ namespace App\Filament\Admin\Resources\Backtests\RelationManagers;
 
 use App\Filament\Admin\Resources\BacktestedCarts\BacktestedCartResource;
 use App\Models\BacktestedCart;
+use App\Models\BacktestedCartItem;
 use Filament\Actions\ViewAction;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class BacktestedCartsRelationManager extends RelationManager
 {
@@ -52,6 +54,23 @@ class BacktestedCartsRelationManager extends RelationManager
                             "subtotal - total {$direction}",
                         ),
                     ),
+
+                TextColumn::make('promotion_names')
+                    ->label('Promotion(s)')
+                    ->state(
+                        fn (BacktestedCart $record): string => $record->items
+                            ->flatMap(
+                                fn (
+                                    BacktestedCartItem $item,
+                                ) => $item->redemptions->pluck(
+                                    'promotion.name',
+                                ),
+                            )
+                            ->filter()
+                            ->unique()
+                            ->join(', '),
+                    )
+                    ->placeholder('-'),
             ])
             ->filters([])
             ->recordActions([
@@ -64,6 +83,11 @@ class BacktestedCartsRelationManager extends RelationManager
                 ),
             ])
             ->toolbarActions([])
+            ->modifyQueryUsing(
+                fn (Builder $query): Builder => $query->with([
+                    'items.redemptions.promotion',
+                ]),
+            )
             ->defaultSort('discount', 'desc');
     }
 }

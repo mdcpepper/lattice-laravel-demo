@@ -23,10 +23,10 @@ class BacktestedCartItemFactory extends Factory
             'backtested_cart_id' => BacktestedCart::factory(),
             'cart_item_id' => CartItem::factory(),
             'product_id' => Product::factory(),
-            'subtotal' => 1000,
-            'subtotal_currency' => 'GBP',
-            'total' => 1000,
-            'total_currency' => 'GBP',
+            'price' => 1000,
+            'price_currency' => 'GBP',
+            'offer_price' => 1000,
+            'offer_price_currency' => 'GBP',
         ];
     }
 }

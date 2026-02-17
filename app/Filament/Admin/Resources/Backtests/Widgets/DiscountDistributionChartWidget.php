@@ -41,12 +41,12 @@ class DiscountDistributionChartWidget extends ChartWidget
         $buckets = $this->record
             ->simulatedCartItems()
             ->whereColumn(
-                'backtested_cart_items.total',
+                'backtested_cart_items.offer_price',
                 '<',
-                'backtested_cart_items.subtotal',
+                'backtested_cart_items.price',
             )
             ->selectRaw(
-                'FLOOR((backtested_cart_items.subtotal - backtested_cart_items.total) / 100) as bucket, COUNT(*) as count',
+                'FLOOR((backtested_cart_items.price - backtested_cart_items.offer_price) / 100) as bucket, COUNT(*) as count',
             )
             ->groupBy('bucket')
             ->orderBy('bucket')

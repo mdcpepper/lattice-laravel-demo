@@ -42,9 +42,9 @@ class BacktestStatsWidget extends StatsOverviewWidget
         $discountedItems = $items
             ->clone()
             ->whereColumn(
-                'backtested_cart_items.total',
+                'backtested_cart_items.offer_price',
                 '<',
-                'backtested_cart_items.subtotal',
+                'backtested_cart_items.price',
             )
             ->count();
 
@@ -57,7 +57,7 @@ class BacktestStatsWidget extends StatsOverviewWidget
             (int) ($items
                 ->clone()
                 ->selectRaw(
-                    'COALESCE(SUM(backtested_cart_items.subtotal - backtested_cart_items.total), 0) as savings',
+                    'COALESCE(SUM(backtested_cart_items.price - backtested_cart_items.offer_price), 0) as savings',
                 )
                 ->value('savings') ?? 0);
 

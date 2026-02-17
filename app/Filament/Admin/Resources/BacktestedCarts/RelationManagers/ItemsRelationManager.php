@@ -6,6 +6,7 @@ use App\Models\BacktestedCartItem;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class ItemsRelationManager extends RelationManager
 {
@@ -18,17 +19,17 @@ class ItemsRelationManager extends RelationManager
             ->columns([
                 TextColumn::make('product.name')->searchable(),
 
-                TextColumn::make('subtotal')->money('GBP')->sortable(),
+                TextColumn::make('price')->money('GBP')->sortable(),
 
-                TextColumn::make('total')->money('GBP')->sortable(),
+                TextColumn::make('offer_price')->money('GBP')->sortable(),
 
                 TextColumn::make('discount')
                     ->label('Discount')
                     ->state(
                         fn (BacktestedCartItem $record): string => '£'.
                             number_format(
-                                ($record->subtotal->getAmount() -
-                                    $record->total->getAmount()) /
+                                ($record->price->getAmount() -
+                                    $record->offer_price->getAmount()) /
                                     100,
                                 2,
                             ),
@@ -38,17 +39,31 @@ class ItemsRelationManager extends RelationManager
                             $query,
                             string $direction,
                         ) => $query->orderByRaw(
-                            "subtotal - total {$direction}",
+                            "price - offer_price {$direction}",
                         ),
                     ),
 
-                TextColumn::make('redemptions_count')
-                    ->label('Promotions')
-                    ->counts('redemptions')
-                    ->sortable(),
+                TextColumn::make('promotion_names')
+                    ->label('Promotion(s)')
+                    ->state(
+                        fn (
+                            BacktestedCartItem $record,
+                        ): string => $record->redemptions
+                            ->pluck('promotion.name')
+                            ->filter()
+                            ->unique()
+                            ->join(', '),
+                    )
+                    ->placeholder('-'),
             ])
             ->filters([])
             ->recordActions([])
-            ->toolbarActions([]);
+            ->toolbarActions([])
+            ->modifyQueryUsing(
+                fn (Builder $query): Builder => $query->with([
+                    'product',
+                    'redemptions.promotion',
+                ]),
+            );
     }
 }

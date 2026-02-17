@@ -23,6 +23,10 @@ return new class extends Migration
                 ->constrained()
                 ->cascadeOnUpdate()
                 ->cascadeOnDelete();
+            $table->unsignedBigInteger('price')->default(0);
+            $table->char('price_currency', 3)->default('GBP');
+            $table->unsignedBigInteger('offer_price')->default(0);
+            $table->char('offer_price_currency', 3)->default('GBP');
             $table->softDeletes();
             $table->timestamps();
         });

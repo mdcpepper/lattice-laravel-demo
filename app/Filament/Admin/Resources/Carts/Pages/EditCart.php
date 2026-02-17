@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\Carts\Pages;
 
+use App\Events\CartRecalculationRequested;
 use App\Filament\Admin\Resources\Carts\CartResource;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ViewAction;
@@ -18,5 +19,14 @@ class EditCart extends EditRecord
     protected function getHeaderActions(): array
     {
         return [ViewAction::make(), DeleteAction::make()];
+    }
+
+    protected function afterSave(): void
+    {
+        if (! $this->record->wasChanged('promotion_stack_id')) {
+            return;
+        }
+
+        CartRecalculationRequested::dispatch($this->record->id);
     }
 }

@@ -19,10 +19,10 @@ class CartItemFactory extends Factory
         return [
             'cart_id' => Cart::factory(),
             'product_id' => Product::factory(),
-            'subtotal' => 1000,
-            'subtotal_currency' => 'GBP',
-            'total' => 1000,
-            'total_currency' => 'GBP',
+            'price' => 1000,
+            'price_currency' => 'GBP',
+            'offer_price' => 1000,
+            'offer_price_currency' => 'GBP',
         ];
     }
 }

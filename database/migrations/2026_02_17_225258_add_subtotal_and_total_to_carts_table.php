@@ -6,16 +6,13 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        Schema::table('cart_items', function (Blueprint $table): void {
+        Schema::table('carts', function (Blueprint $table): void {
             $table
                 ->unsignedBigInteger('subtotal')
                 ->default(0)
-                ->after('product_id');
+                ->after('promotion_stack_id');
             $table
                 ->char('subtotal_currency', 3)
                 ->default('GBP')
@@ -28,12 +25,9 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::table('cart_items', function (Blueprint $table): void {
+        Schema::table('carts', function (Blueprint $table): void {
             $table->dropColumn([
                 'subtotal',
                 'subtotal_currency',

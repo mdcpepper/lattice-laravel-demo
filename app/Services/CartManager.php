@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Events\CartRecalculationRequested;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Product;
@@ -38,22 +39,44 @@ class CartManager
         return $cart;
     }
 
-    public function addItem(Cart $cart, Product $product): CartItem
-    {
+    public function addItem(
+        Cart $cart,
+        Product $product,
+        bool $requestRecalculation = true,
+    ): CartItem {
         $amount = $product->price->getAmount();
         $currency = $product->price->getCurrency()->getCode();
 
-        return $cart->items()->create([
+        $item = $cart->items()->create([
             'product_id' => $product->id,
-            'subtotal' => $amount,
-            'subtotal_currency' => $currency,
-            'total' => $amount,
-            'total_currency' => $currency,
+            'price' => $amount,
+            'price_currency' => $currency,
+            'offer_price' => $amount,
+            'offer_price_currency' => $currency,
         ]);
+
+        if ($requestRecalculation) {
+            $this->requestRecalculation($cart);
+        }
+
+        return $item;
     }
 
-    public function removeItem(CartItem $item): void
-    {
+    public function removeItem(
+        CartItem $item,
+        bool $requestRecalculation = true,
+    ): void {
+        $cartId = (int) $item->cart_id;
+
         $item->delete();
+
+        if ($requestRecalculation) {
+            CartRecalculationRequested::dispatch($cartId);
+        }
+    }
+
+    public function requestRecalculation(Cart $cart): void
+    {
+        CartRecalculationRequested::dispatch($cart->id);
     }
 }

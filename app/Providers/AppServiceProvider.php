@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Events\CartRecalculationRequested;
+use App\Listeners\RecalculateCartTotals;
 use App\Services\Lattice\Promotions\DirectDiscountPromotionStrategy as DirectLatticeFactoryStrategy;
 use App\Services\Lattice\Promotions\LatticePromotionFactory;
 use App\Services\Lattice\Promotions\MixAndMatchPromotionStrategy as MixAndMatchLatticeFactoryStrategy;
@@ -24,6 +26,7 @@ use App\Services\PromotionQualification\DirectDiscountStrategy as DirectQualific
 use App\Services\PromotionQualification\MixAndMatchStrategy as MixAndMatchQualificationStrategy;
 use App\Services\PromotionQualification\PositionalDiscountStrategy as PositionalQualificationStrategy;
 use App\Services\PromotionQualification\TieredThresholdStrategy as TieredThresholdQualificationStrategy;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -95,6 +98,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Event::listen(
+            CartRecalculationRequested::class,
+            RecalculateCartTotals::class,
+        );
     }
 }
