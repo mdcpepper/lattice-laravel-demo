@@ -2,11 +2,11 @@
 
 namespace App\Filament\Admin\Resources\PromotionStacks\Tables;
 
-use App\Enums\SimulationRunStatus;
-use App\Filament\Admin\Resources\SimulationRuns\SimulationRunResource;
-use App\Jobs\ProcessSimulationCartJob;
+use App\Enums\BacktestStatus;
+use App\Filament\Admin\Resources\Backtests\BacktestResource;
+use App\Jobs\ProcessCartBacktestJob;
+use App\Models\Backtest;
 use App\Models\Cart;
-use App\Models\SimulationRun;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -48,8 +48,8 @@ class PromotionStacksTable
             ])
             ->recordActions([
                 EditAction::make(),
-                Action::make('runSimulation')
-                    ->label('Run Simulation')
+                Action::make('runBacktest')
+                    ->label('Run Backtest')
                     ->requiresConfirmation()
                     ->modalDescription(function () {
                         $count = Cart::query()
@@ -65,11 +65,11 @@ class PromotionStacksTable
                             ->where('team_id', $teamId)
                             ->pluck('id');
 
-                        $simulationRun = SimulationRun::query()->create([
+                        $backtestRun = Backtest::query()->create([
                             'promotion_stack_id' => $record->id,
                             'total_carts' => $cartIds->count(),
                             'processed_carts' => 0,
-                            'status' => SimulationRunStatus::Running,
+                            'status' => BacktestStatus::Running,
                         ]);
 
                         /** @var PendingChain $chain */
@@ -78,8 +78,8 @@ class PromotionStacksTable
                                 ->map(
                                     fn (
                                         int $cartId,
-                                    ): ProcessSimulationCartJob => new ProcessSimulationCartJob(
-                                        simulationRunId: $simulationRun->id,
+                                    ): ProcessCartBacktestJob => new ProcessCartBacktestJob(
+                                        backtestRunId: $backtestRun->id,
                                         cartId: $cartId,
                                     ),
                                 )
@@ -89,12 +89,12 @@ class PromotionStacksTable
                         $chain->dispatch();
 
                         $action->successRedirectUrl(
-                            SimulationRunResource::getUrl('view', [
-                                'record' => $simulationRun,
+                            BacktestResource::getUrl('view', [
+                                'record' => $backtestRun,
                             ]),
                         );
                     })
-                    ->successNotificationTitle('Simulation started'),
+                    ->successNotificationTitle('Backtest started'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([DeleteBulkAction::make()]),

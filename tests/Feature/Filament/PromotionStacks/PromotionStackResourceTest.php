@@ -3,17 +3,17 @@
 namespace Tests\Feature\Filament\PromotionStacks;
 
 use App\Enums\SimpleDiscountKind;
+use App\Filament\Admin\Resources\Backtests\BacktestResource;
 use App\Filament\Admin\Resources\PromotionStacks\Pages\CreatePromotionStack;
 use App\Filament\Admin\Resources\PromotionStacks\Pages\EditPromotionStack;
 use App\Filament\Admin\Resources\PromotionStacks\Pages\ListPromotionStacks;
-use App\Filament\Admin\Resources\SimulationRuns\SimulationRunResource;
+use App\Models\Backtest;
 use App\Models\Cart;
 use App\Models\DirectDiscountPromotion;
 use App\Models\Promotion;
 use App\Models\PromotionLayer;
 use App\Models\PromotionStack;
 use App\Models\SimpleDiscount;
-use App\Models\SimulationRun;
 use App\Models\Team;
 use App\Models\User;
 use Filament\Facades\Filament;
@@ -37,7 +37,7 @@ it('can render the list page', function (): void {
 });
 
 it(
-    'redirects to the simulation run page when running a simulation',
+    'redirects to the backtests page when running a backtest',
     function (): void {
         Bus::fake();
 
@@ -45,17 +45,17 @@ it(
         Cart::factory()->for($this->team)->create();
 
         $livewire = Livewire::test(ListPromotionStacks::class)
-            ->callTableAction('runSimulation', record: $stack)
+            ->callTableAction('runBacktest', record: $stack)
             ->assertHasNoTableActionErrors();
 
-        $simulationRun = SimulationRun::query()
+        $backtest = Backtest::query()
             ->where('promotion_stack_id', $stack->id)
             ->latest('id')
             ->firstOrFail();
 
         $livewire->assertRedirect(
-            SimulationRunResource::getUrl('view', [
-                'record' => $simulationRun,
+            BacktestResource::getUrl('view', [
+                'record' => $backtest,
             ]),
         );
     },
