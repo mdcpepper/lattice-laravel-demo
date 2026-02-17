@@ -9,12 +9,23 @@ use App\Models\DirectDiscountPromotion as DirectDiscountPromotionModel;
 use App\Models\Promotion as PromotionModel;
 use App\Models\Qualification as QualificationModel;
 use App\Models\SimpleDiscount as SimpleDiscountModel;
+use App\Services\Lattice\Concerns\BuildsLatticeBudget;
+use App\Services\Lattice\Concerns\BuildsLatticeDiscountValues;
+use App\Services\Lattice\Concerns\BuildsLatticeQualification;
+use App\Services\Lattice\Concerns\BuildsSimpleLatticeDiscount;
+use App\Services\Lattice\Concerns\HandlesUnsupportedPromotionableType;
 use Lattice\Promotions\DirectDiscountPromotion;
 use Lattice\Promotions\Promotion as LatticePromotion;
 use RuntimeException;
 
-class DirectDiscountPromotionStrategy extends BaseLatticePromotionStrategy
+class DirectDiscountPromotionStrategy implements LatticePromotionStrategy
 {
+    use BuildsLatticeBudget;
+    use BuildsLatticeDiscountValues;
+    use BuildsLatticeQualification;
+    use BuildsSimpleLatticeDiscount;
+    use HandlesUnsupportedPromotionableType;
+
     public function supports(PromotionModel $promotion): bool
     {
         return $promotion->promotionable instanceof DirectDiscountPromotionModel;

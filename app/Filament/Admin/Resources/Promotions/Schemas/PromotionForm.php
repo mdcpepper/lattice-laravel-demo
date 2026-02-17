@@ -7,6 +7,7 @@ use App\Enums\PromotionType;
 use App\Enums\QualificationOp;
 use App\Enums\QualificationRuleKind;
 use App\Enums\SimpleDiscountKind;
+use App\Enums\TieredThresholdDiscountKind;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TagsInput;
@@ -70,6 +71,7 @@ class PromotionForm
             static::directDiscountDetails(),
             static::mixAndMatchDetails(),
             static::mixAndMatchSlots(),
+            static::tieredThresholdTiers(),
             static::positionalDiscountPositions(),
 
             Section::make('Qualification Rules')
@@ -91,7 +93,7 @@ class PromotionForm
     {
         return [
             Select::make('qualification_op')
-                ->label('Type')
+                ->label('Matching')
                 ->options(QualificationOp::asSelectOptions())
                 ->default(QualificationOp::And->value)
                 ->required(),
@@ -100,13 +102,28 @@ class PromotionForm
                 ->label('Rules')
                 ->defaultItems(0)
                 ->addActionLabel('Add Rule')
+                ->columns([
+                    'default' => 1,
+                    'md' => 3,
+                    'xl' => 3,
+                ])
                 ->schema([
                     Select::make('kind')
                         ->options(QualificationRuleKind::asSelectOptions())
+                        ->columnSpan([
+                            'default' => 1,
+                            'md' => 1,
+                            'xl' => 1,
+                        ])
                         ->required()
                         ->live(),
 
                     TagsInput::make('tags')
+                        ->columnSpan([
+                            'default' => 1,
+                            'md' => 2,
+                            'xl' => 2,
+                        ])
                         ->trim()
                         ->suggestions(self::tagSuggestions())
                         ->visible(
@@ -127,7 +144,13 @@ class PromotionForm
                         ),
 
                     Select::make('group_op')
+                        ->label('Matching')
                         ->options(QualificationOp::asSelectOptions())
+                        ->columnSpan([
+                            'default' => 1,
+                            'md' => 2,
+                            'xl' => 2,
+                        ])
                         ->visible(
                             fn (Get $get): bool => $get('kind') ===
                                 QualificationRuleKind::Group->value,
@@ -139,6 +162,12 @@ class PromotionForm
 
                     Repeater::make('group_rules')
                         ->defaultItems(0)
+                        ->columnSpanFull()
+                        ->columns([
+                            'default' => 1,
+                            'md' => 3,
+                            'xl' => 3,
+                        ])
                         ->visible(
                             fn (Get $get): bool => $get('kind') ===
                                 QualificationRuleKind::Group->value,
@@ -150,9 +179,19 @@ class PromotionForm
                                         false,
                                     ),
                                 )
+                                ->columnSpan([
+                                    'default' => 1,
+                                    'md' => 1,
+                                    'xl' => 1,
+                                ])
                                 ->required(),
 
                             TagsInput::make('tags')
+                                ->columnSpan([
+                                    'default' => 1,
+                                    'md' => 2,
+                                    'xl' => 2,
+                                ])
                                 ->trim()
                                 ->suggestions(self::tagSuggestions())
                                 ->required(),
@@ -189,6 +228,11 @@ class PromotionForm
                     true,
                 ),
             )
+            ->columns([
+                'default' => 1,
+                'md' => 2,
+                'xl' => 2,
+            ])
             ->schema([
                 Select::make('discount_kind')
                     ->label('Type')
@@ -238,6 +282,11 @@ class PromotionForm
                 fn (Get $get): bool => $get('promotion_type') ===
                     PromotionType::MixAndMatch->value,
             )
+            ->columns([
+                'default' => 1,
+                'md' => 2,
+                'xl' => 2,
+            ])
             ->schema([
                 Select::make('discount_kind')
                     ->label('Type')
@@ -359,6 +408,126 @@ class PromotionForm
                                 ),
                             )
                             ->required(),
+                    ]),
+            ]);
+    }
+
+    private static function tieredThresholdTiers(): Section
+    {
+        return Section::make('Tiers')
+            ->visible(
+                fn (Get $get): bool => PromotionType::TieredThreshold->value ===
+                    $get('promotion_type'),
+            )
+            ->schema([
+                Repeater::make('tiers')
+                    ->hiddenLabel('Tiers')
+                    ->defaultItems(0)
+                    ->addActionLabel('Add Tier')
+                    ->schema([
+                        Fieldset::make('Thresholds')
+                            ->contained(false)
+                            ->columns([
+                                'default' => 1,
+                                'md' => 2,
+                                'xl' => 2,
+                            ])
+                            ->schema([
+                                TextInput::make('lower_item_count_threshold')
+                                    ->label('Lower Item Count')
+                                    ->numeric()
+                                    ->minValue(1)
+                                    ->step(1)
+                                    ->nullable(),
+
+                                TextInput::make('lower_monetary_threshold')
+                                    ->label('Lower Monetary')
+                                    ->numeric()
+                                    ->step(0.01)
+                                    ->prefix('£')
+                                    ->nullable(),
+
+                                TextInput::make('upper_item_count_threshold')
+                                    ->label('Upper Item Count')
+                                    ->numeric()
+                                    ->minValue(1)
+                                    ->step(1)
+                                    ->nullable(),
+
+                                TextInput::make('upper_monetary_threshold')
+                                    ->label('Upper Monetary')
+                                    ->numeric()
+                                    ->step(0.01)
+                                    ->prefix('£')
+                                    ->nullable(),
+                            ]),
+
+                        Fieldset::make('Discount')
+                            ->contained(false)
+                            ->schema([
+                                Select::make('discount_kind')
+                                    ->label('Type')
+                                    ->options(
+                                        TieredThresholdDiscountKind::asSelectOptions(),
+                                    )
+                                    ->required()
+                                    ->live(),
+
+                                TextInput::make('discount_percentage')
+                                    ->label('Percentage')
+                                    ->numeric()
+                                    ->suffix('%')
+                                    ->visible(
+                                        fn (Get $get): bool => \in_array(
+                                            $get('discount_kind'),
+                                            TieredThresholdDiscountKind::percentageTypes(),
+                                            true,
+                                        ),
+                                    )
+                                    ->requiredIf(
+                                        'discount_kind',
+                                        TieredThresholdDiscountKind::PercentageOffEachItem->value,
+                                    )
+                                    ->requiredIf(
+                                        'discount_kind',
+                                        TieredThresholdDiscountKind::PercentageOffCheapest->value,
+                                    ),
+
+                                TextInput::make('discount_amount')
+                                    ->label('Amount')
+                                    ->numeric()
+                                    ->prefix('£')
+                                    ->step(0.01)
+                                    ->visible(
+                                        fn (Get $get): bool => \in_array(
+                                            $get('discount_kind'),
+                                            TieredThresholdDiscountKind::amountTypes(),
+                                            true,
+                                        ),
+                                    )
+                                    ->requiredIf(
+                                        'discount_kind',
+                                        TieredThresholdDiscountKind::AmountOffEachItem->value,
+                                    )
+                                    ->requiredIf(
+                                        'discount_kind',
+                                        TieredThresholdDiscountKind::AmountOffTotal->value,
+                                    )
+                                    ->requiredIf(
+                                        'discount_kind',
+                                        TieredThresholdDiscountKind::OverrideEachItem->value,
+                                    )
+                                    ->requiredIf(
+                                        'discount_kind',
+                                        TieredThresholdDiscountKind::OverrideTotal->value,
+                                    )
+                                    ->requiredIf(
+                                        'discount_kind',
+                                        TieredThresholdDiscountKind::OverrideCheapest->value,
+                                    ),
+                            ]),
+
+                        ...static::qualifications(),
                     ]),
             ]);
     }

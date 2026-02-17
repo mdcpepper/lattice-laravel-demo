@@ -8,6 +8,7 @@ use App\Enums\QualificationContext;
 use App\Enums\QualificationOp;
 use App\Enums\QualificationRuleKind;
 use App\Enums\SimpleDiscountKind;
+use App\Enums\TieredThresholdDiscountKind;
 use App\Filament\Admin\Resources\Promotions\Concerns\BuildsPromotionFormData;
 use App\Filament\Admin\Resources\Promotions\PromotionResource;
 use App\Models\DirectDiscountPromotion;
@@ -15,6 +16,8 @@ use App\Models\MixAndMatchPromotion;
 use App\Models\PositionalDiscountPromotion;
 use App\Models\Promotion;
 use App\Models\Qualification;
+use App\Models\TieredThresholdDiscount;
+use App\Models\TieredThresholdPromotion;
 use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Database\Eloquent\Model;
@@ -66,11 +69,20 @@ class EditPromotion extends EditRecord
             ]);
         }
 
+        if ($promotionable instanceof TieredThresholdPromotion) {
+            $promotionable->load([
+                'tiers.discount',
+                'tiers.qualification.rules.tags',
+            ]);
+        }
+
         $data['promotion_type'] = match (get_class($promotionable)) {
             DirectDiscountPromotion::class => PromotionType::DirectDiscount
                 ->value,
             MixAndMatchPromotion::class => PromotionType::MixAndMatch->value,
             PositionalDiscountPromotion::class => PromotionType::PositionalDiscount->value,
+            TieredThresholdPromotion::class => PromotionType::TieredThreshold
+                ->value,
         };
 
         $rawBudget = $promotion->getRawOriginal('monetary_budget');
@@ -156,6 +168,55 @@ class EditPromotion extends EditRecord
                 ->all();
         }
 
+        if ($promotionable instanceof TieredThresholdPromotion) {
+            $data['tiers'] = $promotionable->tiers
+                ->sortBy('sort_order')
+                ->values()
+                ->map(function ($tier) use ($promotion): array {
+                    $discount = $tier->discount;
+                    $rootQual = $tier->qualification;
+
+                    return [
+                        'lower_monetary_threshold' => $tier->lower_monetary_threshold_minor !== null
+                                ? number_format(
+                                    (float) $tier->lower_monetary_threshold_minor /
+                                        100,
+                                    2,
+                                    '.',
+                                    '',
+                                )
+                                : null,
+                        'lower_item_count_threshold' => $tier->lower_item_count_threshold,
+                        'upper_monetary_threshold' => $tier->upper_monetary_threshold_minor !== null
+                                ? number_format(
+                                    (float) $tier->upper_monetary_threshold_minor /
+                                        100,
+                                    2,
+                                    '.',
+                                    '',
+                                )
+                                : null,
+                        'upper_item_count_threshold' => $tier->upper_item_count_threshold,
+                        'discount_kind' => $discount?->kind?->value,
+                        'discount_percentage' => $discount?->percentage,
+                        'discount_amount' => $discount?->amount !== null
+                                ? number_format(
+                                    (float) $discount->amount / 100,
+                                    2,
+                                    '.',
+                                    '',
+                                )
+                                : null,
+                        'qualification_op' => $rootQual?->op?->value ??
+                            QualificationOp::And->value,
+                        'qualification_rules' => $rootQual instanceof Qualification
+                                ? $this->flattenRules($rootQual, $promotion)
+                                : [],
+                    ];
+                })
+                ->all();
+        }
+
         return $data;
     }
 
@@ -216,10 +277,8 @@ class EditPromotion extends EditRecord
             fn (): Promotion => match ($data['promotion_type']) {
                 PromotionType::DirectDiscount->value => $this->updateDirectDiscountPromotion($record, $data),
                 PromotionType::MixAndMatch->value => $this->updateMixAndMatchPromotion($record, $data),
-                PromotionType::PositionalDiscount->value => $this->updatePositionalDiscountPromotion(
-                    $record,
-                    $data,
-                ),
+                PromotionType::PositionalDiscount->value => $this->updatePositionalDiscountPromotion($record, $data),
+                PromotionType::TieredThreshold->value => $this->updateTieredThresholdPromotion($record, $data),
             },
         );
     }
@@ -481,6 +540,145 @@ class EditPromotion extends EditRecord
                 'position' => $selectedPosition - 1,
                 'sort_order' => $sortOrder,
             ]);
+        }
+
+        return $promotion;
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    private function updateTieredThresholdPromotion(
+        Promotion $promotion,
+        array $data,
+    ): Promotion {
+        $promotion->update([
+            'name' => $data['name'],
+            'application_budget' => $data['application_budget'] !== null &&
+                $data['application_budget'] !== ''
+                    ? (int) $data['application_budget']
+                    : null,
+            'monetary_budget' => $this->parseMonetaryBudget(
+                $data['monetary_budget'] ?? null,
+            ),
+        ]);
+
+        $promotion->load([
+            'promotionable.tiers.discount',
+            'promotionable.tiers.qualification.rules',
+            'qualifications.rules',
+        ]);
+
+        $tieredThresholdPromotion = $promotion->promotionable;
+
+        foreach ($promotion->qualifications as $qualification) {
+            foreach ($qualification->rules as $rule) {
+                $rule->delete();
+            }
+        }
+
+        $promotion->qualifications()->delete();
+
+        $oldDiscountIds = $tieredThresholdPromotion->tiers
+            ->pluck('tiered_threshold_discount_id')
+            ->filter(fn (mixed $id): bool => is_numeric($id))
+            ->map(fn (mixed $id): int => (int) $id)
+            ->values()
+            ->all();
+
+        $tieredThresholdPromotion->tiers()->delete();
+
+        if ($oldDiscountIds !== []) {
+            TieredThresholdDiscount::query()
+                ->whereIn('id', $oldDiscountIds)
+                ->delete();
+        }
+
+        $tiers = $this->normalizeRepeaterRows($data['tiers'] ?? []);
+
+        foreach ($tiers as $sortOrder => $tierData) {
+            if (! is_array($tierData)) {
+                continue;
+            }
+
+            $kind = TieredThresholdDiscountKind::from(
+                $tierData['discount_kind'],
+            );
+            $discountData = ['kind' => $kind->value];
+
+            if (
+                in_array(
+                    $kind->value,
+                    TieredThresholdDiscountKind::percentageTypes(),
+                    true,
+                )
+            ) {
+                $discountData['percentage'] =
+                    $tierData['discount_percentage'] ?? null;
+                $discountData['amount'] = null;
+                $discountData['amount_currency'] = null;
+            } elseif (
+                in_array(
+                    $kind->value,
+                    TieredThresholdDiscountKind::amountTypes(),
+                    true,
+                )
+            ) {
+                $amount = $this->parseAmountToMinor(
+                    $tierData['discount_amount'] ?? null,
+                );
+
+                $discountData['percentage'] = null;
+                $discountData['amount'] = $amount;
+                $discountData['amount_currency'] =
+                    $amount !== null ? 'GBP' : null;
+            } else {
+                $discountData['percentage'] = null;
+                $discountData['amount'] = null;
+                $discountData['amount_currency'] = null;
+            }
+
+            $discount = TieredThresholdDiscount::query()->create($discountData);
+
+            $lowerMonetaryThreshold = $this->parseAmountToMinor(
+                $tierData['lower_monetary_threshold'] ?? null,
+            );
+            $upperMonetaryThreshold = $this->parseAmountToMinor(
+                $tierData['upper_monetary_threshold'] ?? null,
+            );
+
+            $tier = $tieredThresholdPromotion->tiers()->create([
+                'tiered_threshold_discount_id' => $discount->id,
+                'sort_order' => $sortOrder,
+                'lower_monetary_threshold_minor' => $lowerMonetaryThreshold,
+                'lower_monetary_threshold_currency' => $lowerMonetaryThreshold !== null ? 'GBP' : null,
+                'lower_item_count_threshold' => isset($tierData['lower_item_count_threshold']) &&
+                    $tierData['lower_item_count_threshold'] !== ''
+                        ? (int) $tierData['lower_item_count_threshold']
+                        : null,
+                'upper_monetary_threshold_minor' => $upperMonetaryThreshold,
+                'upper_monetary_threshold_currency' => $upperMonetaryThreshold !== null ? 'GBP' : null,
+                'upper_item_count_threshold' => isset($tierData['upper_item_count_threshold']) &&
+                    $tierData['upper_item_count_threshold'] !== ''
+                        ? (int) $tierData['upper_item_count_threshold']
+                        : null,
+            ]);
+
+            $root = $tier->qualification()->create([
+                'promotion_id' => $promotion->id,
+                'context' => QualificationContext::Primary->value,
+                'op' => $tierData['qualification_op'] ??
+                    QualificationOp::And->value,
+                'sort_order' => 0,
+            ]);
+
+            $this->createQualificationRules(
+                $root,
+                is_array($tierData['qualification_rules'] ?? null)
+                    ? $tierData['qualification_rules']
+                    : [],
+                $promotion,
+            );
         }
 
         return $promotion;

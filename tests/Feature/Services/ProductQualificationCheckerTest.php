@@ -7,6 +7,7 @@ use App\Enums\QualificationContext;
 use App\Enums\QualificationOp;
 use App\Enums\QualificationRuleKind;
 use App\Enums\SimpleDiscountKind;
+use App\Enums\TieredThresholdDiscountKind;
 use App\Models\DirectDiscountPromotion;
 use App\Models\MixAndMatchDiscount;
 use App\Models\MixAndMatchPromotion;
@@ -14,6 +15,8 @@ use App\Models\PositionalDiscountPromotion;
 use App\Models\Product;
 use App\Models\Promotion;
 use App\Models\SimpleDiscount;
+use App\Models\TieredThresholdDiscount;
+use App\Models\TieredThresholdPromotion;
 use App\Services\ProductQualificationChecker;
 
 describe('direct discount promotion', function (): void {
@@ -150,6 +153,30 @@ describe('mix and match promotion', function (): void {
     it('does not match a product that fits neither slot', function (): void {
         $product = Product::factory()->create();
         $product->syncTags(['category-c']);
+
+        expect($this->checker->qualifyingPromotionNames($product))->toBeEmpty();
+    });
+});
+
+describe('tiered threshold promotion', function (): void {
+    beforeEach(function (): void {
+        buildTieredThresholdPromotion('Tiered Deal');
+
+        $this->checker = app(ProductQualificationChecker::class);
+    });
+
+    it('matches a product qualifying for a tier', function (): void {
+        $product = Product::factory()->create();
+        $product->syncTags(['tiered:eligible']);
+
+        expect($this->checker->qualifyingPromotionNames($product))->toBe([
+            'Tiered Deal',
+        ]);
+    });
+
+    it('does not match a product outside all tiers', function (): void {
+        $product = Product::factory()->create();
+        $product->syncTags(['tiered:other']);
 
         expect($this->checker->qualifyingPromotionNames($product))->toBeEmpty();
     });
@@ -355,6 +382,45 @@ function buildMixAndMatchPromotion(string $name = 'Buy 2 Get 1'): Promotion
         ->create(['kind' => QualificationRuleKind::HasAny, 'sort_order' => 0]);
 
     $ruleB->syncTags(['category-b']);
+
+    return $promotion;
+}
+
+function buildTieredThresholdPromotion(string $name = 'Tiered Deal'): Promotion
+{
+    $tieredThreshold = TieredThresholdPromotion::query()->create();
+
+    $promotion = Promotion::query()->create([
+        'name' => $name,
+        'promotionable_type' => $tieredThreshold->getMorphClass(),
+        'promotionable_id' => $tieredThreshold->id,
+    ]);
+
+    $discount = TieredThresholdDiscount::query()->create([
+        'kind' => TieredThresholdDiscountKind::AmountOffTotal,
+        'amount' => 150,
+        'amount_currency' => 'GBP',
+    ]);
+
+    $tier = $tieredThreshold->tiers()->create([
+        'tiered_threshold_discount_id' => $discount->id,
+        'sort_order' => 0,
+        'lower_item_count_threshold' => 1,
+    ]);
+
+    $tierQualification = $tier->qualification()->create([
+        'promotion_id' => $promotion->id,
+        'context' => QualificationContext::Primary->value,
+        'op' => QualificationOp::And,
+        'sort_order' => 0,
+    ]);
+
+    $tierRule = $tierQualification->rules()->create([
+        'kind' => QualificationRuleKind::HasAny,
+        'sort_order' => 0,
+    ]);
+
+    $tierRule->syncTags(['tiered:eligible']);
 
     return $promotion;
 }
