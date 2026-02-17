@@ -6,10 +6,12 @@ use App\Enums\MixAndMatchDiscountKind;
 use App\Enums\QualificationContext;
 use App\Enums\QualificationRuleKind;
 use App\Enums\SimpleDiscountKind;
+use App\Enums\TieredThresholdDiscountKind;
 use App\Models\MixAndMatchDiscount;
 use App\Models\Promotion;
 use App\Models\Qualification;
 use App\Models\SimpleDiscount;
+use App\Models\TieredThresholdDiscount;
 
 trait BuildsPromotionFormData
 {
@@ -66,6 +68,49 @@ trait BuildsPromotionFormData
         }
 
         return MixAndMatchDiscount::query()->create($discountData);
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    private function createTieredThresholdDiscount(
+        array $data,
+    ): TieredThresholdDiscount {
+        $kind = TieredThresholdDiscountKind::from($data['discount_kind']);
+
+        $discountData = ['kind' => $kind->value];
+
+        if (
+            in_array(
+                $kind->value,
+                TieredThresholdDiscountKind::percentageTypes(),
+                true,
+            )
+        ) {
+            $discountData['percentage'] = $data['discount_percentage'] ?? null;
+            $discountData['amount'] = null;
+            $discountData['amount_currency'] = null;
+        } elseif (
+            in_array(
+                $kind->value,
+                TieredThresholdDiscountKind::amountTypes(),
+                true,
+            )
+        ) {
+            $amount = $this->parseAmountToMinor(
+                $data['discount_amount'] ?? null,
+            );
+
+            $discountData['percentage'] = null;
+            $discountData['amount'] = $amount;
+            $discountData['amount_currency'] = $amount !== null ? 'GBP' : null;
+        } else {
+            $discountData['percentage'] = null;
+            $discountData['amount'] = null;
+            $discountData['amount_currency'] = null;
+        }
+
+        return TieredThresholdDiscount::query()->create($discountData);
     }
 
     /**

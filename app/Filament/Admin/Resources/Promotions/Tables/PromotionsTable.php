@@ -6,6 +6,7 @@ use App\Models\DirectDiscountPromotion;
 use App\Models\MixAndMatchPromotion;
 use App\Models\PositionalDiscountPromotion;
 use App\Models\Promotion;
+use App\Models\TieredThresholdPromotion;
 use App\Services\PromotionDiscount\PromotionDiscountFormatter;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -29,6 +30,9 @@ class PromotionsTable
                             DirectDiscountPromotion::class => ['discount'],
                             MixAndMatchPromotion::class => ['discount'],
                             PositionalDiscountPromotion::class => ['discount'],
+                            TieredThresholdPromotion::class => [
+                                'tiers.discount',
+                            ],
                         ]);
                     },
                 ]),
@@ -43,6 +47,7 @@ class PromotionsTable
                             DirectDiscountPromotion::class => 'Direct Discount',
                             MixAndMatchPromotion::class => 'Mix and Match',
                             PositionalDiscountPromotion::class => 'Positional Discount',
+                            TieredThresholdPromotion::class => 'Tiered Threshold',
                             default => $state,
                         },
                     ),

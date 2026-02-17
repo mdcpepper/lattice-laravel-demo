@@ -64,6 +64,10 @@ class Promotion extends Model
                 'discount',
                 'slots.qualification.rules.tags',
             ],
+            TieredThresholdPromotion::class => [
+                'tiers.discount',
+                'tiers.qualification.rules.tags',
+            ],
         ];
     }
 
