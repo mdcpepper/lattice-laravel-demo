@@ -2,10 +2,11 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Lattice;
+namespace App\Services\Lattice\Promotions;
 
 use App\Enums\QualificationContext;
-use App\Models\DirectDiscountPromotion as DirectDiscountPromotionModel;
+use App\Models\PositionalDiscountPosition as PositionalDiscountPositionModel;
+use App\Models\PositionalDiscountPromotion as PositionalDiscountPromotionModel;
 use App\Models\Promotion as PromotionModel;
 use App\Models\Qualification as QualificationModel;
 use App\Models\SimpleDiscount as SimpleDiscountModel;
@@ -14,11 +15,11 @@ use App\Services\Lattice\Concerns\BuildsLatticeDiscountValues;
 use App\Services\Lattice\Concerns\BuildsLatticeQualification;
 use App\Services\Lattice\Concerns\BuildsSimpleLatticeDiscount;
 use App\Services\Lattice\Concerns\HandlesUnsupportedPromotionableType;
-use Lattice\Promotions\DirectDiscountPromotion;
+use Lattice\Promotions\PositionalDiscountPromotion;
 use Lattice\Promotions\Promotion as LatticePromotion;
 use RuntimeException;
 
-class DirectDiscountPromotionStrategy implements LatticePromotionStrategy
+class PositionalDiscountPromotionStrategy implements LatticePromotionStrategy
 {
     use BuildsLatticeBudget;
     use BuildsLatticeDiscountValues;
@@ -28,14 +29,14 @@ class DirectDiscountPromotionStrategy implements LatticePromotionStrategy
 
     public function supports(PromotionModel $promotion): bool
     {
-        return $promotion->promotionable instanceof DirectDiscountPromotionModel;
+        return $promotion->promotionable instanceof PositionalDiscountPromotionModel;
     }
 
     public function make(PromotionModel $promotion): LatticePromotion
     {
         $promotionable = $promotion->promotionable;
 
-        if (! $promotionable instanceof DirectDiscountPromotionModel) {
+        if (! $promotionable instanceof PositionalDiscountPromotionModel) {
             throw $this->unsupportedPromotionableType($promotion);
         }
 
@@ -43,7 +44,7 @@ class DirectDiscountPromotionStrategy implements LatticePromotionStrategy
 
         if (! $discount instanceof SimpleDiscountModel) {
             throw new RuntimeException(
-                'Direct discount promotion is missing its simple discount relation.',
+                'Positional discount promotion is missing its simple discount relation.',
             );
         }
 
@@ -54,7 +55,17 @@ class DirectDiscountPromotionStrategy implements LatticePromotionStrategy
             $promotionable,
         );
 
-        return new DirectDiscountPromotion(
+        $positions = $promotionable->positions
+            ->sortBy('sort_order')
+            ->values()
+            ->map(
+                fn (
+                    PositionalDiscountPositionModel $position,
+                ): int => $position->position,
+            )
+            ->all();
+
+        return new PositionalDiscountPromotion(
             reference: $promotion,
             qualification: $this->makeQualification(
                 $rootQualification,
@@ -62,28 +73,32 @@ class DirectDiscountPromotionStrategy implements LatticePromotionStrategy
             ),
             discount: $this->makeSimpleDiscount($discount),
             budget: $this->makeBudget($promotion),
+            size: $promotionable->size,
+            positions: $positions,
         );
     }
 
     private function resolveRootQualification(
         PromotionModel $promotion,
-        DirectDiscountPromotionModel $directPromotion,
+        PositionalDiscountPromotionModel $positionalPromotion,
     ): QualificationModel {
-        $directQualification = $directPromotion->relationLoaded('qualification')
-            ? $directPromotion->qualification
+        $positionalQualification = $positionalPromotion->relationLoaded(
+            'qualification',
+        )
+            ? $positionalPromotion->qualification
             : null;
 
-        if ($directQualification instanceof QualificationModel) {
-            return $directQualification;
+        if ($positionalQualification instanceof QualificationModel) {
+            return $positionalQualification;
         }
 
         $qualification = $promotion->qualifications->first(
             fn (QualificationModel $candidate): bool => $candidate->context ===
                 QualificationContext::Primary->value &&
                 $candidate->qualifiable_type ===
-                    $directPromotion->getMorphClass() &&
+                    $positionalPromotion->getMorphClass() &&
                 (int) $candidate->qualifiable_id ===
-                    (int) $directPromotion->getKey(),
+                    (int) $positionalPromotion->getKey(),
         );
 
         if ($qualification instanceof QualificationModel) {
@@ -91,7 +106,7 @@ class DirectDiscountPromotionStrategy implements LatticePromotionStrategy
         }
 
         throw new RuntimeException(
-            'Direct discount promotion is missing its primary qualification.',
+            'Positional discount promotion is missing its primary qualification.',
         );
     }
 }

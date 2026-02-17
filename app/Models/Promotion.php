@@ -8,6 +8,7 @@ use Cknow\Money\Casts\MoneyIntegerCast;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
@@ -101,5 +102,18 @@ class Promotion extends Model
             ->whereNull('qualifiable_type')
             ->whereNull('qualifiable_id')
             ->where('context', QualificationContext::Primary->value);
+    }
+
+    /**
+     * @return BelongsToMany<PromotionLayer, Promotion>
+     */
+    public function layers(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            PromotionLayer::class,
+            'promotion_layer_promotion',
+        )
+            ->withPivot('sort_order')
+            ->withTimestamps();
     }
 }

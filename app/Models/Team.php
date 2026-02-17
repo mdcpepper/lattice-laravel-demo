@@ -54,4 +54,12 @@ class Team extends Model
     {
         return $this->hasMany(Promotion::class);
     }
+
+    /**
+     * @return HasMany<PromotionStack, Team>
+     */
+    public function promotionStacks(): HasMany
+    {
+        return $this->hasMany(PromotionStack::class);
+    }
 }

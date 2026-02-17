@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Services\Lattice;
 
 use App\Models\Promotion;
-use App\Services\Lattice\LatticePromotionFactory;
-use App\Services\Lattice\LatticePromotionStrategy;
-use Closure;
+use App\Services\Lattice\Promotions\LatticePromotionFactory;
 use Lattice\Discount\Percentage;
 use Lattice\Discount\SimpleDiscount;
 use Lattice\Promotions\Budget;
@@ -16,6 +14,7 @@ use Lattice\Promotions\Promotion as LatticePromotion;
 use Lattice\Qualification;
 use Lattice\Qualification\BoolOp;
 use RuntimeException;
+use Tests\Helpers\FakeLatticePromotionStrategy;
 
 test(
     'delegates lattice promotion building to the first supporting strategy',
@@ -80,31 +79,4 @@ function fakeLatticePromotion(Promotion $promotion): LatticePromotion
         discount: SimpleDiscount::percentageOff(Percentage::fromDecimal(0.1)),
         budget: Budget::unlimited(),
     );
-}
-
-class FakeLatticePromotionStrategy implements LatticePromotionStrategy
-{
-    /** @var list<string> */
-    public array $builtPromotionNames = [];
-
-    /**
-     * @param  Closure(Promotion): bool  $supports
-     * @param  Closure(Promotion): LatticePromotion  $make
-     */
-    public function __construct(
-        private readonly Closure $supports,
-        private readonly Closure $make,
-    ) {}
-
-    public function supports(Promotion $promotion): bool
-    {
-        return ($this->supports)($promotion);
-    }
-
-    public function make(Promotion $promotion): LatticePromotion
-    {
-        $this->builtPromotionNames[] = (string) $promotion->name;
-
-        return ($this->make)($promotion);
-    }
 }

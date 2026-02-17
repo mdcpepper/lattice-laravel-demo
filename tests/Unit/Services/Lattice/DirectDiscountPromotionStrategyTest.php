@@ -11,7 +11,7 @@ use App\Models\DirectDiscountPromotion;
 use App\Models\MixAndMatchPromotion;
 use App\Models\Promotion;
 use App\Models\SimpleDiscount;
-use App\Services\Lattice\DirectDiscountPromotionStrategy;
+use App\Services\Lattice\Promotions\DirectDiscountPromotionStrategy;
 use RuntimeException;
 
 test('supports direct discount promotions only', function (): void {

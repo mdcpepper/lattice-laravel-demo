@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Lattice;
+namespace App\Services\Lattice\Promotions;
 
 use App\Models\Promotion as PromotionModel;
 use Lattice\Promotions\Promotion as LatticePromotion;

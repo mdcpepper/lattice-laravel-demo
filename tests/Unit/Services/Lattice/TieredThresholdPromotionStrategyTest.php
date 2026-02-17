@@ -11,7 +11,7 @@ use App\Models\Promotion;
 use App\Models\TieredThresholdDiscount;
 use App\Models\TieredThresholdPromotion;
 use App\Models\TieredThresholdTier;
-use App\Services\Lattice\TieredThresholdPromotionStrategy;
+use App\Services\Lattice\Promotions\TieredThresholdPromotionStrategy;
 use RuntimeException;
 
 test('supports tiered threshold promotions only', function (): void {
@@ -33,108 +33,124 @@ test('supports tiered threshold promotions only', function (): void {
     expect($strategy->supports($mixAndMatchPromotion))->toBeFalse();
 });
 
-test('builds a lattice tiered threshold promotion with sorted tiers', function (): void {
-    $strategy = new TieredThresholdPromotionStrategy;
+test(
+    'builds a lattice tiered threshold promotion with sorted tiers',
+    function (): void {
+        $strategy = new TieredThresholdPromotionStrategy;
 
-    $tierAQualification = tieredLatticeQualification(id: 801);
-    $tierAQualification->setRelation(
-        'rules',
-        collect([
-            tieredLatticeQualificationRule(
-                id: 1,
-                kind: QualificationRuleKind::HasAll,
-                sortOrder: 0,
-                tags: ['a'],
-            ),
-        ]),
-    );
+        $tierAQualification = tieredLatticeQualification(id: 801);
+        $tierAQualification->setRelation(
+            'rules',
+            collect([
+                tieredLatticeQualificationRule(
+                    id: 1,
+                    kind: QualificationRuleKind::HasAll,
+                    sortOrder: 0,
+                    tags: ['a'],
+                ),
+            ]),
+        );
 
-    $tierBQualification = tieredLatticeQualification(id: 802);
-    $tierBQualification->setRelation(
-        'rules',
-        collect([
-            tieredLatticeQualificationRule(
-                id: 2,
-                kind: QualificationRuleKind::HasAll,
-                sortOrder: 0,
-                tags: ['b'],
-            ),
-        ]),
-    );
+        $tierBQualification = tieredLatticeQualification(id: 802);
+        $tierBQualification->setRelation(
+            'rules',
+            collect([
+                tieredLatticeQualificationRule(
+                    id: 2,
+                    kind: QualificationRuleKind::HasAll,
+                    sortOrder: 0,
+                    tags: ['b'],
+                ),
+            ]),
+        );
 
-    $amountDiscount = new TieredThresholdDiscount;
-    $amountDiscount->kind = TieredThresholdDiscountKind::AmountOffTotal;
-    $amountDiscount->amount = 250;
-    $amountDiscount->amount_currency = 'GBP';
+        $amountDiscount = new TieredThresholdDiscount;
+        $amountDiscount->kind = TieredThresholdDiscountKind::AmountOffTotal;
+        $amountDiscount->amount = 250;
+        $amountDiscount->amount_currency = 'GBP';
 
-    $percentageDiscount = new TieredThresholdDiscount;
-    $percentageDiscount->kind =
-        TieredThresholdDiscountKind::PercentageOffEachItem;
-    $percentageDiscount->percentage = 20.0;
+        $percentageDiscount = new TieredThresholdDiscount;
+        $percentageDiscount->kind =
+            TieredThresholdDiscountKind::PercentageOffEachItem;
+        $percentageDiscount->percentage = 20.0;
 
-    $tierA = new TieredThresholdTier;
-    $tierA->id = 10;
-    $tierA->sort_order = 2;
-    $tierA->lower_monetary_threshold_minor = 500;
-    $tierA->lower_monetary_threshold_currency = 'GBP';
-    $tierA->upper_item_count_threshold = 4;
-    $tierA->setRelation('discount', $amountDiscount);
-    $tierA->setRelation('qualification', $tierAQualification);
+        $tierA = new TieredThresholdTier;
+        $tierA->id = 10;
+        $tierA->sort_order = 2;
+        $tierA->lower_monetary_threshold_minor = 500;
+        $tierA->lower_monetary_threshold_currency = 'GBP';
+        $tierA->upper_item_count_threshold = 4;
+        $tierA->setRelation('discount', $amountDiscount);
+        $tierA->setRelation('qualification', $tierAQualification);
 
-    $tierB = new TieredThresholdTier;
-    $tierB->id = 20;
-    $tierB->sort_order = 1;
-    $tierB->lower_item_count_threshold = 2;
-    $tierB->upper_monetary_threshold_minor = 1200;
-    $tierB->upper_monetary_threshold_currency = 'GBP';
-    $tierB->setRelation('discount', $percentageDiscount);
-    $tierB->setRelation('qualification', $tierBQualification);
+        $tierB = new TieredThresholdTier;
+        $tierB->id = 20;
+        $tierB->sort_order = 1;
+        $tierB->lower_item_count_threshold = 2;
+        $tierB->upper_monetary_threshold_minor = 1200;
+        $tierB->upper_monetary_threshold_currency = 'GBP';
+        $tierB->setRelation('discount', $percentageDiscount);
+        $tierB->setRelation('qualification', $tierBQualification);
 
-    $tieredThreshold = new TieredThresholdPromotion;
-    $tieredThreshold->setRelation('tiers', collect([$tierA, $tierB]));
+        $tieredThreshold = new TieredThresholdPromotion;
+        $tieredThreshold->setRelation('tiers', collect([$tierA, $tierB]));
 
-    $promotion = new Promotion;
-    $promotion->setRawAttributes(
-        [
-            'name' => 'Tiered Promo',
-            'application_budget' => 15,
-            'monetary_budget' => 5000,
-        ],
-        true,
-    );
-    $promotion->setRelation('promotionable', $tieredThreshold);
-    $promotion->setRelation(
-        'qualifications',
-        collect([$tierAQualification, $tierBQualification]),
-    );
+        $promotion = new Promotion;
+        $promotion->setRawAttributes(
+            [
+                'name' => 'Tiered Promo',
+                'application_budget' => 15,
+                'monetary_budget' => 5000,
+            ],
+            true,
+        );
+        $promotion->setRelation('promotionable', $tieredThreshold);
+        $promotion->setRelation(
+            'qualifications',
+            collect([$tierAQualification, $tierBQualification]),
+        );
 
-    $latticePromotion = $strategy->make($promotion);
+        $latticePromotion = $strategy->make($promotion);
 
-    expect($latticePromotion->tiers)
-        ->toHaveCount(2)
-        ->and($latticePromotion->tiers[0]->discount->kind->value)
-        ->toBe(TieredThresholdDiscountKind::PercentageOffEachItem->value)
-        ->and($latticePromotion->tiers[0]->discount->percentage?->value())
-        ->toBe(0.2)
-        ->and($latticePromotion->tiers[0]->lowerThreshold->itemCountThreshold)
-        ->toBe(2)
-        ->and($latticePromotion->tiers[0]->upperThreshold?->monetaryThreshold?->amount)
-        ->toBe(1200)
-        ->and(
-            $latticePromotion->tiers[0]->contributionQualification->matches(['b']),
-        )
-        ->toBeTrue()
-        ->and($latticePromotion->tiers[1]->discount->amount?->amount)
-        ->toBe(250)
-        ->and($latticePromotion->tiers[1]->lowerThreshold->monetaryThreshold?->amount)
-        ->toBe(500)
-        ->and($latticePromotion->tiers[1]->upperThreshold?->itemCountThreshold)
-        ->toBe(4)
-        ->and($latticePromotion->budget->applicationLimit)
-        ->toBe(15)
-        ->and($latticePromotion->budget->monetaryLimit?->amount)
-        ->toBe(5000);
-});
+        expect($latticePromotion->tiers)
+            ->toHaveCount(2)
+            ->and($latticePromotion->tiers[0]->discount->kind->value)
+            ->toBe(TieredThresholdDiscountKind::PercentageOffEachItem->value)
+            ->and($latticePromotion->tiers[0]->discount->percentage?->value())
+            ->toBe(0.2)
+            ->and(
+                $latticePromotion->tiers[0]->lowerThreshold->itemCountThreshold,
+            )
+            ->toBe(2)
+            ->and(
+                $latticePromotion->tiers[0]->upperThreshold?->monetaryThreshold
+                    ?->amount,
+            )
+            ->toBe(1200)
+            ->and(
+                $latticePromotion->tiers[0]->contributionQualification->matches(
+                    ['b'],
+                ),
+            )
+            ->toBeTrue()
+            ->and($latticePromotion->tiers[1]->discount->amount?->amount)
+            ->toBe(250)
+            ->and(
+                $latticePromotion->tiers[1]->lowerThreshold->monetaryThreshold
+                    ?->amount,
+            )
+            ->toBe(500)
+            ->and(
+                $latticePromotion->tiers[1]->upperThreshold
+                    ?->itemCountThreshold,
+            )
+            ->toBe(4)
+            ->and($latticePromotion->budget->applicationLimit)
+            ->toBe(15)
+            ->and($latticePromotion->budget->monetaryLimit?->amount)
+            ->toBe(5000);
+    },
+);
 
 test(
     'resolves tier qualification from promotion qualifications when tier relation is not loaded',

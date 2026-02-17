@@ -1,6 +1,9 @@
 fmt:
     docker compose run --rm app ./vendor/bin/pint
 
+composer *args='':
+    docker compose run --rm app composer {{ args }}
+
 test:
     docker compose run --rm app php artisan test --parallel
 

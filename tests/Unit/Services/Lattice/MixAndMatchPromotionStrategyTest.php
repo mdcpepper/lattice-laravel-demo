@@ -11,7 +11,7 @@ use App\Models\MixAndMatchDiscount;
 use App\Models\MixAndMatchPromotion;
 use App\Models\MixAndMatchSlot;
 use App\Models\Promotion;
-use App\Services\Lattice\MixAndMatchPromotionStrategy;
+use App\Services\Lattice\Promotions\MixAndMatchPromotionStrategy;
 use RuntimeException;
 
 test('supports mix and match promotions only', function (): void {

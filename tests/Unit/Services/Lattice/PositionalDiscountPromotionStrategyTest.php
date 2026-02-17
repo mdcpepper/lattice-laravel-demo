@@ -15,7 +15,7 @@ use App\Models\Promotion;
 use App\Models\Qualification;
 use App\Models\QualificationRule;
 use App\Models\SimpleDiscount;
-use App\Services\Lattice\PositionalDiscountPromotionStrategy;
+use App\Services\Lattice\Promotions\PositionalDiscountPromotionStrategy;
 use RuntimeException;
 
 test('supports positional discount promotions only', function (): void {
