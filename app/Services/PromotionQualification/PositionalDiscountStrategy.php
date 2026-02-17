@@ -1,17 +1,14 @@
 <?php
 
-declare(strict_types=1);
-
 namespace App\Services\PromotionQualification;
 
 use App\Enums\QualificationContext;
-use App\Models\DirectDiscountPromotion;
+use App\Models\PositionalDiscountPromotion;
 use App\Models\Promotion;
 use App\Models\Qualification;
-use Illuminate\Support\Collection;
 use RuntimeException;
 
-class DirectDiscountStrategy implements PromotionQualificationStrategy
+class PositionalDiscountStrategy implements PromotionQualificationStrategy
 {
     public function __construct(
         private readonly QualificationEvaluator $qualificationEvaluator,
@@ -19,7 +16,7 @@ class DirectDiscountStrategy implements PromotionQualificationStrategy
 
     public function supports(Promotion $promotion): bool
     {
-        return $promotion->promotionable instanceof DirectDiscountPromotion;
+        return $promotion->promotionable instanceof PositionalDiscountPromotion;
     }
 
     /**
@@ -31,7 +28,7 @@ class DirectDiscountStrategy implements PromotionQualificationStrategy
     ): bool {
         $promotionable = $promotion->promotionable;
 
-        if (! $promotionable instanceof DirectDiscountPromotion) {
+        if (! $promotionable instanceof PositionalDiscountPromotion) {
             return false;
         }
 
@@ -52,22 +49,22 @@ class DirectDiscountStrategy implements PromotionQualificationStrategy
 
     private function resolveRootQualification(
         Promotion $promotion,
-        DirectDiscountPromotion $directPromotion,
+        PositionalDiscountPromotion $positionalPromotion,
     ): Qualification {
         if (
-            $directPromotion->relationLoaded('qualification') &&
-            $directPromotion->qualification instanceof Qualification
+            $positionalPromotion->relationLoaded('qualification') &&
+            $positionalPromotion->qualification instanceof Qualification
         ) {
-            return $directPromotion->qualification;
+            return $positionalPromotion->qualification;
         }
 
         $qualification = $promotion->qualifications->first(
             fn (Qualification $candidate): bool => $candidate->context ===
                 QualificationContext::Primary->value &&
                 $candidate->qualifiable_type ===
-                    $directPromotion->getMorphClass() &&
+                    $positionalPromotion->getMorphClass() &&
                 (int) $candidate->qualifiable_id ===
-                    (int) $directPromotion->getKey(),
+                    (int) $positionalPromotion->getKey(),
         );
 
         if ($qualification instanceof Qualification) {
@@ -75,7 +72,7 @@ class DirectDiscountStrategy implements PromotionQualificationStrategy
         }
 
         throw new RuntimeException(
-            'Direct discount promotion is missing its primary qualification.',
+            'Positional discount promotion is missing its primary qualification.',
         );
     }
 }
