@@ -2,11 +2,18 @@
 
 namespace App\Providers;
 
-use App\Services\Lattice\DirectDiscountPromotionStrategy as DirectLatticeFactoryStrategy;
-use App\Services\Lattice\LatticePromotionFactory;
-use App\Services\Lattice\MixAndMatchPromotionStrategy as MixAndMatchLatticeFactoryStrategy;
-use App\Services\Lattice\PositionalDiscountPromotionStrategy as PositionalLatticeFactoryStrategy;
-use App\Services\Lattice\TieredThresholdPromotionStrategy as TieredThresholdLatticeFactoryStrategy;
+use App\Services\Lattice\Promotions\DirectDiscountPromotionStrategy as DirectLatticeFactoryStrategy;
+use App\Services\Lattice\Promotions\LatticePromotionFactory;
+use App\Services\Lattice\Promotions\MixAndMatchPromotionStrategy as MixAndMatchLatticeFactoryStrategy;
+use App\Services\Lattice\Promotions\PositionalDiscountPromotionStrategy as PositionalLatticeFactoryStrategy;
+use App\Services\Lattice\Promotions\TieredThresholdPromotionStrategy as TieredThresholdLatticeFactoryStrategy;
+use App\Services\Lattice\Stacks\LatticeLayerFactory;
+use App\Services\Lattice\Stacks\LatticeLayerOutputFactory;
+use App\Services\Lattice\Stacks\LatticeStackFactory;
+use App\Services\Lattice\Stacks\PassThroughLayerOutputStrategy;
+use App\Services\Lattice\Stacks\PromotionLayerStrategy;
+use App\Services\Lattice\Stacks\PromotionStackStrategy;
+use App\Services\Lattice\Stacks\SplitLayerOutputStrategy;
 use App\Services\ProductQualificationChecker;
 use App\Services\PromotionDiscount\DirectDiscountStrategy as DirectFormattingStrategy;
 use App\Services\PromotionDiscount\MixAndMatchStrategy as MixAndMatchFormattingStrategy;
@@ -57,6 +64,28 @@ class AppServiceProvider extends ServiceProvider
                 $this->app->make(PositionalLatticeFactoryStrategy::class),
                 $this->app->make(MixAndMatchLatticeFactoryStrategy::class),
                 $this->app->make(TieredThresholdLatticeFactoryStrategy::class),
+            ]),
+        );
+
+        $this->app->bind(
+            LatticeLayerFactory::class,
+            fn (): LatticeLayerFactory => new LatticeLayerFactory([
+                $this->app->make(PromotionLayerStrategy::class),
+            ]),
+        );
+
+        $this->app->bind(
+            LatticeLayerOutputFactory::class,
+            fn (): LatticeLayerOutputFactory => new LatticeLayerOutputFactory([
+                $this->app->make(PassThroughLayerOutputStrategy::class),
+                $this->app->make(SplitLayerOutputStrategy::class),
+            ]),
+        );
+
+        $this->app->bind(
+            LatticeStackFactory::class,
+            fn (): LatticeStackFactory => new LatticeStackFactory([
+                $this->app->make(PromotionStackStrategy::class),
             ]),
         );
     }

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Services\Lattice;
+namespace App\Services\Lattice\Promotions;
 
 use App\Enums\TieredThresholdDiscountKind;
 use App\Models\Promotion as PromotionModel;

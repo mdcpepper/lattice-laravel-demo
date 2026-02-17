@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Helpers;
 
 use App\Models\Promotion;
-use App\Services\Lattice\LatticePromotionStrategy;
+use App\Services\Lattice\Promotions\LatticePromotionStrategy;
 use Closure;
 use Lattice\Promotions\Promotion as LatticePromotion;
 

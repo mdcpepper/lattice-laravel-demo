@@ -11,7 +11,7 @@ use App\Models\MixAndMatchPromotion;
 use App\Models\MixAndMatchSlot;
 use App\Models\Promotion;
 use App\Models\Team;
-use App\Services\Lattice\LatticePromotionFactory;
+use App\Services\Lattice\Promotions\LatticePromotionFactory;
 use Illuminate\Support\Facades\DB;
 use Lattice\Item;
 use Lattice\Layer;
