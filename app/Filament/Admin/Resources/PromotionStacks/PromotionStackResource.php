@@ -17,9 +17,11 @@ use UnitEnum;
 
 class PromotionStackResource extends Resource
 {
+    protected static ?string $navigationLabel = 'Stacks';
+
     protected static ?string $model = PromotionStack::class;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Shop';
+    protected static string|UnitEnum|null $navigationGroup = 'Promotions';
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 

@@ -83,8 +83,7 @@ class PromotionStackForm
                                     fn (): array => self::promotionOptions(),
                                 )
                                 ->searchable()
-                                ->preload()
-                                ->columnSpanFull(),
+                                ->preload(),
 
                             Select::make('output_mode')
                                 ->label('Output')
@@ -112,7 +111,9 @@ class PromotionStackForm
                                         PromotionLayerOutputMode::Split->value,
                                 )
                                 ->schema([
-                                    Fieldset::make('Participating')->schema([
+                                    Fieldset::make(
+                                        'Participating Items',
+                                    )->schema([
                                         Select::make(
                                             'participating_output_mode',
                                         )
@@ -157,51 +158,52 @@ class PromotionStackForm
                                             ->searchable(),
                                     ]),
 
-                                    Fieldset::make('Non Participating')->schema(
-                                        [
-                                            Select::make(
-                                                'non_participating_output_mode',
+                                    Fieldset::make(
+                                        'Non Participating Items',
+                                    )->schema([
+                                        Select::make(
+                                            'non_participating_output_mode',
+                                        )
+                                            ->label('Output Type')
+                                            ->options(
+                                                PromotionLayerOutputTargetMode::asSelectOptions(),
                                             )
-                                                ->label('Output Type')
-                                                ->options(
-                                                    PromotionLayerOutputTargetMode::asSelectOptions(),
-                                                )
-                                                ->default(
-                                                    PromotionLayerOutputTargetMode::PassThrough->value,
-                                                )
-                                                ->requiredIf(
-                                                    'output_mode',
-                                                    PromotionLayerOutputMode::Split->value,
-                                                )
-                                                ->live(),
+                                            ->default(
+                                                PromotionLayerOutputTargetMode::PassThrough->value,
+                                            )
+                                            ->requiredIf(
+                                                'output_mode',
+                                                PromotionLayerOutputMode::Split
+                                                    ->value,
+                                            )
+                                            ->live(),
 
-                                            Select::make(
-                                                'non_participating_output_reference',
+                                        Select::make(
+                                            'non_participating_output_reference',
+                                        )
+                                            ->label('Target Layer')
+                                            ->options(
+                                                fn (
+                                                    Get $get,
+                                                ): array => self::layerReferenceOptions(
+                                                    $get('../../layers'),
+                                                    (string) ($get(
+                                                        'reference',
+                                                    ) ?? ''),
+                                                ),
                                             )
-                                                ->label('Target Layer')
-                                                ->options(
-                                                    fn (
-                                                        Get $get,
-                                                    ): array => self::layerReferenceOptions(
-                                                        $get('../../layers'),
-                                                        (string) ($get(
-                                                            'reference',
-                                                        ) ?? ''),
-                                                    ),
-                                                )
-                                                ->visible(
-                                                    fn (Get $get): bool => $get(
-                                                        'non_participating_output_mode',
-                                                    ) ===
-                                                        PromotionLayerOutputTargetMode::Layer->value,
-                                                )
-                                                ->requiredIf(
+                                            ->visible(
+                                                fn (Get $get): bool => $get(
                                                     'non_participating_output_mode',
+                                                ) ===
                                                     PromotionLayerOutputTargetMode::Layer->value,
-                                                )
-                                                ->searchable(),
-                                        ],
-                                    ),
+                                            )
+                                            ->requiredIf(
+                                                'non_participating_output_mode',
+                                                PromotionLayerOutputTargetMode::Layer->value,
+                                            )
+                                            ->searchable(),
+                                    ]),
                                 ]),
                         ]),
                 ]),
