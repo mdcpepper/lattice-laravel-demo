@@ -38,14 +38,6 @@ class ProcessSimulationCartJob implements ShouldQueue
             ->with('items.product.tags')
             ->findOrFail($this->cartId);
 
-        $simulatedCart = SimulatedCart::query()->create([
-            'simulation_run_id' => $simulationRun->id,
-            'cart_id' => $cart->id,
-            'team_id' => $cart->team_id,
-            'email' => $cart->email,
-            'customer_id' => $cart->customer_id,
-        ]);
-
         /** @var array<int, LatticeProduct> $latticeProductsByProductId */
         $latticeProductsByProductId = [];
 
@@ -72,6 +64,18 @@ class ProcessSimulationCartJob implements ShouldQueue
             ->all();
 
         $receipt = $latticeStack->process($latticeItems);
+
+        $simulatedCart = SimulatedCart::query()->create([
+            'simulation_run_id' => $simulationRun->id,
+            'cart_id' => $cart->id,
+            'team_id' => $cart->team_id,
+            'email' => $cart->email,
+            'customer_id' => $cart->customer_id,
+            'subtotal' => $receipt->subtotal->amount,
+            'subtotal_currency' => $receipt->subtotal->currency,
+            'total' => $receipt->total->amount,
+            'total_currency' => $receipt->total->currency,
+        ]);
 
         /** @var array<int, list<\Lattice\PromotionApplication>> $applicationsByCartItemId */
         $applicationsByCartItemId = [];

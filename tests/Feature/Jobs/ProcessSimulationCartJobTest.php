@@ -62,20 +62,25 @@ it('processes a cart and creates simulation records', function (): void {
 
     $stack = PromotionStack::factory()->for($team)->create();
 
-    $layer = PromotionLayer::factory()->for($stack, 'stack')->create([
-        'reference' => 'root',
-        'sort_order' => 0,
-    ]);
+    $layer = PromotionLayer::factory()
+        ->for($stack, 'stack')
+        ->create([
+            'reference' => 'root',
+            'sort_order' => 0,
+        ]);
 
     $layer->promotions()->attach($promotion, ['sort_order' => 0]);
 
     $cart = Cart::factory()->for($team)->create();
-    $cartItem = CartItem::factory()->for($cart)->for($product)->create([
-        'subtotal' => 500,
-        'subtotal_currency' => 'GBP',
-        'total' => 500,
-        'total_currency' => 'GBP',
-    ]);
+    $cartItem = CartItem::factory()
+        ->for($cart)
+        ->for($product)
+        ->create([
+            'subtotal' => 500,
+            'subtotal_currency' => 'GBP',
+            'total' => 500,
+            'total_currency' => 'GBP',
+        ]);
 
     $simulationRun = SimulationRun::query()->create([
         'promotion_stack_id' => $stack->id,
@@ -95,6 +100,10 @@ it('processes a cart and creates simulation records', function (): void {
         'simulation_run_id' => $simulationRun->id,
         'cart_id' => $cart->id,
         'team_id' => $team->id,
+        'subtotal' => 500,
+        'subtotal_currency' => 'GBP',
+        'total' => 450,
+        'total_currency' => 'GBP',
     ]);
 
     $this->assertDatabaseHas('simulated_cart_items', [
@@ -120,6 +129,8 @@ it('processes a cart and creates simulation records', function (): void {
 
     $simulationRun->refresh();
 
-    expect($simulationRun->processed_carts)->toBe(1)
-        ->and($simulationRun->status)->toBe(SimulationRunStatus::Completed);
+    expect($simulationRun->processed_carts)
+        ->toBe(1)
+        ->and($simulationRun->status)
+        ->toBe(SimulationRunStatus::Completed);
 });

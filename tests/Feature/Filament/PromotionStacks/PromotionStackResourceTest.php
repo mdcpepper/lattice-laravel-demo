@@ -6,14 +6,18 @@ use App\Enums\SimpleDiscountKind;
 use App\Filament\Admin\Resources\PromotionStacks\Pages\CreatePromotionStack;
 use App\Filament\Admin\Resources\PromotionStacks\Pages\EditPromotionStack;
 use App\Filament\Admin\Resources\PromotionStacks\Pages\ListPromotionStacks;
+use App\Filament\Admin\Resources\SimulationRuns\SimulationRunResource;
+use App\Models\Cart;
 use App\Models\DirectDiscountPromotion;
 use App\Models\Promotion;
 use App\Models\PromotionLayer;
 use App\Models\PromotionStack;
 use App\Models\SimpleDiscount;
+use App\Models\SimulationRun;
 use App\Models\Team;
 use App\Models\User;
 use Filament\Facades\Filament;
+use Illuminate\Support\Facades\Bus;
 use Livewire\Livewire;
 
 beforeEach(function (): void {
@@ -31,6 +35,31 @@ beforeEach(function (): void {
 it('can render the list page', function (): void {
     Livewire::test(ListPromotionStacks::class)->assertSuccessful();
 });
+
+it(
+    'redirects to the simulation run page when running a simulation',
+    function (): void {
+        Bus::fake();
+
+        $stack = PromotionStack::factory()->for($this->team)->create();
+        Cart::factory()->for($this->team)->create();
+
+        $livewire = Livewire::test(ListPromotionStacks::class)
+            ->callTableAction('runSimulation', record: $stack)
+            ->assertHasNoTableActionErrors();
+
+        $simulationRun = SimulationRun::query()
+            ->where('promotion_stack_id', $stack->id)
+            ->latest('id')
+            ->firstOrFail();
+
+        $livewire->assertRedirect(
+            SimulationRunResource::getUrl('view', [
+                'record' => $simulationRun,
+            ]),
+        );
+    },
+);
 
 it(
     'can create a promotion stack with split and pass-through outputs',

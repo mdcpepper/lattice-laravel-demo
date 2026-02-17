@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Resources\PromotionStacks\Tables;
 
 use App\Enums\SimulationRunStatus;
+use App\Filament\Admin\Resources\SimulationRuns\SimulationRunResource;
 use App\Jobs\ProcessSimulationCartJob;
 use App\Models\Cart;
 use App\Models\SimulationRun;
@@ -57,7 +58,7 @@ class PromotionStacksTable
 
                         return "This will simulate {$count} cart(s) through this promotion stack. No actual records will be modified.";
                     })
-                    ->action(function ($record): void {
+                    ->action(function ($record, Action $action): void {
                         $teamId = Filament::getTenant()->id;
 
                         $cartIds = Cart::query()
@@ -73,15 +74,25 @@ class PromotionStacksTable
 
                         /** @var PendingChain $chain */
                         $chain = Bus::chain(
-                            $cartIds->map(
-                                fn (int $cartId): ProcessSimulationCartJob => new ProcessSimulationCartJob(
-                                    simulationRunId: $simulationRun->id,
-                                    cartId: $cartId,
-                                ),
-                            )->all(),
+                            $cartIds
+                                ->map(
+                                    fn (
+                                        int $cartId,
+                                    ): ProcessSimulationCartJob => new ProcessSimulationCartJob(
+                                        simulationRunId: $simulationRun->id,
+                                        cartId: $cartId,
+                                    ),
+                                )
+                                ->all(),
                         );
 
                         $chain->dispatch();
+
+                        $action->successRedirectUrl(
+                            SimulationRunResource::getUrl('view', [
+                                'record' => $simulationRun,
+                            ]),
+                        );
                     })
                     ->successNotificationTitle('Simulation started'),
             ])

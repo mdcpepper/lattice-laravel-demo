@@ -23,6 +23,10 @@ class SimulatedCartFactory extends Factory
             'team_id' => Team::factory(),
             'email' => null,
             'customer_id' => null,
+            'subtotal' => 1000,
+            'subtotal_currency' => 'GBP',
+            'total' => 1000,
+            'total_currency' => 'GBP',
         ];
     }
 }
