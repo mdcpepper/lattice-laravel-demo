@@ -3,9 +3,12 @@
 namespace Tests\Feature\Filament\PromotionStacks;
 
 use App\Enums\SimpleDiscountKind;
+use App\Filament\Admin\Resources\Backtests\BacktestResource;
 use App\Filament\Admin\Resources\PromotionStacks\Pages\CreatePromotionStack;
 use App\Filament\Admin\Resources\PromotionStacks\Pages\EditPromotionStack;
 use App\Filament\Admin\Resources\PromotionStacks\Pages\ListPromotionStacks;
+use App\Models\Backtest;
+use App\Models\Cart;
 use App\Models\DirectDiscountPromotion;
 use App\Models\Promotion;
 use App\Models\PromotionLayer;
@@ -14,6 +17,7 @@ use App\Models\SimpleDiscount;
 use App\Models\Team;
 use App\Models\User;
 use Filament\Facades\Filament;
+use Illuminate\Support\Facades\Bus;
 use Livewire\Livewire;
 
 beforeEach(function (): void {
@@ -31,6 +35,31 @@ beforeEach(function (): void {
 it('can render the list page', function (): void {
     Livewire::test(ListPromotionStacks::class)->assertSuccessful();
 });
+
+it(
+    'redirects to the backtests page when running a backtest',
+    function (): void {
+        Bus::fake();
+
+        $stack = PromotionStack::factory()->for($this->team)->create();
+        Cart::factory()->for($this->team)->create();
+
+        $livewire = Livewire::test(ListPromotionStacks::class)
+            ->callTableAction('runBacktest', record: $stack)
+            ->assertHasNoTableActionErrors();
+
+        $backtest = Backtest::query()
+            ->where('promotion_stack_id', $stack->id)
+            ->latest('id')
+            ->firstOrFail();
+
+        $livewire->assertRedirect(
+            BacktestResource::getUrl('view', [
+                'record' => $backtest,
+            ]),
+        );
+    },
+);
 
 it(
     'can create a promotion stack with split and pass-through outputs',

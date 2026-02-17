@@ -2,14 +2,15 @@
 
 namespace Database\Factories;
 
+use App\Models\BacktestRun;
 use App\Models\Cart;
-use App\Models\Product;
+use App\Models\Team;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\CartItem>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\BacktestedCart>
  */
-class CartItemFactory extends Factory
+class BacktestedCartFactory extends Factory
 {
     /**
      * @return array<string, mixed>
@@ -17,8 +18,11 @@ class CartItemFactory extends Factory
     public function definition(): array
     {
         return [
+            'backtest_id' => BacktestRun::factory(),
             'cart_id' => Cart::factory(),
-            'product_id' => Product::factory(),
+            'team_id' => Team::factory(),
+            'email' => null,
+            'customer_id' => null,
             'subtotal' => 1000,
             'subtotal_currency' => 'GBP',
             'total' => 1000,

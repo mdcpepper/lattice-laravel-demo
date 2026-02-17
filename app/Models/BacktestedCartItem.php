@@ -10,14 +10,18 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class CartItem extends Model
+class BacktestedCartItem extends Model
 {
+    /** @use HasFactory<\Database\Factories\BacktestedCartItemFactory> */
     use HasFactory;
+
     use HasRouteUlid;
     use SoftDeletes;
 
     protected $fillable = [
-        'cart_id',
+        'backtest_id',
+        'backtested_cart_id',
+        'cart_item_id',
         'product_id',
         'subtotal',
         'subtotal_currency',
@@ -37,15 +41,31 @@ class CartItem extends Model
     }
 
     /**
-     * @return BelongsTo<Cart, CartItem>
+     * @return BelongsTo<Backtest, BacktestedCartItem>
      */
-    public function cart(): BelongsTo
+    public function backtestRun(): BelongsTo
     {
-        return $this->belongsTo(Cart::class);
+        return $this->belongsTo(Backtest::class);
     }
 
     /**
-     * @return BelongsTo<Product, CartItem>
+     * @return BelongsTo<BacktestedCart, BacktestedCartItem>
+     */
+    public function backtestedCart(): BelongsTo
+    {
+        return $this->belongsTo(BacktestedCart::class);
+    }
+
+    /**
+     * @return BelongsTo<CartItem, BacktestedCartItem>
+     */
+    public function cartItem(): BelongsTo
+    {
+        return $this->belongsTo(CartItem::class);
+    }
+
+    /**
+     * @return BelongsTo<Product, BacktestedCartItem>
      */
     public function product(): BelongsTo
     {
@@ -53,7 +73,7 @@ class CartItem extends Model
     }
 
     /**
-     * @return MorphMany<PromotionRedemption, CartItem>
+     * @return MorphMany<PromotionRedemption, BacktestedCartItem>
      */
     public function redemptions(): MorphMany
     {

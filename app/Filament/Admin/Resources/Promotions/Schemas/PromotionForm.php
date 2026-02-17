@@ -23,56 +23,62 @@ class PromotionForm
     public static function configure(Schema $schema): Schema
     {
         return $schema->components([
-            Section::make('Promotion Details')->schema([
-                TextInput::make('name')->required(),
+            Section::make('Promotion Details')
+                ->columnSpanFull()
+                ->columns([
+                    'default' => 1,
+                    'md' => 2,
+                    'xl' => 2,
+                ])
+                ->schema([
+                    TextInput::make('name')->required(),
 
-                Select::make('promotion_type')
-                    ->label('Type')
-                    ->options(PromotionType::asSelectOptions())
-                    ->required()
-                    ->live(),
+                    Select::make('promotion_type')
+                        ->label('Type')
+                        ->options(PromotionType::asSelectOptions())
+                        ->required()
+                        ->live(),
 
-                TextInput::make('size')
-                    ->label('Size')
-                    ->numeric()
-                    ->minValue(1)
-                    ->step(1)
-                    ->live()
-                    ->visible(
-                        fn (Get $get): bool => $get('promotion_type') ==
-                            PromotionType::PositionalDiscount->value,
-                    )
-                    ->required(),
+                    TextInput::make('size')
+                        ->label('Size')
+                        ->numeric()
+                        ->minValue(1)
+                        ->step(1)
+                        ->live()
+                        ->visible(
+                            fn (Get $get): bool => $get('promotion_type') ==
+                                PromotionType::PositionalDiscount->value,
+                        )
+                        ->required(),
 
-                Fieldset::make('Budget')
-                    ->contained(false)
-                    ->columns([
-                        'default' => 1,
-                        'md' => 2,
-                        'xl' => 2,
-                    ])
-                    ->schema([
-                        TextInput::make('application_budget')
-                            ->label('Applications')
-                            ->numeric()
-                            ->minValue(1)
-                            ->step(1)
-                            ->nullable(),
+                    Fieldset::make('Budget')
+                        ->contained(false)
+                        ->columnSpanFull()
+                        ->columns([
+                            'default' => 1,
+                            'md' => 2,
+                            'xl' => 2,
+                        ])
+                        ->schema([
+                            TextInput::make('application_budget')
+                                ->label('Applications')
+                                ->numeric()
+                                ->minValue(1)
+                                ->step(1)
+                                ->nullable(),
 
-                        TextInput::make('monetary_budget')
-                            ->label('Monetary')
-                            ->numeric()
-                            ->step(0.01)
-                            ->prefix('£')
-                            ->nullable(),
-                    ]),
-            ]),
+                            TextInput::make('monetary_budget')
+                                ->label('Monetary')
+                                ->numeric()
+                                ->step(0.01)
+                                ->prefix('£')
+                                ->nullable(),
+                        ]),
+                ]),
 
-            static::directDiscountDetails(),
-            static::mixAndMatchDetails(),
             static::mixAndMatchSlots(),
+            static::mixAndMatchDetails(),
             static::tieredThresholdTiers(),
-            static::positionalDiscountPositions(),
 
             Section::make('Qualification Rules')
                 ->visible(
@@ -83,6 +89,9 @@ class PromotionForm
                     ),
                 )
                 ->schema(static::qualifications()),
+
+            static::directDiscountDetails(),
+            static::positionalDiscountPositions(),
         ]);
     }
 
@@ -415,6 +424,7 @@ class PromotionForm
     private static function tieredThresholdTiers(): Section
     {
         return Section::make('Tiers')
+            ->columnSpanFull()
             ->visible(
                 fn (Get $get): bool => PromotionType::TieredThreshold->value ===
                     $get('promotion_type'),
@@ -461,6 +471,8 @@ class PromotionForm
                                     ->prefix('£')
                                     ->nullable(),
                             ]),
+
+                        ...static::qualifications(),
 
                         Fieldset::make('Discount')
                             ->contained(false)
@@ -526,8 +538,6 @@ class PromotionForm
                                         TieredThresholdDiscountKind::OverrideCheapest->value,
                                     ),
                             ]),
-
-                        ...static::qualifications(),
                     ]),
             ]);
     }

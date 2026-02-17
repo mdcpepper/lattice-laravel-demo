@@ -10,7 +10,7 @@ it('adding a product creates a CartItem row', function (): void {
     $cart = Cart::factory()->create();
     $product = Product::factory()->create();
 
-    $item = $cart->items()->create(['product_id' => $product->id]);
+    $item = $cart->items()->create(['product_id' => $product->id, 'subtotal' => 1000, 'subtotal_currency' => 'GBP', 'total' => 1000, 'total_currency' => 'GBP']);
 
     expect($item)
         ->toBeInstanceOf(CartItem::class)
@@ -26,8 +26,8 @@ it(
         $cart = Cart::factory()->create();
         $product = Product::factory()->create();
 
-        $cart->items()->create(['product_id' => $product->id]);
-        $cart->items()->create(['product_id' => $product->id]);
+        $cart->items()->create(['product_id' => $product->id, 'subtotal' => 1000, 'subtotal_currency' => 'GBP', 'total' => 1000, 'total_currency' => 'GBP']);
+        $cart->items()->create(['product_id' => $product->id, 'subtotal' => 1000, 'subtotal_currency' => 'GBP', 'total' => 1000, 'total_currency' => 'GBP']);
 
         expect($cart->items()->count())->toBe(2);
     },
@@ -50,10 +50,10 @@ it('re-adding after remove creates a fresh row', function (): void {
     $cart = Cart::factory()->create();
     $product = Product::factory()->create();
 
-    $first = $cart->items()->create(['product_id' => $product->id]);
+    $first = $cart->items()->create(['product_id' => $product->id, 'subtotal' => 1000, 'subtotal_currency' => 'GBP', 'total' => 1000, 'total_currency' => 'GBP']);
     $first->delete();
 
-    $second = $cart->items()->create(['product_id' => $product->id]);
+    $second = $cart->items()->create(['product_id' => $product->id, 'subtotal' => 1000, 'subtotal_currency' => 'GBP', 'total' => 1000, 'total_currency' => 'GBP']);
 
     expect($second->id)
         ->not->toBe($first->id)
