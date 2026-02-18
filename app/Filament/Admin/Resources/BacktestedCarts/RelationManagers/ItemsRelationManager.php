@@ -19,6 +19,11 @@ class ItemsRelationManager extends RelationManager
             ->columns([
                 TextColumn::make('product.name')->searchable(),
 
+                TextColumn::make('product.tags_array')
+                    ->label('Tags')
+                    ->listWithLineBreaks()
+                    ->badge(),
+
                 TextColumn::make('price')->money('GBP')->sortable(),
 
                 TextColumn::make('discount')
@@ -61,7 +66,7 @@ class ItemsRelationManager extends RelationManager
             ->toolbarActions([])
             ->modifyQueryUsing(
                 fn (Builder $query): Builder => $query->with([
-                    'product',
+                    'product.tags',
                     'redemptions.promotion',
                 ]),
             );

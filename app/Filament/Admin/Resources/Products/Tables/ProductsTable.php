@@ -27,13 +27,20 @@ class ProductsTable
             )
             ->columns([
                 ImageColumn::make('thumb_url')->label('Image'),
+
                 TextColumn::make('name')->searchable(),
+
                 TextColumn::make('category.name')->searchable(),
+
                 TextColumn::make('stock')->numeric()->sortable(),
+
                 TextColumn::make('price')->money()->sortable(),
+
                 TextColumn::make('tags_array')
                     ->label('Tags')
-                    ->listWithLineBreaks(),
+                    ->listWithLineBreaks()
+                    ->badge(),
+
                 TextColumn::make('qualifying_promotions')
                     ->label('Qualifying Promotions')
                     ->state(
@@ -47,10 +54,12 @@ class ProductsTable
                     ->listWithLineBreaks()
                     ->badge()
                     ->placeholder('None'),
+
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+
                 TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()

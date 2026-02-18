@@ -19,11 +19,11 @@ class BacktestedCartsRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
-            ->poll('5s')
+            ->poll($this->getPoll())
             ->recordTitleAttribute('ulid')
             ->columns([
-                TextColumn::make('ulid')
-                    ->label('ID')
+                TextColumn::make('cart.ulid')
+                    ->label('Cart ID')
                     ->fontFamily('mono')
                     ->searchable(),
 
@@ -107,9 +107,22 @@ class BacktestedCartsRelationManager extends RelationManager
             ->toolbarActions([])
             ->modifyQueryUsing(
                 fn (Builder $query): Builder => $query->with([
+                    'cart',
                     'items.redemptions.promotion',
                 ]),
             )
             ->defaultSort('discount', 'desc');
+    }
+
+    private function getPoll(): ?string
+    {
+        if (
+            $this->ownerRecord->processed_carts !=
+            $this->ownerRecord->total_carts
+        ) {
+            return '2s';
+        }
+
+        return null;
     }
 }

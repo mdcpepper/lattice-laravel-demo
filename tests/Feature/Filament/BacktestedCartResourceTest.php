@@ -57,6 +57,8 @@ it(
             'subtotal_currency' => 'GBP',
             'total' => 750,
             'total_currency' => 'GBP',
+            'processing_time' => 900,
+            'solve_time' => 800,
         ]);
 
         $products = Product::factory()
@@ -112,6 +114,11 @@ it(
         Livewire::test(ViewBacktestedCart::class, [
             'record' => $backtestedCart->ulid,
         ])
+            ->assertSee((string) $cart->ulid)
+            ->assertSee('End-to-end')
+            ->assertSee('900 ns')
+            ->assertSee('Solve')
+            ->assertSee('800 ns')
             ->assertSee('Subtotal')
             ->assertSee('Discount')
             ->assertSee('Total')
@@ -147,6 +154,7 @@ it(
         ]);
 
         $product = Product::factory()->for($this->team)->create();
+        $product->syncTags(['meal-deal:main']);
         $cartItem = CartItem::factory()->for($cart)->for($product)->create();
 
         $backtestedCartItem = BacktestedCartItem::query()->create([
@@ -192,6 +200,8 @@ it(
             'ownerRecord' => $backtestedCart,
             'pageClass' => ViewBacktestedCart::class,
         ])
+            ->assertSee('Tags')
+            ->assertSee('meal-deal:main')
             ->assertSee('Promotion')
             ->assertSee('Backtest Promo');
     },
@@ -265,6 +275,7 @@ it(
             'ownerRecord' => $backtest,
             'pageClass' => ViewBacktest::class,
         ])
+            ->assertSee((string) $cart->ulid)
             ->assertSee('End-to-end')
             ->assertSee('Solve')
             ->assertSee('Promotion(s)')

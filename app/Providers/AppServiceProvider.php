@@ -26,6 +26,7 @@ use App\Services\PromotionQualification\DirectDiscountStrategy as DirectQualific
 use App\Services\PromotionQualification\MixAndMatchStrategy as MixAndMatchQualificationStrategy;
 use App\Services\PromotionQualification\PositionalDiscountStrategy as PositionalQualificationStrategy;
 use App\Services\PromotionQualification\TieredThresholdStrategy as TieredThresholdQualificationStrategy;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
@@ -102,5 +103,7 @@ class AppServiceProvider extends ServiceProvider
             CartRecalculationRequested::class,
             RecalculateCartTotals::class,
         );
+
+        Model::preventLazyLoading(! $this->app->isProduction());
     }
 }
