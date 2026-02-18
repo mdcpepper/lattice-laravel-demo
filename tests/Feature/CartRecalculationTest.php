@@ -1,18 +1,12 @@
 <?php
 
-use App\Enums\QualificationOp;
-use App\Enums\QualificationRuleKind;
-use App\Enums\SimpleDiscountKind;
 use App\Events\CartRecalculationRequested;
 use App\Models\Cart;
 use App\Models\CartItem;
-use App\Models\DirectDiscountPromotion;
 use App\Models\Product;
-use App\Models\Promotion;
 use App\Models\PromotionLayer;
 use App\Models\PromotionRedemption;
 use App\Models\PromotionStack;
-use App\Models\SimpleDiscount;
 use App\Models\Team;
 
 it(
@@ -165,38 +159,3 @@ it(
         )->toBe(0);
     },
 );
-
-function createSaleDiscountPromotion(Team $team): Promotion
-{
-    $discount = SimpleDiscount::query()->create([
-        'kind' => SimpleDiscountKind::PercentageOff,
-        'percentage' => 10.0,
-    ]);
-
-    $direct = DirectDiscountPromotion::query()->create([
-        'simple_discount_id' => $discount->id,
-    ]);
-
-    $promotion = Promotion::query()->create([
-        'name' => '10% Off Sale Items',
-        'team_id' => $team->id,
-        'promotionable_type' => $direct->getMorphClass(),
-        'promotionable_id' => $direct->id,
-    ]);
-
-    $qualification = $direct->qualification()->create([
-        'promotion_id' => $promotion->id,
-        'context' => 'primary',
-        'op' => QualificationOp::And,
-        'sort_order' => 0,
-    ]);
-
-    $rule = $qualification->rules()->create([
-        'kind' => QualificationRuleKind::HasAny,
-        'sort_order' => 0,
-    ]);
-
-    $rule->syncTags(['sale']);
-
-    return $promotion;
-}

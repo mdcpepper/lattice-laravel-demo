@@ -21,8 +21,6 @@ class ItemsRelationManager extends RelationManager
 
                 TextColumn::make('price')->money('GBP')->sortable(),
 
-                TextColumn::make('offer_price')->money('GBP')->sortable(),
-
                 TextColumn::make('discount')
                     ->label('Discount')
                     ->state(
@@ -42,6 +40,8 @@ class ItemsRelationManager extends RelationManager
                             "price - offer_price {$direction}",
                         ),
                     ),
+
+                TextColumn::make('offer_price')->money('GBP')->sortable(),
 
                 TextColumn::make('promotion_names')
                     ->label('Promotion(s)')

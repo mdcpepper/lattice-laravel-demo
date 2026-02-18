@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\BacktestRun;
+use App\Models\Backtest;
 use App\Models\Cart;
 use App\Models\Team;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -18,7 +18,7 @@ class BacktestedCartFactory extends Factory
     public function definition(): array
     {
         return [
-            'backtest_id' => BacktestRun::factory(),
+            'backtest_id' => Backtest::factory(),
             'cart_id' => Cart::factory(),
             'team_id' => Team::factory(),
             'email' => null,

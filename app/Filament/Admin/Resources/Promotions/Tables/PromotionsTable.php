@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\Promotions\Tables;
 
+use App\Models\CartItem;
 use App\Models\DirectDiscountPromotion;
 use App\Models\MixAndMatchPromotion;
 use App\Models\PositionalDiscountPromotion;
@@ -15,6 +16,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Support\Facades\DB;
 
 class PromotionsTable
 {
@@ -24,18 +26,32 @@ class PromotionsTable
 
         return $table
             ->modifyQueryUsing(
-                fn (Builder $query): Builder => $query->with([
-                    'promotionable' => function (MorphTo $morphTo): void {
-                        $morphTo->morphWith([
-                            DirectDiscountPromotion::class => ['discount'],
-                            MixAndMatchPromotion::class => ['discount'],
-                            PositionalDiscountPromotion::class => ['discount'],
-                            TieredThresholdPromotion::class => [
-                                'tiers.discount',
-                            ],
-                        ]);
-                    },
-                ]),
+                fn (Builder $query): Builder => $query
+                    ->with([
+                        'promotionable' => function (MorphTo $morphTo): void {
+                            $morphTo->morphWith([
+                                DirectDiscountPromotion::class => ['discount'],
+                                MixAndMatchPromotion::class => ['discount'],
+                                PositionalDiscountPromotion::class => [
+                                    'discount',
+                                ],
+                                TieredThresholdPromotion::class => [
+                                    'tiers.discount',
+                                ],
+                            ]);
+                        },
+                    ])
+                    ->withCount('redemptions')
+                    ->addSelect([
+                        'monetary_redeemed' => DB::table(
+                            'promotion_redemptions',
+                        )
+                            ->selectRaw(
+                                'COALESCE(SUM(original_price - final_price), 0)',
+                            )
+                            ->whereColumn('promotion_id', 'promotions.id')
+                            ->where('redeemable_type', CartItem::class),
+                    ]),
             )
             ->columns([
                 TextColumn::make('name')->searchable()->sortable(),
@@ -62,15 +78,31 @@ class PromotionsTable
                     ->placeholder('Unknown'),
 
                 TextColumn::make('application_budget')
-                    ->label('App. Budget')
-                    ->placeholder('Unlimited')
-                    ->numeric()
+                    ->label('Redemption Budget')
+                    ->state(
+                        fn (
+                            Promotion $record,
+                        ): string => ($record->redemptions_count ?? 0).
+                            ' / '.
+                            ($record->application_budget ?? '∞'),
+                    )
                     ->sortable(),
 
                 TextColumn::make('monetary_budget')
                     ->label('Monetary Budget')
-                    ->placeholder('Unlimited')
-                    ->money()
+                    ->state(function (Promotion $record): string {
+                        $redeemed = money(
+                            (int) ($record->monetary_redeemed ?? 0),
+                            'GBP',
+                        )->format();
+                        $rawBudget = $record->getRawOriginal('monetary_budget');
+                        $budget =
+                            $rawBudget !== null
+                                ? money((int) $rawBudget, 'GBP')->format()
+                                : '∞';
+
+                        return "{$redeemed} / {$budget}";
+                    })
                     ->sortable(),
 
                 TextColumn::make('created_at')

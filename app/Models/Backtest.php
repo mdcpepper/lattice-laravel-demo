@@ -15,6 +15,24 @@ class Backtest extends Model
     /** @use HasFactory<\Database\Factories\BacktestFactory> */
     use HasFactory, HasRouteUlid;
 
+    protected static function booted(): void
+    {
+        static::deleting(function (self $backtest): void {
+            PromotionRedemption::query()
+                ->where(
+                    'redeemable_type',
+                    new BacktestedCartItem()->getMorphClass(),
+                )
+                ->whereIn(
+                    'redeemable_id',
+                    $backtest
+                        ->simulatedCartItems()
+                        ->select('backtested_cart_items.id'),
+                )
+                ->delete();
+        });
+    }
+
     protected $fillable = [
         'promotion_stack_id',
         'total_carts',

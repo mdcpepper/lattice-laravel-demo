@@ -6,6 +6,7 @@ use App\Enums\QualificationContext;
 use App\Models\Concerns\HasRouteUlid;
 use Cknow\Money\Casts\MoneyIntegerCast;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -15,7 +16,8 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class Promotion extends Model
 {
-    use HasRouteUlid;
+    /** @use HasFactory<\Database\Factories\PromotionFactory> */
+    use HasFactory, HasRouteUlid;
 
     protected $casts = [
         'monetary_budget' => MoneyIntegerCast::class.':GBP',
@@ -115,5 +117,16 @@ class Promotion extends Model
         )
             ->withPivot('sort_order')
             ->withTimestamps();
+    }
+
+    /**
+     * @return HasMany<PromotionRedemption, Promotion>
+     */
+    public function redemptions(): HasMany
+    {
+        return $this->hasMany(PromotionRedemption::class)->where(
+            'redeemable_type',
+            CartItem::class,
+        );
     }
 }

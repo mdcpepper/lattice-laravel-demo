@@ -29,4 +29,11 @@ class EditCart extends EditRecord
 
         CartRecalculationRequested::dispatch($this->record->id);
     }
+
+    protected function getRedirectUrl(): string
+    {
+        return $this->getResource()::getUrl('view', [
+            'record' => $this->record,
+        ]);
+    }
 }

@@ -45,22 +45,6 @@ class ItemsRelationManager extends RelationManager
 
                 TextColumn::make('price')->label('Price')->money()->sortable(),
 
-                TextColumn::make('promotion_names')
-                    ->label('Promotion')
-                    ->state(
-                        fn (CartItem $record): string => $record->redemptions
-                            ->pluck('promotion.name')
-                            ->filter()
-                            ->unique()
-                            ->join(', '),
-                    )
-                    ->placeholder('-'),
-
-                TextColumn::make('offer_price')
-                    ->label('Offer Price')
-                    ->money()
-                    ->sortable(),
-
                 TextColumn::make('discount')
                     ->label('Discount')
                     ->state(
@@ -83,6 +67,22 @@ class ItemsRelationManager extends RelationManager
                             "price - offer_price {$direction}",
                         ),
                     ),
+
+                TextColumn::make('offer_price')
+                    ->label('Offer Price')
+                    ->money()
+                    ->sortable(),
+
+                TextColumn::make('promotion_names')
+                    ->label('Promotion(s)')
+                    ->state(
+                        fn (CartItem $record): string => $record->redemptions
+                            ->pluck('promotion.name')
+                            ->filter()
+                            ->unique()
+                            ->join(', '),
+                    )
+                    ->placeholder('-'),
 
                 TextColumn::make('created_at')
                     ->dateTime()
