@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Jobs\DispatchCartRecalculationRequest;
 use App\Models\Concerns\HasRouteUlid;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -13,6 +14,13 @@ class PromotionStack extends Model
 {
     /** @use HasFactory<\Database\Factories\PromotionStackFactory> */
     use HasFactory, HasRouteUlid;
+
+    protected static function booted(): void
+    {
+        static::saved(function (self $stack): void {
+            $stack->queueRecalculationsForCarts();
+        });
+    }
 
     protected $fillable = [
         'team_id',
@@ -70,5 +78,14 @@ class PromotionStack extends Model
     public function carts(): HasMany
     {
         return $this->hasMany(Cart::class, 'promotion_stack_id');
+    }
+
+    private function queueRecalculationsForCarts(): void
+    {
+        $cartIds = $this->carts()->pluck('id');
+
+        foreach ($cartIds as $cartId) {
+            DispatchCartRecalculationRequest::dispatch((int) $cartId);
+        }
     }
 }

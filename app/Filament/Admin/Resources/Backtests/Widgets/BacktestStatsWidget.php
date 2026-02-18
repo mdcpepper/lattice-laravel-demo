@@ -74,7 +74,7 @@ class BacktestStatsWidget extends StatsOverviewWidget
         return [
             Stat::make(
                 'Progress',
-                "{$this->record->processed_carts}/{$this->record->total_carts} {$this->getProgress()}%",
+                "{$this->record->processed_carts}/{$this->record->total_carts} ({$this->getProgress()}%)",
             ),
 
             Stat::make(

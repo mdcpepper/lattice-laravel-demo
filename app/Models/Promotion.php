@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\QualificationContext;
+use App\Jobs\DispatchCartRecalculationRequest;
 use App\Models\Concerns\HasRouteUlid;
 use Cknow\Money\Casts\MoneyIntegerCast;
 use Illuminate\Database\Eloquent\Builder;
@@ -18,6 +19,13 @@ class Promotion extends Model
 {
     /** @use HasFactory<\Database\Factories\PromotionFactory> */
     use HasFactory, HasRouteUlid;
+
+    protected static function booted(): void
+    {
+        static::saved(function (self $promotion): void {
+            $promotion->queueRecalculationsForLinkedCarts();
+        });
+    }
 
     protected $casts = [
         'monetary_budget' => MoneyIntegerCast::class.':GBP',
@@ -128,5 +136,25 @@ class Promotion extends Model
             'redeemable_type',
             CartItem::class,
         );
+    }
+
+    private function queueRecalculationsForLinkedCarts(): void
+    {
+        $stackIds = $this->layers()
+            ->select('promotion_layers.promotion_stack_id')
+            ->distinct()
+            ->pluck('promotion_layers.promotion_stack_id');
+
+        if ($stackIds->isEmpty()) {
+            return;
+        }
+
+        $cartIds = Cart::query()
+            ->whereIn('promotion_stack_id', $stackIds)
+            ->pluck('id');
+
+        foreach ($cartIds as $cartId) {
+            DispatchCartRecalculationRequest::dispatch((int) $cartId);
+        }
     }
 }

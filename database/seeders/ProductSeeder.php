@@ -34,6 +34,7 @@ class ProductSeeder extends Seeder
             $categories,
             $team,
         );
+
         $categoryTagBySlug = $categories->mapWithKeys(
             fn (array $category): array => [
                 $category['slug'] => Str::lower($category['name']),
@@ -215,8 +216,9 @@ class ProductSeeder extends Seeder
         $rawCategoryId = is_string($categorySlug)
             ? $categoryIdsBySlug->get($categorySlug)
             : null;
+
         $categoryTag = is_string($categorySlug)
-            ? $categoryTagBySlug->get($categorySlug)
+            ? 'category:'.$categoryTagBySlug->get($categorySlug)
             : null;
 
         $categoryId = is_numeric($rawCategoryId) ? (int) $rawCategoryId : null;
