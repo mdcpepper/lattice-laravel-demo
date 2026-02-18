@@ -72,6 +72,39 @@ it(
 );
 
 it(
+    'stores a zero amount discount as zero minor units on create',
+    function (): void {
+        Livewire::test(CreatePromotion::class)
+            ->fillForm([
+                'name' => 'Zero Amount Positional',
+                'promotion_type' => PromotionType::PositionalDiscount->value,
+                'size' => 2,
+                'discount_kind' => SimpleDiscountKind::AmountOff->value,
+                'discount_amount' => '0',
+                'qualification_op' => QualificationOp::And->value,
+                'qualification_rules' => [],
+                'positions' => [['position' => 1]],
+            ])
+            ->call('create')
+            ->assertHasNoFormErrors()
+            ->assertRedirect();
+
+        $promotion = Promotion::query()
+            ->where('name', 'Zero Amount Positional')
+            ->firstOrFail();
+
+        $positional = $promotion->promotionable;
+
+        $this->assertDatabaseHas('simple_discounts', [
+            'id' => $positional->simple_discount_id,
+            'kind' => SimpleDiscountKind::AmountOff->value,
+            'amount' => 0,
+            'amount_currency' => 'GBP',
+        ]);
+    },
+);
+
+it(
     'validates positional selections are within 1..size on create',
     function (): void {
         Livewire::test(CreatePromotion::class)

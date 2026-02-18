@@ -59,6 +59,7 @@ class CartRecalculator
                     foreach ($receipt->promotionApplications as $application) {
                         /** @var CartItem $cartItem */
                         $cartItem = $application->item->reference;
+
                         $applicationsByCartItemId[
                             $cartItem->id
                         ][] = $application;

@@ -15,6 +15,7 @@ class SimpleDiscount extends Model implements DiscountContract
     protected $casts = [
         'kind' => SimpleDiscountKind::class,
         'percentage' => PercentageBasisPointsCast::class,
+        'amount' => 'integer',
     ];
 
     protected $fillable = ['kind', 'percentage', 'amount', 'amount_currency'];

@@ -15,6 +15,7 @@ class MixAndMatchDiscount extends Model implements DiscountContract
     protected $casts = [
         'kind' => MixAndMatchDiscountKind::class,
         'percentage' => PercentageBasisPointsCast::class,
+        'amount' => 'integer',
     ];
 
     protected $fillable = ['kind', 'percentage', 'amount', 'amount_currency'];

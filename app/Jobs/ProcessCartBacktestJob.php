@@ -63,9 +63,13 @@ class ProcessCartBacktestJob implements ShouldQueue
             )
             ->all();
 
+        $startTime = microtime(true);
+
         $receipt = $latticeStack->process($latticeItems);
 
-        $simulatedCart = BacktestedCart::query()->create([
+        $elapsedTime = microtime(true) - $startTime;
+
+        $backtestedCart = BacktestedCart::query()->create([
             'backtest_id' => $backtestRun->id,
             'cart_id' => $cart->id,
             'team_id' => $cart->team_id,
@@ -75,6 +79,7 @@ class ProcessCartBacktestJob implements ShouldQueue
             'subtotal_currency' => $receipt->subtotal->currency,
             'total' => $receipt->total->amount,
             'total_currency' => $receipt->total->currency,
+            'processing_time' => $elapsedTime,
         ]);
 
         /** @var array<int, list<\Lattice\PromotionApplication>> $applicationsByCartItemId */
@@ -105,7 +110,7 @@ class ProcessCartBacktestJob implements ShouldQueue
 
             $backtestedCartItem = BacktestedCartItem::query()->create([
                 'backtest_id' => $backtestRun->id,
-                'backtested_cart_id' => $simulatedCart->id,
+                'backtested_cart_id' => $backtestedCart->id,
                 'cart_item_id' => $item->id,
                 'product_id' => $product->id,
                 'price' => $price,
