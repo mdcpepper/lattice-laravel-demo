@@ -16,7 +16,7 @@ class FakeLatticePromotionStrategy implements LatticePromotionStrategy
 
     /**
      * @param  Closure(Promotion): bool  $supports
-     * @param  Closure(Promotion): LatticePromotion  $make
+     * @param  Closure(Promotion): ?LatticePromotion  $make
      */
     public function __construct(
         private readonly Closure $supports,
@@ -28,7 +28,7 @@ class FakeLatticePromotionStrategy implements LatticePromotionStrategy
         return ($this->supports)($promotion);
     }
 
-    public function make(Promotion $promotion): LatticePromotion
+    public function make(Promotion $promotion): ?LatticePromotion
     {
         $this->builtPromotionNames[] = (string) $promotion->name;
 

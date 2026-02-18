@@ -6,8 +6,12 @@ use App\Enums\QualificationContext;
 use App\Enums\QualificationOp;
 use App\Enums\QualificationRuleKind;
 use App\Enums\SimpleDiscountKind;
+use App\Models\Cart;
+use App\Models\CartItem;
 use App\Models\DirectDiscountPromotion;
 use App\Models\Promotion;
+use App\Models\PromotionRedemption;
+use App\Models\PromotionStack;
 use App\Models\SimpleDiscount;
 use App\Models\Team;
 use App\Services\Lattice\Promotions\LatticePromotionFactory;
@@ -274,3 +278,61 @@ it('can be turned into a Lattice Graph', function (): void {
         ->and($receipt->subtotal->amount - $receipt->total->amount)
         ->toBe(30);
 });
+
+it(
+    'skips lattice promotion creation when either budget type is exhausted',
+    function (
+        ?int $applicationBudget,
+        ?int $monetaryBudget,
+        int $originalPrice,
+        int $finalPrice,
+    ): void {
+        $this->promotion->update([
+            'application_budget' => $applicationBudget,
+            'monetary_budget' => $monetaryBudget,
+        ]);
+
+        $stack = PromotionStack::factory()->for($this->team)->create();
+
+        $product = \App\Models\Product::factory()
+            ->for($this->team)
+            ->create(['price' => 5_00]);
+
+        $cart = Cart::factory()->for($this->team)->create();
+
+        $cartItem = CartItem::factory()
+            ->for($cart)
+            ->for($product)
+            ->create([
+                'price' => 500,
+                'price_currency' => 'GBP',
+                'offer_price' => 500,
+                'offer_price_currency' => 'GBP',
+            ]);
+
+        PromotionRedemption::query()->create([
+            'promotion_id' => $this->promotion->id,
+            'promotion_stack_id' => $stack->id,
+            'redeemable_type' => $cartItem->getMorphClass(),
+            'redeemable_id' => $cartItem->id,
+            'sort_order' => 0,
+            'original_price' => $originalPrice,
+            'original_price_currency' => 'GBP',
+            'final_price' => $finalPrice,
+            'final_price_currency' => 'GBP',
+        ]);
+
+        $promotion = Promotion::query()
+            ->withGraph()
+            ->findOrFail($this->promotion->id);
+
+        $latticePromotion = app(LatticePromotionFactory::class)->make(
+            $promotion,
+        );
+
+        expect($latticePromotion)->toBeNull();
+    },
+)->with([
+    'application budget exhausted' => [1, null, 500, 500],
+    'monetary budget exhausted' => [null, 50, 500, 450],
+]);

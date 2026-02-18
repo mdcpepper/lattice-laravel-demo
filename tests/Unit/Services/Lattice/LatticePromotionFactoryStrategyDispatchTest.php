@@ -65,7 +65,7 @@ test('throws when no strategy supports the promotion', function (): void {
         ),
     ]);
 
-    expect(fn (): LatticePromotion => $factory->make($promotion))->toThrow(
+    expect(fn (): mixed => $factory->make($promotion))->toThrow(
         RuntimeException::class,
         'Unsupported promotionable type [unsupported/type].',
     );

@@ -17,7 +17,7 @@ class LatticePromotionFactory
         private readonly array $latticePromotionStrategies,
     ) {}
 
-    public function make(PromotionModel $promotion): LatticePromotion
+    public function make(PromotionModel $promotion): ?LatticePromotion
     {
         $strategy = collect($this->latticePromotionStrategies)->first(
             fn (LatticePromotionStrategy $strategy): bool => $strategy->supports(

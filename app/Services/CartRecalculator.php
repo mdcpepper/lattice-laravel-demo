@@ -25,37 +25,45 @@ class CartRecalculator
         /** @var Collection<int, CartItem> $items */
         $items = $cart->items->values();
 
-        /** @var \Lattice\Receipt|null $receipt */
-        $receipt = null;
-
-        /** @var array<int, list<\Lattice\PromotionApplication>> $applicationsByCartItemId */
-        $applicationsByCartItemId = [];
+        /** @var array<int, Item> $latticeItems */
+        $latticeItems = [];
 
         if (
             $cart->promotionStack instanceof PromotionStack &&
             $items->isNotEmpty()
         ) {
-            $latticeStack = $this->stackFactory->make($cart->promotionStack);
             $latticeItems = $this->buildLatticeItems($items);
-
-            $receipt = $latticeStack->process($latticeItems);
-
-            foreach ($receipt->promotionApplications as $application) {
-                /** @var CartItem $cartItem */
-                $cartItem = $application->item->reference;
-                $applicationsByCartItemId[$cartItem->id][] = $application;
-            }
         }
 
         $cart
             ->getConnection()
-            ->transaction(function () use (
-                $cart,
-                $items,
-                $receipt,
-                $applicationsByCartItemId,
-            ): void {
+            ->transaction(function () use ($cart, $items, $latticeItems): void {
                 $this->deleteExistingCartItemRedemptions($cart);
+
+                /** @var \Lattice\Receipt|null $receipt */
+                $receipt = null;
+
+                /** @var array<int, list<\Lattice\PromotionApplication>> $applicationsByCartItemId */
+                $applicationsByCartItemId = [];
+
+                if (
+                    $cart->promotionStack instanceof PromotionStack &&
+                    $latticeItems !== []
+                ) {
+                    $latticeStack = $this->stackFactory->make(
+                        $cart->promotionStack,
+                    );
+
+                    $receipt = $latticeStack->process($latticeItems);
+
+                    foreach ($receipt->promotionApplications as $application) {
+                        /** @var CartItem $cartItem */
+                        $cartItem = $application->item->reference;
+                        $applicationsByCartItemId[
+                            $cartItem->id
+                        ][] = $application;
+                    }
+                }
 
                 $cartSubtotal = 0;
                 $cartTotal = 0;

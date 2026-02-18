@@ -33,7 +33,7 @@ class MixAndMatchPromotionStrategy implements LatticePromotionStrategy
         return $promotion->promotionable instanceof MixAndMatchPromotionModel;
     }
 
-    public function make(PromotionModel $promotion): LatticePromotion
+    public function make(PromotionModel $promotion): ?LatticePromotion
     {
         $promotionable = $promotion->promotionable;
 
@@ -47,6 +47,12 @@ class MixAndMatchPromotionStrategy implements LatticePromotionStrategy
             throw new RuntimeException(
                 'Mix and match promotion is missing its discount relation.',
             );
+        }
+
+        $budget = $this->makeBudget($promotion);
+
+        if (is_null($budget)) {
+            return null;
         }
 
         $qualificationIndex = $this->qualificationIndex($promotion);
@@ -73,7 +79,7 @@ class MixAndMatchPromotionStrategy implements LatticePromotionStrategy
             reference: $promotion,
             slots: $slots,
             discount: $this->makeMixAndMatchDiscount($discount),
-            budget: $this->makeBudget($promotion),
+            budget: $budget,
         );
     }
 

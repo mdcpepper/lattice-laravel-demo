@@ -11,5 +11,5 @@ interface LatticePromotionStrategy
 {
     public function supports(PromotionModel $promotion): bool;
 
-    public function make(PromotionModel $promotion): LatticePromotion;
+    public function make(PromotionModel $promotion): ?LatticePromotion;
 }

@@ -35,10 +35,14 @@ class PromotionLayerStrategy implements LatticeLayerStrategy
             ->map(
                 fn (
                     Promotion $promotion,
-                ): LatticePromotion => $this->latticePromotionFactory->make(
+                ): ?LatticePromotion => $this->latticePromotionFactory->make(
                     $promotion,
                 ),
             )
+            ->filter(
+                fn (?LatticePromotion $promotion): bool => $promotion instanceof LatticePromotion,
+            )
+            ->values()
             ->all();
 
         return new LatticeLayer(

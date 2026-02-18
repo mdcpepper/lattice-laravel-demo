@@ -159,3 +159,96 @@ it(
         )->toBe(0);
     },
 );
+
+it(
+    'enforces application budget across separate carts during recalculation',
+    function (): void {
+        $team = Team::factory()->create();
+
+        $product = Product::factory()
+            ->for($team)
+            ->create(['price' => 5_00]);
+        $product->syncTags(['sale']);
+        $product->load('tags');
+
+        $promotion = createSaleDiscountPromotion($team);
+        $promotion->update(['application_budget' => 1]);
+
+        $stack = PromotionStack::factory()->for($team)->create();
+
+        $layer = PromotionLayer::factory()
+            ->for($stack, 'stack')
+            ->create([
+                'reference' => 'root',
+                'sort_order' => 0,
+            ]);
+
+        $layer->promotions()->attach($promotion, ['sort_order' => 0]);
+
+        $cartOne = Cart::factory()
+            ->for($team)
+            ->create([
+                'promotion_stack_id' => $stack->id,
+            ]);
+
+        $cartOneItem = CartItem::factory()
+            ->for($cartOne)
+            ->for($product)
+            ->create([
+                'price' => 999,
+                'price_currency' => 'GBP',
+                'offer_price' => 999,
+                'offer_price_currency' => 'GBP',
+            ]);
+
+        $cartTwo = Cart::factory()
+            ->for($team)
+            ->create([
+                'promotion_stack_id' => $stack->id,
+            ]);
+
+        $cartTwoItem = CartItem::factory()
+            ->for($cartTwo)
+            ->for($product)
+            ->create([
+                'price' => 999,
+                'price_currency' => 'GBP',
+                'offer_price' => 999,
+                'offer_price_currency' => 'GBP',
+            ]);
+
+        CartRecalculationRequested::dispatch($cartOne->id);
+
+        $this->assertDatabaseHas('cart_items', [
+            'id' => $cartOneItem->id,
+            'price' => 500,
+            'price_currency' => 'GBP',
+            'offer_price' => 450,
+            'offer_price_currency' => 'GBP',
+        ]);
+
+        $this->assertDatabaseHas('promotion_redemptions', [
+            'promotion_id' => $promotion->id,
+            'promotion_stack_id' => $stack->id,
+            'redeemable_type' => CartItem::class,
+            'redeemable_id' => $cartOneItem->id,
+        ]);
+
+        CartRecalculationRequested::dispatch($cartTwo->id);
+
+        $this->assertDatabaseHas('cart_items', [
+            'id' => $cartTwoItem->id,
+            'price' => 500,
+            'price_currency' => 'GBP',
+            'offer_price' => 500,
+            'offer_price_currency' => 'GBP',
+        ]);
+
+        $this->assertDatabaseMissing('promotion_redemptions', [
+            'promotion_id' => $promotion->id,
+            'promotion_stack_id' => $stack->id,
+            'redeemable_type' => CartItem::class,
+            'redeemable_id' => $cartTwoItem->id,
+        ]);
+    },
+);
