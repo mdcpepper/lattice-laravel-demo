@@ -171,6 +171,57 @@ it('shows the edit header action on the view page', function (): void {
     ])->assertActionExists('edit');
 });
 
+it('shows cart summary stats on the view page', function (): void {
+    $cart = Cart::factory()
+        ->for($this->team)
+        ->create([
+            'subtotal' => 1_000,
+            'total' => 750,
+        ]);
+
+    $products = Product::factory()
+        ->count(3)
+        ->for($this->team)
+        ->create([
+            'price' => 500,
+        ]);
+
+    CartItem::factory()
+        ->for($cart)
+        ->for($products[0])
+        ->create([
+            'price' => 500,
+            'offer_price' => 400,
+        ]);
+
+    CartItem::factory()
+        ->for($cart)
+        ->for($products[1])
+        ->create([
+            'price' => 500,
+            'offer_price' => 350,
+        ]);
+
+    CartItem::factory()
+        ->for($cart)
+        ->for($products[2])
+        ->create([
+            'price' => 500,
+            'offer_price' => 500,
+        ]);
+
+    Livewire::test(ViewCart::class, [
+        'record' => $cart->ulid,
+    ])
+        ->assertSee('Subtotal')
+        ->assertSee('Discount')
+        ->assertSee('Total')
+        ->assertSee('£10.00')
+        ->assertSee('£2.50')
+        ->assertSee('£7.50')
+        ->assertSee('2/3');
+});
+
 // ── Edit page ─────────────────────────────────────────────────────────────────
 
 it('can render the edit page', function (): void {

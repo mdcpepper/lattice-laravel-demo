@@ -37,6 +37,91 @@ beforeEach(function (): void {
 });
 
 it(
+    'shows cart summary stats on the backtested cart view page',
+    function (): void {
+        $stack = PromotionStack::factory()->for($this->team)->create();
+        $backtest = Backtest::query()->create([
+            'promotion_stack_id' => $stack->id,
+            'total_carts' => 1,
+            'processed_carts' => 1,
+            'status' => BacktestStatus::Completed,
+        ]);
+
+        $cart = Cart::factory()->for($this->team)->create();
+        $backtestedCart = BacktestedCart::query()->create([
+            'backtest_id' => $backtest->id,
+            'cart_id' => $cart->id,
+            'team_id' => $this->team->id,
+            'subtotal' => 1_000,
+            'subtotal_currency' => 'GBP',
+            'total' => 750,
+            'total_currency' => 'GBP',
+        ]);
+
+        $products = Product::factory()
+            ->count(3)
+            ->for($this->team)
+            ->create([
+                'price' => 500,
+            ]);
+
+        $cartItems = CartItem::factory()
+            ->count(3)
+            ->for($cart)
+            ->sequence(
+                ['product_id' => $products[0]->id],
+                ['product_id' => $products[1]->id],
+                ['product_id' => $products[2]->id],
+            )
+            ->create();
+
+        BacktestedCartItem::query()->create([
+            'backtest_id' => $backtest->id,
+            'backtested_cart_id' => $backtestedCart->id,
+            'cart_item_id' => $cartItems[0]->id,
+            'product_id' => $products[0]->id,
+            'price' => 500,
+            'price_currency' => 'GBP',
+            'offer_price' => 400,
+            'offer_price_currency' => 'GBP',
+        ]);
+
+        BacktestedCartItem::query()->create([
+            'backtest_id' => $backtest->id,
+            'backtested_cart_id' => $backtestedCart->id,
+            'cart_item_id' => $cartItems[1]->id,
+            'product_id' => $products[1]->id,
+            'price' => 500,
+            'price_currency' => 'GBP',
+            'offer_price' => 350,
+            'offer_price_currency' => 'GBP',
+        ]);
+
+        BacktestedCartItem::query()->create([
+            'backtest_id' => $backtest->id,
+            'backtested_cart_id' => $backtestedCart->id,
+            'cart_item_id' => $cartItems[2]->id,
+            'product_id' => $products[2]->id,
+            'price' => 500,
+            'price_currency' => 'GBP',
+            'offer_price' => 500,
+            'offer_price_currency' => 'GBP',
+        ]);
+
+        Livewire::test(ViewBacktestedCart::class, [
+            'record' => $backtestedCart->ulid,
+        ])
+            ->assertSee('Subtotal')
+            ->assertSee('Discount')
+            ->assertSee('Total')
+            ->assertSee('£10.00')
+            ->assertSee('£2.50')
+            ->assertSee('£7.50')
+            ->assertSee('2/3');
+    },
+);
+
+it(
     'shows promotion names in backtested cart items relation manager',
     function (): void {
         $stack = PromotionStack::factory()->for($this->team)->create();

@@ -10,6 +10,9 @@ use Filament\Resources\Pages\EditRecord;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * @extends EditRecord<Model>
+ */
 class EditPromotionStack extends EditRecord
 {
     use InteractsWithPromotionStackLayers;

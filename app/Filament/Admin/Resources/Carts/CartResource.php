@@ -9,6 +9,7 @@ use App\Filament\Admin\Resources\Carts\Pages\ViewCart;
 use App\Filament\Admin\Resources\Carts\RelationManagers\ItemsRelationManager;
 use App\Filament\Admin\Resources\Carts\Schemas\CartForm;
 use App\Filament\Admin\Resources\Carts\Tables\CartsTable;
+use App\Filament\Admin\Resources\Carts\Widgets\CartStatsWidget;
 use App\Models\Cart;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -38,6 +39,11 @@ class CartResource extends Resource
     public static function getRelations(): array
     {
         return [ItemsRelationManager::class];
+    }
+
+    public static function getWidgets(): array
+    {
+        return [CartStatsWidget::class];
     }
 
     public static function getPages(): array

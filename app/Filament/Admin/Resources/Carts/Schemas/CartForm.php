@@ -33,8 +33,7 @@ class CartForm
                 )
                 ->searchable()
                 ->preload()
-                ->nullable()
-                ->hiddenOn('create'),
+                ->nullable(),
         ]);
     }
 }

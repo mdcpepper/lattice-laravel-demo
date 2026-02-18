@@ -33,8 +33,6 @@ class CartsTable
 
                 TextColumn::make('subtotal')->money()->sortable(),
 
-                TextColumn::make('total')->money()->sortable(),
-
                 TextColumn::make('discount')
                     ->label('Discount')
                     ->state(
@@ -57,6 +55,8 @@ class CartsTable
                             "subtotal - total {$direction}",
                         ),
                     ),
+
+                TextColumn::make('total')->money()->sortable(),
 
                 TextColumn::make('created_at')
                     ->dateTime()

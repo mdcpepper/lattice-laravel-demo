@@ -33,8 +33,6 @@ class BacktestedCartsRelationManager extends RelationManager
 
                 TextColumn::make('subtotal')->label('Subtotal'),
 
-                TextColumn::make('total')->label('Total'),
-
                 TextColumn::make('discount')
                     ->label('Discount')
                     ->state(
@@ -54,6 +52,8 @@ class BacktestedCartsRelationManager extends RelationManager
                             "subtotal - total {$direction}",
                         ),
                     ),
+
+                TextColumn::make('total')->label('Total'),
 
                 TextColumn::make('promotion_names')
                     ->label('Promotion(s)')
