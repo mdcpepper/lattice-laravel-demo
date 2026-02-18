@@ -16,6 +16,7 @@ use App\Models\PromotionStack;
 use App\Models\SimpleDiscount;
 use App\Models\Team;
 use App\Models\User;
+use App\Services\CartManager;
 use Filament\Facades\Filament;
 use Illuminate\Support\Facades\Bus;
 use Livewire\Livewire;
@@ -70,6 +71,7 @@ it(
         Livewire::test(CreatePromotionStack::class)
             ->fillForm([
                 'name' => 'Checkout Stack',
+                'active_from' => now()->toDateString(),
                 'root_layer_reference' => 'root',
             ])
             ->set('data.layers', [
@@ -140,6 +142,7 @@ it('can update a stack graph in the edit page', function (): void {
         'team_id' => $this->team->id,
         'name' => 'Editable Stack',
         'root_layer_reference' => 'root',
+        'active_from' => now()->toDateString(),
     ]);
 
     $eligibleLayer = $stack->layers()->create([
@@ -165,6 +168,7 @@ it('can update a stack graph in the edit page', function (): void {
     Livewire::test(EditPromotionStack::class, ['record' => $stack->ulid])
         ->fillForm([
             'name' => 'Editable Stack Updated',
+            'active_from' => now()->toDateString(),
             'root_layer_reference' => 'root',
         ])
         ->set('data.layers', [
@@ -224,6 +228,7 @@ it('validates duplicate layer references', function (): void {
     Livewire::test(CreatePromotionStack::class)
         ->fillForm([
             'name' => 'Invalid Stack',
+            'active_from' => now()->toDateString(),
             'root_layer_reference' => 'root',
         ])
         ->set('data.layers', [
@@ -242,6 +247,72 @@ it('validates duplicate layer references', function (): void {
         ])
         ->call('create')
         ->assertHasFormErrors(['layers']);
+});
+
+it('prevents creating a stack with overlapping dates', function (): void {
+    PromotionStack::factory()->for($this->team)->active()->create();
+
+    Livewire::test(CreatePromotionStack::class)
+        ->fillForm([
+            'name' => 'Conflicting Stack',
+            'active_from' => now()->addDay()->toDateString(),
+            'root_layer_reference' => 'root',
+        ])
+        ->set('data.layers', [
+            [
+                'reference' => 'root',
+                'name' => 'Root',
+                'promotion_ids' => [],
+                'output_mode' => 'pass_through',
+            ],
+        ])
+        ->call('create')
+        ->assertHasFormErrors(['active_from']);
+});
+
+it('allows adjacent non-overlapping stacks', function (): void {
+    PromotionStack::factory()->for($this->team)->create([
+        'active_from' => '2026-01-01',
+        'active_to' => '2026-01-31',
+    ]);
+
+    Livewire::test(CreatePromotionStack::class)
+        ->fillForm([
+            'name' => 'Adjacent Stack',
+            'active_from' => '2026-02-01',
+            'root_layer_reference' => 'root',
+        ])
+        ->set('data.layers', [
+            [
+                'reference' => 'root',
+                'name' => 'Root',
+                'promotion_ids' => [],
+                'output_mode' => 'pass_through',
+            ],
+        ])
+        ->call('create')
+        ->assertHasNoFormErrors()
+        ->assertRedirect();
+
+    $stack = PromotionStack::query()
+        ->where('team_id', $this->team->id)
+        ->where('name', 'Adjacent Stack')
+        ->firstOrFail();
+
+    expect($stack->active_from->toDateString())->toBe('2026-02-01');
+});
+
+it('assigns the active stack to a newly created cart', function (): void {
+    $stack = PromotionStack::factory()->for($this->team)->active()->create();
+    $cart = app(CartManager::class)->currentCart($this->team, app('session.store'));
+
+    expect($cart->promotion_stack_id)->toBe($stack->id);
+});
+
+it('assigns null promotion_stack_id when no stack is active', function (): void {
+    $cart = app(CartManager::class)->currentCart($this->team, app('session.store'));
+
+    expect($cart->promotion_stack_id)->toBeNull();
 });
 
 function createDirectPromotion(Team $team, string $name): Promotion

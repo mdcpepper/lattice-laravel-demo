@@ -34,6 +34,7 @@ class ProductSeeder extends Seeder
             $categories,
             $team,
         );
+
         $categoryTagBySlug = $categories->mapWithKeys(
             fn (array $category): array => [
                 $category['slug'] => Str::lower($category['name']),
@@ -215,9 +216,15 @@ class ProductSeeder extends Seeder
         $rawCategoryId = is_string($categorySlug)
             ? $categoryIdsBySlug->get($categorySlug)
             : null;
+
         $categoryTag = is_string($categorySlug)
-            ? $categoryTagBySlug->get($categorySlug)
+            ? 'category:'.$categoryTagBySlug->get($categorySlug)
             : null;
+
+        $product['tags'] = collect($product['tags'] ?? [])
+            ->filter(fn (mixed $tag): bool => is_string($tag) && $tag !== '')
+            ->map(fn (string $tag): string => 'tag:'.$tag)
+            ->all();
 
         $categoryId = is_numeric($rawCategoryId) ? (int) $rawCategoryId : null;
         $timestamps = $this->extractProductTimestamps($product['meta'] ?? null);
@@ -324,6 +331,11 @@ class ProductSeeder extends Seeder
 
         return collect($tags)
             ->filter(fn (mixed $tag): bool => is_string($tag) && $tag !== '')
+            ->map(
+                fn (string $tag): string => collect(explode(':', $tag))
+                    ->map(fn (string $segment): string => Str::slug($segment))
+                    ->implode(':'),
+            )
             ->unique()
             ->values()
             ->all();

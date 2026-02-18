@@ -119,6 +119,34 @@ it('can create a promotion with amount off discount', function (): void {
 });
 
 it(
+    'stores a zero amount discount as zero minor units on create',
+    function (): void {
+        Livewire::test(CreatePromotion::class)
+            ->fillForm([
+                'name' => '£0 Off',
+                'promotion_type' => 'direct_discount',
+                'discount_kind' => SimpleDiscountKind::AmountOff->value,
+                'discount_amount' => '0',
+                'qualification_op' => QualificationOp::And->value,
+                'qualification_rules' => [],
+            ])
+            ->call('create')
+            ->assertHasNoFormErrors()
+            ->assertRedirect();
+
+        $promotion = Promotion::query()->where('name', '£0 Off')->firstOrFail();
+        $direct = $promotion->promotionable;
+
+        $this->assertDatabaseHas('simple_discounts', [
+            'id' => $direct->simple_discount_id,
+            'kind' => SimpleDiscountKind::AmountOff->value,
+            'amount' => 0,
+            'amount_currency' => 'GBP',
+        ]);
+    },
+);
+
+it(
     'can create a promotion with a nested group qualification rule',
     function (): void {
         Livewire::test(CreatePromotion::class)

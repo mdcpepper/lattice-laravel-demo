@@ -32,7 +32,7 @@ class PositionalDiscountPromotionStrategy implements LatticePromotionStrategy
         return $promotion->promotionable instanceof PositionalDiscountPromotionModel;
     }
 
-    public function make(PromotionModel $promotion): LatticePromotion
+    public function make(PromotionModel $promotion): ?LatticePromotion
     {
         $promotionable = $promotion->promotionable;
 
@@ -46,6 +46,12 @@ class PositionalDiscountPromotionStrategy implements LatticePromotionStrategy
             throw new RuntimeException(
                 'Positional discount promotion is missing its simple discount relation.',
             );
+        }
+
+        $budget = $this->makeBudget($promotion);
+
+        if (is_null($budget)) {
+            return null;
         }
 
         $qualificationIndex = $this->qualificationIndex($promotion);
@@ -72,7 +78,7 @@ class PositionalDiscountPromotionStrategy implements LatticePromotionStrategy
                 $qualificationIndex,
             ),
             discount: $this->makeSimpleDiscount($discount),
-            budget: $this->makeBudget($promotion),
+            budget: $budget,
             size: $promotionable->size,
             positions: $positions,
         );

@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Events\CartRecalculationRequested;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Customer;
@@ -120,6 +121,8 @@ class CartSeeder extends Seeder
                 $itemTime,
             );
         }
+
+        CartRecalculationRequested::dispatch($cart->id);
     }
 
     /**

@@ -6,6 +6,7 @@ use App\Enums\PromotionLayerOutputMode;
 use App\Enums\PromotionLayerOutputTargetMode;
 use App\Models\Promotion;
 use Filament\Facades\Filament;
+use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -41,6 +42,15 @@ class PromotionStackForm
                         ->helperText(
                             'The layer that should be used as the stack root.',
                         ),
+
+                    DateTimePicker::make('active_from')
+                        ->nullable()
+                        ->native(false),
+
+                    DateTimePicker::make('active_to')
+                        ->nullable()
+                        ->native(false)
+                        ->afterOrEqual('active_from'),
                 ]),
 
             Section::make('Layers')

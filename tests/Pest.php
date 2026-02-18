@@ -1,7 +1,12 @@
 <?php
 
-namespace Tests;
-
+use App\Enums\QualificationOp;
+use App\Enums\QualificationRuleKind;
+use App\Enums\SimpleDiscountKind;
+use App\Models\DirectDiscountPromotion;
+use App\Models\Promotion;
+use App\Models\SimpleDiscount;
+use App\Models\Team;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 /*
@@ -15,9 +20,12 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 |
 */
 
-pest()->extend(TestCase::class)->in('Unit');
+pest()->extend(Tests\TestCase::class)->in('Unit');
 
-pest()->extend(TestCase::class)->use(RefreshDatabase::class)->in('Feature');
+pest()
+    ->extend(Tests\TestCase::class)
+    ->use(RefreshDatabase::class)
+    ->in('Feature');
 
 /*
 |--------------------------------------------------------------------------
@@ -44,3 +52,38 @@ expect()->extend('toBeOne', function () {
 | global functions to help you to reduce the number of lines of code in your test files.
 |
 */
+
+function createSaleDiscountPromotion(Team $team): Promotion
+{
+    $discount = SimpleDiscount::query()->create([
+        'kind' => SimpleDiscountKind::PercentageOff,
+        'percentage' => 10.0,
+    ]);
+
+    $direct = DirectDiscountPromotion::query()->create([
+        'simple_discount_id' => $discount->id,
+    ]);
+
+    $promotion = Promotion::query()->create([
+        'name' => '10% Off Sale Items',
+        'team_id' => $team->id,
+        'promotionable_type' => $direct->getMorphClass(),
+        'promotionable_id' => $direct->id,
+    ]);
+
+    $qualification = $direct->qualification()->create([
+        'promotion_id' => $promotion->id,
+        'context' => 'primary',
+        'op' => QualificationOp::And,
+        'sort_order' => 0,
+    ]);
+
+    $rule = $qualification->rules()->create([
+        'kind' => QualificationRuleKind::HasAny,
+        'sort_order' => 0,
+    ]);
+
+    $rule->syncTags(['sale']);
+
+    return $promotion;
+}

@@ -231,10 +231,6 @@ trait BuildsPromotionFormData
 
         $float = (float) $value;
 
-        if ($float === 0.0) {
-            return null;
-        }
-
         return (int) round($float * 100);
     }
 }

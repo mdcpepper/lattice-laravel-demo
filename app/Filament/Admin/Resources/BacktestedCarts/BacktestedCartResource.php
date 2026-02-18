@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Resources\BacktestedCarts;
 use App\Filament\Admin\Resources\BacktestedCarts\Pages\ViewBacktestedCart;
 use App\Filament\Admin\Resources\BacktestedCarts\RelationManagers\ItemsRelationManager;
 use App\Filament\Admin\Resources\BacktestedCarts\Schemas\BacktestedCartInfolist;
+use App\Filament\Admin\Resources\BacktestedCarts\Widgets\BacktestedCartStatsWidget;
 use App\Filament\Admin\Resources\Backtests\BacktestResource;
 use App\Models\BacktestedCart;
 use BackedEnum;
@@ -31,6 +32,11 @@ class BacktestedCartResource extends Resource
     public static function getRelations(): array
     {
         return [ItemsRelationManager::class];
+    }
+
+    public static function getWidgets(): array
+    {
+        return [BacktestedCartStatsWidget::class];
     }
 
     public static function getIndexUrl(

@@ -7,6 +7,7 @@ use App\Enums\PromotionLayerOutputTargetMode;
 use App\Models\PromotionLayer;
 use App\Models\PromotionStack;
 use Filament\Facades\Filament;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Validation\ValidationException;
 use RuntimeException;
 
@@ -64,7 +65,13 @@ trait InteractsWithPromotionStackLayers
      */
     protected function syncStackGraph(PromotionStack $stack, array $data): void
     {
-        $stack->update(['name' => (string) $data['name']]);
+        $stack->update([
+            'name' => (string) $data['name'],
+            'active_from' => $data['active_from'] ?? null,
+            'active_to' => $data['active_to'] ?? null,
+        ]);
+
+        $this->assertNoDatesOverlap($stack, $data);
 
         $rows = $this->normalizeRepeaterRows($data['layers'] ?? []);
         $layerRows = $this->sanitizeLayerRows($rows);
@@ -84,9 +91,11 @@ trait InteractsWithPromotionStackLayers
 
         foreach ($layerRows as $sortOrder => $layerRow) {
             $reference = $layerRow['reference'];
+
             $outputMode = $this->normalizeOutputMode(
                 $layerRow['output_mode'] ?? null,
             );
+
             $isSplit = $outputMode === PromotionLayerOutputMode::Split->value;
 
             $layer = $stack->layers()->create([
@@ -130,6 +139,7 @@ trait InteractsWithPromotionStackLayers
 
         foreach ($rowsByReference as $reference => $layerRow) {
             $layer = $createdLayersByReference[$reference];
+
             $outputMode = $this->normalizeOutputMode(
                 $layerRow['output_mode'] ?? null,
             );
@@ -162,6 +172,7 @@ trait InteractsWithPromotionStackLayers
         $providedRootReference = trim(
             (string) ($data['root_layer_reference'] ?? ''),
         );
+
         $resolvedRootReference =
             $providedRootReference !== '' &&
             array_key_exists($providedRootReference, $createdLayersByReference)
@@ -182,6 +193,45 @@ trait InteractsWithPromotionStackLayers
         }
 
         return (int) $tenant->getKey();
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    private function assertNoDatesOverlap(
+        PromotionStack $stack,
+        array $data,
+    ): void {
+        $activeFrom = $data['active_from'] ?? null;
+        $activeTo = $data['active_to'] ?? null;
+
+        if ($activeFrom === null) {
+            return;
+        }
+
+        $overlaps = PromotionStack::query()
+            ->where('team_id', $stack->team_id)
+            ->where('id', '!=', $stack->id)
+            ->where(function (Builder $query) use ($activeFrom): void {
+                $query
+                    ->whereNull('active_to')
+                    ->orWhereDate('active_to', '>=', $activeFrom);
+            })
+            ->when(
+                $activeTo !== null,
+                fn (Builder $query) => $query->whereDate(
+                    'active_from',
+                    '<=',
+                    $activeTo,
+                ),
+            )
+            ->exists();
+
+        if ($overlaps) {
+            throw ValidationException::withMessages([
+                'data.active_from' => 'This date range overlaps with an existing promotion stack.',
+            ]);
+        }
     }
 
     private function normalizeOutputMode(mixed $value): string

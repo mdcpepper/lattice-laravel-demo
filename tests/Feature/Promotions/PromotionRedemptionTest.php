@@ -32,12 +32,15 @@ it('saves promotion redemptions from a Lattice receipt', function (): void {
     $product->load('tags');
 
     $cart = Cart::factory()->for($team)->create();
-    $cartItem = CartItem::factory()->for($cart)->for($product)->create([
-        'subtotal' => 500,
-        'subtotal_currency' => 'GBP',
-        'total' => 500,
-        'total_currency' => 'GBP',
-    ]);
+    $cartItem = CartItem::factory()
+        ->for($cart)
+        ->for($product)
+        ->create([
+            'price' => 500,
+            'price_currency' => 'GBP',
+            'offer_price' => 500,
+            'offer_price_currency' => 'GBP',
+        ]);
 
     $discount = SimpleDiscount::query()->create([
         'kind' => SimpleDiscountKind::PercentageOff,
@@ -99,14 +102,19 @@ it('saves promotion redemptions from a Lattice receipt', function (): void {
 
     $receipt = $stackBuilder->build()->process([$latticeItem]);
 
-    $redemptions = collect($receipt->promotionApplications)->values()->map(
-        fn ($application, int $index) => PromotionRedemption::createFromApplication(
-            $application,
-            $stack,
-            $cartItem,
-            $index,
-        ),
-    );
+    $redemptions = collect($receipt->promotionApplications)
+        ->values()
+        ->map(
+            fn (
+                $application,
+                int $index,
+            ) => PromotionRedemption::createFromApplication(
+                $application,
+                $stack,
+                $cartItem,
+                $index,
+            ),
+        );
 
     expect($receipt->subtotal->amount)
         ->toBe(500)

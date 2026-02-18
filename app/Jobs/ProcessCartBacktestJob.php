@@ -27,16 +27,18 @@ class ProcessCartBacktestJob implements ShouldQueue
 
     public function handle(LatticeStackFactory $stackFactory): void
     {
+        $endToEndStart = hrtime(true);
+
         $backtestRun = Backtest::query()
             ->with('promotionStack.layers')
             ->findOrFail($this->backtestRunId);
 
-        $promotionStack = $backtestRun->promotionStack;
-        $latticeStack = $stackFactory->make($promotionStack);
-
         $cart = Cart::query()
             ->with('items.product.tags')
             ->findOrFail($this->cartId);
+
+        $promotionStack = $backtestRun->promotionStack;
+        $latticeStack = $stackFactory->make($promotionStack);
 
         /** @var array<int, LatticeProduct> $latticeProductsByProductId */
         $latticeProductsByProductId = [];
@@ -63,9 +65,13 @@ class ProcessCartBacktestJob implements ShouldQueue
             )
             ->all();
 
+        $solveStart = hrtime(true);
+
         $receipt = $latticeStack->process($latticeItems);
 
-        $simulatedCart = BacktestedCart::query()->create([
+        $solveTime = hrtime(true) - $solveStart;
+
+        $backtestedCart = BacktestedCart::query()->create([
             'backtest_id' => $backtestRun->id,
             'cart_id' => $cart->id,
             'team_id' => $cart->team_id,
@@ -75,6 +81,8 @@ class ProcessCartBacktestJob implements ShouldQueue
             'subtotal_currency' => $receipt->subtotal->currency,
             'total' => $receipt->total->amount,
             'total_currency' => $receipt->total->currency,
+            'processing_time' => 0,
+            'solve_time' => $solveTime,
         ]);
 
         /** @var array<int, list<\Lattice\PromotionApplication>> $applicationsByCartItemId */
@@ -90,28 +98,28 @@ class ProcessCartBacktestJob implements ShouldQueue
             $product = $item->product;
             $applications = $applicationsByCartItemId[$item->id] ?? [];
 
-            $subtotal = (int) $product->price->getAmount();
+            $price = (int) $product->price->getAmount();
             $currency = $product->price->getCurrency()->getCode();
 
-            $total =
+            $offerPrice =
                 count($applications) > 0
                     ? end($applications)->finalPrice->amount
-                    : $subtotal;
+                    : $price;
 
-            $totalCurrency =
+            $offerPriceCurrency =
                 count($applications) > 0
                     ? end($applications)->finalPrice->currency
                     : $currency;
 
             $backtestedCartItem = BacktestedCartItem::query()->create([
                 'backtest_id' => $backtestRun->id,
-                'backtested_cart_id' => $simulatedCart->id,
+                'backtested_cart_id' => $backtestedCart->id,
                 'cart_item_id' => $item->id,
                 'product_id' => $product->id,
-                'subtotal' => $subtotal,
-                'subtotal_currency' => $currency,
-                'total' => $total,
-                'total_currency' => $totalCurrency,
+                'price' => $price,
+                'price_currency' => $currency,
+                'offer_price' => $offerPrice,
+                'offer_price_currency' => $offerPriceCurrency,
             ]);
 
             foreach ($applications as $index => $application) {
@@ -123,6 +131,10 @@ class ProcessCartBacktestJob implements ShouldQueue
                 );
             }
         }
+
+        $backtestedCart->update([
+            'processing_time' => hrtime(true) - $endToEndStart,
+        ]);
 
         $backtestRun->increment('processed_carts');
 

@@ -129,6 +129,42 @@ it('can create a promotion with amount off discount', function (): void {
 });
 
 it(
+    'stores a zero amount discount as zero minor units on create',
+    function (): void {
+        Livewire::test(CreatePromotion::class)
+            ->fillForm([
+                'name' => '£0 Off Meal Deal',
+                'promotion_type' => PromotionType::MixAndMatch->value,
+                'discount_kind' => MixAndMatchDiscountKind::AmountOffTotal->value,
+                'discount_amount' => '0',
+                'slots' => [
+                    [
+                        'min' => 1,
+                        'max' => 1,
+                        'qualification_op' => QualificationOp::And->value,
+                        'qualification_rules' => [],
+                    ],
+                ],
+            ])
+            ->call('create')
+            ->assertHasNoFormErrors()
+            ->assertRedirect();
+
+        $promotion = Promotion::query()
+            ->where('name', '£0 Off Meal Deal')
+            ->firstOrFail();
+        $mixAndMatch = $promotion->promotionable;
+
+        $this->assertDatabaseHas('mix_and_match_discounts', [
+            'id' => $mixAndMatch->mix_and_match_discount_id,
+            'kind' => MixAndMatchDiscountKind::AmountOffTotal->value,
+            'amount' => 0,
+            'amount_currency' => 'GBP',
+        ]);
+    },
+);
+
+it(
     'can create a promotion with a nested group qualification rule',
     function (): void {
         Livewire::test(CreatePromotion::class)

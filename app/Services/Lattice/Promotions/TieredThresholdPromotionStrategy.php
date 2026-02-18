@@ -34,12 +34,18 @@ class TieredThresholdPromotionStrategy implements LatticePromotionStrategy
         return $promotion->promotionable instanceof TieredThresholdPromotionModel;
     }
 
-    public function make(PromotionModel $promotion): LatticePromotion
+    public function make(PromotionModel $promotion): ?LatticePromotion
     {
         $promotionable = $promotion->promotionable;
 
         if (! $promotionable instanceof TieredThresholdPromotionModel) {
             throw $this->unsupportedPromotionableType($promotion);
+        }
+
+        $budget = $this->makeBudget($promotion);
+
+        if (is_null($budget)) {
+            return null;
         }
 
         $qualificationIndex = $this->qualificationIndex($promotion);
@@ -85,7 +91,7 @@ class TieredThresholdPromotionStrategy implements LatticePromotionStrategy
         return new LatticeTieredThresholdPromotion(
             reference: $promotion,
             tiers: $tiers,
-            budget: $this->makeBudget($promotion),
+            budget: $budget,
         );
     }
 

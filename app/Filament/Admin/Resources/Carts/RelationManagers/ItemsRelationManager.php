@@ -2,7 +2,12 @@
 
 namespace App\Filament\Admin\Resources\Carts\RelationManagers;
 
+use App\Events\CartRecalculationRequested;
 use App\Filament\Admin\Resources\Carts\Tables\ProductSelectionTable;
+use App\Models\Cart;
+use App\Models\CartItem;
+use App\Models\Product;
+use App\Services\CartManager;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
@@ -17,6 +22,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class ItemsRelationManager extends RelationManager
@@ -33,9 +39,50 @@ class ItemsRelationManager extends RelationManager
                     ->fontFamily('mono')
                     ->searchable(),
 
-                TextColumn::make('product.name')->searchable(),
+                TextColumn::make('product.name')
+                    ->label('Product')
+                    ->searchable(),
 
-                TextColumn::make('product.price')->money()->sortable(),
+                TextColumn::make('price')->label('Price')->money()->sortable(),
+
+                TextColumn::make('discount')
+                    ->label('Discount')
+                    ->state(
+                        fn (
+                            CartItem $record,
+                        ): int => (int) $record->price->getAmount() -
+                            (int) $record->offer_price->getAmount(),
+                    )
+                    ->money(
+                        currency: fn (
+                            CartItem $record,
+                        ): string => $record->offer_price_currency,
+                        divideBy: 100,
+                    )
+                    ->sortable(
+                        query: fn (
+                            Builder $query,
+                            string $direction,
+                        ): Builder => $query->orderByRaw(
+                            "price - offer_price {$direction}",
+                        ),
+                    ),
+
+                TextColumn::make('offer_price')
+                    ->label('Offer Price')
+                    ->money()
+                    ->sortable(),
+
+                TextColumn::make('promotion_names')
+                    ->label('Promotion(s)')
+                    ->state(
+                        fn (CartItem $record): string => $record->redemptions
+                            ->pluck('promotion.name')
+                            ->filter()
+                            ->unique()
+                            ->join(', '),
+                    )
+                    ->placeholder('-'),
 
                 TextColumn::make('created_at')
                     ->dateTime()
@@ -59,30 +106,129 @@ class ItemsRelationManager extends RelationManager
                     ->action(function (
                         array $data,
                         RelationManager $livewire,
+                        CartManager $cartManager,
                     ): void {
+                        /** @var Cart $cart */
+                        $cart = $livewire->getOwnerRecord();
+                        $productsById = Product::query()
+                            ->whereIn('id', $data['product_id'])
+                            ->get()
+                            ->keyBy('id');
+
                         foreach ($data['product_id'] as $productId) {
-                            $livewire->getRelationship()->create([
-                                'product_id' => $productId,
-                            ]);
+                            $product = $productsById->get($productId);
+
+                            if (! $product instanceof Product) {
+                                continue;
+                            }
+
+                            $cartManager->addItem(
+                                $cart,
+                                $product,
+                                requestRecalculation: false,
+                            );
                         }
+
+                        $cartManager->requestRecalculation($cart);
                     }),
             ])
             ->recordActions([
-                DeleteAction::make()->label('Remove'),
-                ForceDeleteAction::make(),
-                RestoreAction::make(),
+                DeleteAction::make()
+                    ->label('Remove')
+                    ->action(function (
+                        CartItem $record,
+                        CartManager $cartManager,
+                    ): void {
+                        $cartManager->removeItem($record);
+                    }),
+
+                ForceDeleteAction::make()->action(function (
+                    CartItem $record,
+                ): void {
+                    $cartId = (int) $record->cart_id;
+
+                    $record->forceDelete();
+
+                    CartRecalculationRequested::dispatch($cartId);
+                }),
+
+                RestoreAction::make()->action(function (
+                    CartItem $record,
+                ): void {
+                    $record->restore();
+
+                    CartRecalculationRequested::dispatch(
+                        (int) $record->cart_id,
+                    );
+                }),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make()->label('Remove selected'),
-                    ForceDeleteBulkAction::make(),
-                    RestoreBulkAction::make(),
+                    DeleteBulkAction::make()
+                        ->label('Remove selected')
+                        ->action(function (
+                            Collection $records,
+                            CartManager $cartManager,
+                        ): void {
+                            $cartIds = $records
+                                ->pluck('cart_id')
+                                ->map(fn (mixed $id): int => (int) $id)
+                                ->unique()
+                                ->values();
+
+                            $records->each(function (CartItem $record) use (
+                                $cartManager,
+                            ): void {
+                                $cartManager->removeItem(
+                                    $record,
+                                    requestRecalculation: false,
+                                );
+                            });
+
+                            $cartIds->each(function (int $cartId): void {
+                                CartRecalculationRequested::dispatch($cartId);
+                            });
+                        }),
+                    ForceDeleteBulkAction::make()->action(function (
+                        Collection $records,
+                    ): void {
+                        $cartIds = $records
+                            ->pluck('cart_id')
+                            ->map(fn (mixed $id): int => (int) $id)
+                            ->unique()
+                            ->values();
+
+                        $records->each(function (CartItem $record): void {
+                            $record->forceDelete();
+                        });
+
+                        $cartIds->each(function (int $cartId): void {
+                            CartRecalculationRequested::dispatch($cartId);
+                        });
+                    }),
+                    RestoreBulkAction::make()->action(function (
+                        Collection $records,
+                    ): void {
+                        $cartIds = $records
+                            ->pluck('cart_id')
+                            ->map(fn (mixed $id): int => (int) $id)
+                            ->unique()
+                            ->values();
+
+                        $records->each(function (CartItem $record): void {
+                            $record->restore();
+                        });
+
+                        $cartIds->each(function (int $cartId): void {
+                            CartRecalculationRequested::dispatch($cartId);
+                        });
+                    }),
                 ]),
             ])
             ->modifyQueryUsing(
-                fn (Builder $query) => $query->withoutGlobalScopes([
-                    SoftDeletingScope::class,
-                ]),
+                fn (Builder $query) => $query
+                    ->with(['product', 'redemptions.promotion'])
+                    ->withoutGlobalScopes([SoftDeletingScope::class]),
             );
     }
 }

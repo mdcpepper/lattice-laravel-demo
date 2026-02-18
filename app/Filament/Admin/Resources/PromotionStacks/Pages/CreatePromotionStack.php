@@ -25,6 +25,8 @@ class CreatePromotionStack extends CreateRecord
                 'team_id' => $this->currentTeamId(),
                 'name' => (string) $data['name'],
                 'root_layer_reference' => null,
+                'active_from' => $data['active_from'] ?? null,
+                'active_to' => $data['active_to'] ?? null,
             ]);
 
             $this->syncStackGraph($stack, $data);

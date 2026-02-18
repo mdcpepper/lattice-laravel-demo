@@ -29,10 +29,10 @@ return new class extends Migration
                 ->foreignId('product_id')
                 ->constrained('products')
                 ->cascadeOnDelete();
-            $table->unsignedBigInteger('subtotal');
-            $table->char('subtotal_currency', 3);
-            $table->unsignedBigInteger('total');
-            $table->char('total_currency', 3);
+            $table->unsignedBigInteger('price');
+            $table->char('price_currency', 3);
+            $table->unsignedBigInteger('offer_price');
+            $table->char('offer_price_currency', 3);
             $table->softDeletes();
             $table->timestamps();
         });

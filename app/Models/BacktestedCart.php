@@ -26,6 +26,8 @@ class BacktestedCart extends Model
         'subtotal_currency',
         'total',
         'total_currency',
+        'processing_time',
+        'solve_time',
     ];
 
     /**

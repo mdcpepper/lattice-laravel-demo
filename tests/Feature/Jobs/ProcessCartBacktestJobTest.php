@@ -8,6 +8,7 @@ use App\Enums\QualificationRuleKind;
 use App\Enums\SimpleDiscountKind;
 use App\Jobs\ProcessCartBacktestJob;
 use App\Models\Backtest;
+use App\Models\BacktestedCart;
 use App\Models\BacktestedCartItem;
 use App\Models\Cart;
 use App\Models\CartItem;
@@ -76,10 +77,10 @@ it('processes a cart and creates backtest records', function (): void {
         ->for($cart)
         ->for($product)
         ->create([
-            'subtotal' => 500,
-            'subtotal_currency' => 'GBP',
-            'total' => 500,
-            'total_currency' => 'GBP',
+            'price' => 500,
+            'price_currency' => 'GBP',
+            'offer_price' => 500,
+            'offer_price_currency' => 'GBP',
         ]);
 
     $backtest = Backtest::query()->create([
@@ -106,12 +107,27 @@ it('processes a cart and creates backtest records', function (): void {
         'total_currency' => 'GBP',
     ]);
 
+    $backtestedCart = BacktestedCart::query()
+        ->where('backtest_id', $backtest->id)
+        ->where('cart_id', $cart->id)
+        ->firstOrFail();
+
+    expect($backtestedCart->processing_time)
+        ->toBeGreaterThan(0)
+        ->and($backtestedCart->solve_time)
+        ->toBeGreaterThan(0)
+        ->and(
+            (int) $backtestedCart->processing_time >=
+                (int) $backtestedCart->solve_time,
+        )
+        ->toBeTrue();
+
     $this->assertDatabaseHas('backtested_cart_items', [
         'backtest_id' => $backtest->id,
         'cart_item_id' => $cartItem->id,
         'product_id' => $product->id,
-        'subtotal' => 500,
-        'total' => 450,
+        'price' => 500,
+        'offer_price' => 450,
     ]);
 
     $simulatedCartItem = BacktestedCartItem::query()

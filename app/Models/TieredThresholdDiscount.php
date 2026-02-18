@@ -20,6 +20,7 @@ class TieredThresholdDiscount extends Model implements DiscountContract
     protected $casts = [
         'kind' => TieredThresholdDiscountKind::class,
         'percentage' => PercentageBasisPointsCast::class,
+        'amount' => 'integer',
     ];
 
     /**

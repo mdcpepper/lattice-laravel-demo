@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use App\Enums\QualificationContext;
+use App\Jobs\DispatchCartRecalculationRequest;
 use App\Models\Concerns\HasRouteUlid;
 use Cknow\Money\Casts\MoneyIntegerCast;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -15,7 +17,15 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class Promotion extends Model
 {
-    use HasRouteUlid;
+    /** @use HasFactory<\Database\Factories\PromotionFactory> */
+    use HasFactory, HasRouteUlid;
+
+    protected static function booted(): void
+    {
+        static::saved(function (self $promotion): void {
+            $promotion->queueRecalculationsForLinkedCarts();
+        });
+    }
 
     protected $casts = [
         'monetary_budget' => MoneyIntegerCast::class.':GBP',
@@ -115,5 +125,36 @@ class Promotion extends Model
         )
             ->withPivot('sort_order')
             ->withTimestamps();
+    }
+
+    /**
+     * @return HasMany<PromotionRedemption, Promotion>
+     */
+    public function redemptions(): HasMany
+    {
+        return $this->hasMany(PromotionRedemption::class)->where(
+            'redeemable_type',
+            CartItem::class,
+        );
+    }
+
+    private function queueRecalculationsForLinkedCarts(): void
+    {
+        $stackIds = $this->layers()
+            ->select('promotion_layers.promotion_stack_id')
+            ->distinct()
+            ->pluck('promotion_layers.promotion_stack_id');
+
+        if ($stackIds->isEmpty()) {
+            return;
+        }
+
+        $cartIds = Cart::query()
+            ->whereIn('promotion_stack_id', $stackIds)
+            ->pluck('id');
+
+        foreach ($cartIds as $cartId) {
+            DispatchCartRecalculationRequest::dispatch((int) $cartId);
+        }
     }
 }

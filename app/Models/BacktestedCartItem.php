@@ -23,10 +23,10 @@ class BacktestedCartItem extends Model
         'backtested_cart_id',
         'cart_item_id',
         'product_id',
-        'subtotal',
-        'subtotal_currency',
-        'total',
-        'total_currency',
+        'price',
+        'price_currency',
+        'offer_price',
+        'offer_price_currency',
     ];
 
     /**
@@ -35,8 +35,8 @@ class BacktestedCartItem extends Model
     public function casts(): array
     {
         return [
-            'subtotal' => MoneyIntegerCast::class.':GBP',
-            'total' => MoneyIntegerCast::class.':GBP',
+            'price' => MoneyIntegerCast::class.':GBP',
+            'offer_price' => MoneyIntegerCast::class.':GBP',
         ];
     }
 

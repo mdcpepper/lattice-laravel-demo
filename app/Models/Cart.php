@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\HasRouteUlid;
+use Cknow\Money\Casts\MoneyIntegerCast;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -13,7 +14,27 @@ class Cart extends Model
     use HasFactory;
     use HasRouteUlid;
 
-    protected $fillable = ['team_id', 'email', 'customer_id'];
+    protected $fillable = [
+        'team_id',
+        'email',
+        'customer_id',
+        'promotion_stack_id',
+        'subtotal',
+        'subtotal_currency',
+        'total',
+        'total_currency',
+    ];
+
+    /**
+     * @return array<string, string>
+     */
+    public function casts(): array
+    {
+        return [
+            'subtotal' => MoneyIntegerCast::class.':GBP',
+            'total' => MoneyIntegerCast::class.':GBP',
+        ];
+    }
 
     /**
      * @return BelongsTo<Team, Cart>
@@ -29,6 +50,14 @@ class Cart extends Model
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
+    }
+
+    /**
+     * @return BelongsTo<PromotionStack, Cart>
+     */
+    public function promotionStack(): BelongsTo
+    {
+        return $this->belongsTo(PromotionStack::class);
     }
 
     /**
