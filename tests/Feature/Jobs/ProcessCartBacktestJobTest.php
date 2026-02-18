@@ -8,6 +8,7 @@ use App\Enums\QualificationRuleKind;
 use App\Enums\SimpleDiscountKind;
 use App\Jobs\ProcessCartBacktestJob;
 use App\Models\Backtest;
+use App\Models\BacktestedCart;
 use App\Models\BacktestedCartItem;
 use App\Models\Cart;
 use App\Models\CartItem;
@@ -105,6 +106,21 @@ it('processes a cart and creates backtest records', function (): void {
         'total' => 450,
         'total_currency' => 'GBP',
     ]);
+
+    $backtestedCart = BacktestedCart::query()
+        ->where('backtest_id', $backtest->id)
+        ->where('cart_id', $cart->id)
+        ->firstOrFail();
+
+    expect($backtestedCart->processing_time)
+        ->toBeGreaterThan(0)
+        ->and($backtestedCart->solve_time)
+        ->toBeGreaterThan(0)
+        ->and(
+            (int) $backtestedCart->processing_time >=
+                (int) $backtestedCart->solve_time,
+        )
+        ->toBeTrue();
 
     $this->assertDatabaseHas('backtested_cart_items', [
         'backtest_id' => $backtest->id,

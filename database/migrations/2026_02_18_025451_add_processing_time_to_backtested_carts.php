@@ -13,9 +13,13 @@ return new class extends Migration
     {
         Schema::table('backtested_carts', function (Blueprint $table) {
             $table
-                ->decimal('processing_time')
+                ->unsignedInteger('processing_time')
                 ->default(0)
                 ->after('customer_id');
+            $table
+                ->unsignedInteger('solve_time')
+                ->default(0)
+                ->after('processing_time');
         });
     }
 
@@ -26,6 +30,7 @@ return new class extends Migration
     {
         Schema::table('backtested_carts', function (Blueprint $table) {
             $table->dropColumn('processing_time');
+            $table->dropColumn('solve_time');
         });
     }
 };

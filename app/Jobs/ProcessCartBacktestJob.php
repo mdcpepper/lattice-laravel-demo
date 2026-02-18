@@ -27,16 +27,18 @@ class ProcessCartBacktestJob implements ShouldQueue
 
     public function handle(LatticeStackFactory $stackFactory): void
     {
+        $endToEndStart = hrtime(true);
+
         $backtestRun = Backtest::query()
             ->with('promotionStack.layers')
             ->findOrFail($this->backtestRunId);
 
-        $promotionStack = $backtestRun->promotionStack;
-        $latticeStack = $stackFactory->make($promotionStack);
-
         $cart = Cart::query()
             ->with('items.product.tags')
             ->findOrFail($this->cartId);
+
+        $promotionStack = $backtestRun->promotionStack;
+        $latticeStack = $stackFactory->make($promotionStack);
 
         /** @var array<int, LatticeProduct> $latticeProductsByProductId */
         $latticeProductsByProductId = [];
@@ -63,11 +65,11 @@ class ProcessCartBacktestJob implements ShouldQueue
             )
             ->all();
 
-        $startTime = microtime(true);
+        $solveStart = hrtime(true);
 
         $receipt = $latticeStack->process($latticeItems);
 
-        $elapsedTime = microtime(true) - $startTime;
+        $solveTime = hrtime(true) - $solveStart;
 
         $backtestedCart = BacktestedCart::query()->create([
             'backtest_id' => $backtestRun->id,
@@ -79,7 +81,8 @@ class ProcessCartBacktestJob implements ShouldQueue
             'subtotal_currency' => $receipt->subtotal->currency,
             'total' => $receipt->total->amount,
             'total_currency' => $receipt->total->currency,
-            'processing_time' => $elapsedTime,
+            'processing_time' => 0,
+            'solve_time' => $solveTime,
         ]);
 
         /** @var array<int, list<\Lattice\PromotionApplication>> $applicationsByCartItemId */
@@ -128,6 +131,10 @@ class ProcessCartBacktestJob implements ShouldQueue
                 );
             }
         }
+
+        $backtestedCart->update([
+            'processing_time' => hrtime(true) - $endToEndStart,
+        ]);
 
         $backtestRun->increment('processed_carts');
 

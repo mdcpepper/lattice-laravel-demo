@@ -111,6 +111,42 @@ it(
 );
 
 it(
+    'stores a zero amount discount as zero minor units on create',
+    function (): void {
+        Livewire::test(CreatePromotion::class)
+            ->fillForm([
+                'name' => 'Tiered Zero Amount',
+                'promotion_type' => PromotionType::TieredThreshold->value,
+                'tiers' => [
+                    [
+                        'lower_item_count_threshold' => 1,
+                        'discount_kind' => TieredThresholdDiscountKind::AmountOffTotal->value,
+                        'discount_amount' => '0',
+                        'qualification_op' => QualificationOp::And->value,
+                        'qualification_rules' => [],
+                    ],
+                ],
+            ])
+            ->call('create')
+            ->assertHasNoFormErrors()
+            ->assertRedirect();
+
+        $promotion = Promotion::query()
+            ->where('name', 'Tiered Zero Amount')
+            ->firstOrFail();
+        $tiered = $promotion->promotionable;
+        $tier = $tiered->tiers()->firstOrFail();
+
+        $this->assertDatabaseHas('tiered_threshold_discounts', [
+            'id' => $tier->tiered_threshold_discount_id,
+            'kind' => TieredThresholdDiscountKind::AmountOffTotal->value,
+            'amount' => 0,
+            'amount_currency' => 'GBP',
+        ]);
+    },
+);
+
+it(
     'loads an existing tiered threshold promotion into the edit form',
     function (): void {
         $discount = TieredThresholdDiscount::query()->create([

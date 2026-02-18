@@ -8,6 +8,7 @@ use App\Filament\Admin\Resources\BacktestedCarts\Pages\ViewBacktestedCart;
 use App\Filament\Admin\Resources\BacktestedCarts\RelationManagers\ItemsRelationManager;
 use App\Filament\Admin\Resources\Backtests\Pages\ViewBacktest;
 use App\Filament\Admin\Resources\Backtests\RelationManagers\BacktestedCartsRelationManager;
+use App\Filament\Admin\Resources\Backtests\Widgets\BacktestStatsWidget;
 use App\Models\Backtest;
 use App\Models\BacktestedCart;
 use App\Models\BacktestedCartItem;
@@ -141,6 +142,8 @@ it(
             'subtotal_currency' => 'GBP',
             'total' => 900,
             'total_currency' => 'GBP',
+            'processing_time' => 900,
+            'solve_time' => 800,
         ]);
 
         $product = Product::factory()->for($this->team)->create();
@@ -262,7 +265,50 @@ it(
             'ownerRecord' => $backtest,
             'pageClass' => ViewBacktest::class,
         ])
+            ->assertSee('End-to-end')
+            ->assertSee('Solve')
             ->assertSee('Promotion(s)')
             ->assertSee('Backtest Promo');
+    },
+);
+
+it(
+    'shows end-to-end and solve percentile stats with human-readable units',
+    function (): void {
+        $stack = PromotionStack::factory()->for($this->team)->create();
+        $backtest = Backtest::query()->create([
+            'promotion_stack_id' => $stack->id,
+            'total_carts' => 10,
+            'processed_carts' => 10,
+            'status' => BacktestStatus::Completed,
+        ]);
+
+        foreach (
+            [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000] as $index => $processingTime
+        ) {
+            $cart = Cart::factory()->for($this->team)->create();
+
+            BacktestedCart::query()->create([
+                'backtest_id' => $backtest->id,
+                'cart_id' => $cart->id,
+                'team_id' => $this->team->id,
+                'subtotal' => 1000,
+                'subtotal_currency' => 'GBP',
+                'total' => 900,
+                'total_currency' => 'GBP',
+                'processing_time' => $processingTime,
+                'solve_time' => ($index + 1) * 50,
+            ]);
+        }
+
+        Livewire::test(BacktestStatsWidget::class, ['record' => $backtest])
+            ->assertSee('End-to-end: P50')
+            ->assertSee('500 ns')
+            ->assertSee('End-to-end: P90')
+            ->assertSee('900 ns')
+            ->assertSee('Solve: P50')
+            ->assertSee('250 ns')
+            ->assertSee('Solve: P90')
+            ->assertSee('450 ns');
     },
 );

@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Resources\Backtests\RelationManagers;
 use App\Filament\Admin\Resources\BacktestedCarts\BacktestedCartResource;
 use App\Models\BacktestedCart;
 use App\Models\BacktestedCartItem;
+use App\Services\NanosecondDurationFormatter;
 use Filament\Actions\ViewAction;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables\Columns\TextColumn;
@@ -29,6 +30,27 @@ class BacktestedCartsRelationManager extends RelationManager
                 TextColumn::make('items_count')
                     ->label('Items')
                     ->counts('items')
+                    ->sortable(),
+
+                TextColumn::make('solve_time')
+                    ->label('Solve')
+                    ->formatStateUsing(
+                        fn (
+                            mixed $state,
+                        ): string => NanosecondDurationFormatter::format(
+                            is_numeric($state) ? (float) $state : null,
+                        ),
+                    )
+                    ->sortable(),
+                TextColumn::make('processing_time')
+                    ->label('End-to-end')
+                    ->formatStateUsing(
+                        fn (
+                            mixed $state,
+                        ): string => NanosecondDurationFormatter::format(
+                            is_numeric($state) ? (float) $state : null,
+                        ),
+                    )
                     ->sortable(),
 
                 TextColumn::make('subtotal')->label('Subtotal'),
