@@ -21,10 +21,6 @@ class PromotionStacksTable
             ->columns([
                 TextColumn::make('name')->searchable()->sortable(),
 
-                TextColumn::make('root_layer_reference')
-                    ->label('Root Layer')
-                    ->placeholder('Unset'),
-
                 TextColumn::make('layers_count')
                     ->label('Layers')
                     ->numeric()

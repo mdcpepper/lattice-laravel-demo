@@ -15,18 +15,18 @@ class RunBacktestAction
 {
     public static function make(): Action
     {
+        $tenant = Filament::getTenant();
+
         return Action::make('runBacktest')
             ->label('Run Backtest')
             ->requiresConfirmation()
-            ->modalDescription(function () {
-                $count = Cart::query()
-                    ->where('team_id', Filament::getTenant()->id)
-                    ->count();
+            ->modalDescription(function () use ($tenant) {
+                $count = Cart::query()->where('team_id', $tenant->id)->count();
 
                 return "This will backtest {$count} cart(s) through this promotion stack. No actual records will be modified.";
             })
-            ->action(function ($record, Action $action): void {
-                $teamId = Filament::getTenant()->id;
+            ->action(function ($record, Action $action) use ($tenant): void {
+                $teamId = $tenant->id;
 
                 $cartIds = Cart::query()
                     ->where('team_id', $teamId)

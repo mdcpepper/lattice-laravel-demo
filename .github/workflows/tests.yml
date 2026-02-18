@@ -62,5 +62,5 @@ jobs:
               composer install --no-interaction --prefer-dist --optimize-autoloader
               php artisan key:generate --force --ansi
               php artisan config:clear --ansi
-              ./vendor/bin/pest --ci
+              php -d memory_limit=512M ./vendor/bin/pest --ci
             '
