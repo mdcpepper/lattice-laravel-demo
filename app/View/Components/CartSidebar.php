@@ -3,8 +3,10 @@
 namespace App\View\Components;
 
 use App\DTOs\CartItemGroup;
+use App\DTOs\CartPromotionSaving;
 use App\Models\Cart;
 use App\Models\CartItem;
+use App\Models\PromotionRedemption;
 use Closure;
 use Illuminate\Contracts\Session\Session;
 use Illuminate\Contracts\View\View;
@@ -28,9 +30,14 @@ class CartSidebar extends Component
      */
     private ?SupportCollection $resolvedGroupedItems = null;
 
+    /**
+     * @var SupportCollection<int, CartPromotionSaving>|null
+     */
+    private ?SupportCollection $resolvedPromotionSavings = null;
+
     public function __construct(private Session $session) {}
 
-    public function itemsCount(): int
+    public function itemCount(): int
     {
         return $this->items()->count();
     }
@@ -68,7 +75,7 @@ class CartSidebar extends Component
         }
 
         return $this->resolvedGroupedItems = $this->items()
-            ->groupBy(fn (CartItem $item): string => $this->itemGroupKey($item))
+            ->groupBy($this->itemGroupKey(...))
             ->map(function (Collection $groupedItems): ?CartItemGroup {
                 $firstItem = $groupedItems->first();
 
@@ -81,6 +88,16 @@ class CartSidebar extends Component
                 if ($product === null) {
                     return null;
                 }
+
+                $promotionNames = $firstItem->redemptions
+                    ->sortBy('sort_order')
+                    ->map(
+                        fn (PromotionRedemption $r): string => $r->promotion
+                            ->name,
+                    )
+                    ->unique()
+                    ->values()
+                    ->all();
 
                 return new CartItemGroup(
                     product: $product,
@@ -95,6 +112,7 @@ class CartSidebar extends Component
                             $item,
                         ),
                     ),
+                    promotionNames: $promotionNames,
                 );
             })
             ->filter(
@@ -172,9 +190,70 @@ class CartSidebar extends Component
                         $offerPriceInMinorUnits,
             )
             ->sortBy('id')
-            ->first();
+            ->last();
 
         return $matchingItem instanceof CartItem ? (int) $matchingItem->id : 0;
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public function itemGroupPromotionNames(CartItemGroup $itemGroup): array
+    {
+        return $itemGroup->promotionNames();
+    }
+
+    /**
+     * @return SupportCollection<int, CartPromotionSaving>
+     */
+    public function promotionSavings(): SupportCollection
+    {
+        if ($this->resolvedPromotionSavings !== null) {
+            return $this->resolvedPromotionSavings;
+        }
+
+        return $this->resolvedPromotionSavings = $this->items()
+            ->flatMap(fn (CartItem $item) => $item->redemptions)
+            ->groupBy(fn (PromotionRedemption $r) => (int) $r->promotion_id)
+            ->map(function (SupportCollection $group): CartPromotionSaving {
+                $first = $group->first();
+
+                $redemptionCount = $group
+                    ->pluck('redemption_idx')
+                    ->unique()
+                    ->count();
+
+                return new CartPromotionSaving(
+                    promotionName: $first->promotion->name,
+                    redemptionCount: $redemptionCount,
+                    itemCount: $group->count(),
+                    savingsInMinorUnits: (int) $group->sum(
+                        fn (
+                            PromotionRedemption $r,
+                        ): int => (int) $r->getRawOriginal('original_price') -
+                            (int) $r->getRawOriginal('final_price'),
+                    ),
+                );
+            })
+            ->values();
+    }
+
+    public function hasPromotionSavings(): bool
+    {
+        return $this->promotionSavings()->isNotEmpty();
+    }
+
+    public function formattedSavings(): string
+    {
+        return $this->formatMinorUnits(
+            $this->subtotalInMinorUnits() - $this->totalInMinorUnits(),
+        );
+    }
+
+    public function formattedPromotionSavingAmount(
+        CartPromotionSaving $saving,
+    ): string {
+        return $this->formatMinorUnits($saving->savingsInMinorUnits());
     }
 
     private function cart(): ?Cart
@@ -185,7 +264,7 @@ class CartSidebar extends Component
 
         $ulid = $this->session->get('cart_ulid');
 
-        if (! is_string($ulid) || $ulid === '') {
+        if (! \is_string($ulid) || $ulid === '') {
             $this->hasResolvedCart = true;
 
             return null;
@@ -193,7 +272,7 @@ class CartSidebar extends Component
 
         $cart = Cart::query()
             ->where('ulid', $ulid)
-            ->with(['items.product'])
+            ->with(['items.product', 'items.redemptions.promotion'])
             ->first();
 
         if (! $cart instanceof Cart) {
