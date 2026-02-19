@@ -41,7 +41,7 @@ class CategoryCard extends Component
             return null;
         }
 
-        return "{$this->thumbnailUrl()} 300w, {$this->imageUrl()} 1200w";
+        return "{$this->thumbnailUrl()} 300w, {$this->imageUrl()} 1000w";
     }
 
     public function imageSizes(): ?string
@@ -57,6 +57,16 @@ class CategoryCard extends Component
     {
         return ($this->cardProduct()?->name ?? $this->category->name).
             ' image';
+    }
+
+    public function imageWidth(): int
+    {
+        return $this->thumbnailUrl() !== null ? 300 : 1000;
+    }
+
+    public function imageHeight(): int
+    {
+        return $this->thumbnailUrl() !== null ? 300 : 1000;
     }
 
     public function hasImage(): bool

@@ -306,7 +306,7 @@ it('can be turned into a Lattice Graph', function (): void {
         ->toBe(MixAndMatchDiscountKind::OverrideTotal->value)
         ->and($latticePromotion->discount->amount?->amount)
         ->toBe(380)
-        ->and($latticePromotion->budget->applicationLimit)
+        ->and($latticePromotion->budget->redemptionLimit)
         ->toBe(100)
         ->and($latticePromotion->budget->monetaryLimit?->amount)
         ->toBe(500000);
@@ -353,10 +353,10 @@ it('can be turned into a Lattice Graph', function (): void {
         ->toBeGreaterThan(380)
         ->and($receipt->total->amount)
         ->toBe(380)
-        ->and($receipt->promotionApplications)
+        ->and($receipt->promotionRedemptions)
         ->toHaveCount(3)
         ->and(
-            collect($receipt->promotionApplications)->every(
+            collect($receipt->promotionRedemptions)->every(
                 fn ($application): bool => $application->promotion
                     ->reference instanceof Promotion &&
                     $application->promotion->reference->is($promotion),
@@ -364,7 +364,7 @@ it('can be turned into a Lattice Graph', function (): void {
         )
         ->toBeTrue()
         ->and(
-            collect($receipt->promotionApplications)->sum(
+            collect($receipt->promotionRedemptions)->sum(
                 fn ($application): int => $application->finalPrice->amount,
             ),
         )

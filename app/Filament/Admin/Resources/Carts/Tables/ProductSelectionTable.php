@@ -16,8 +16,6 @@ class ProductSelectionTable
 {
     public static function configure(Table $table): Table
     {
-        $tenantId = Filament::getTenant()?->getKey();
-
         $livewireRecordCategoryId = null;
         $tableLivewire = $table->getLivewire();
 
@@ -36,9 +34,10 @@ class ProductSelectionTable
         return $table
             ->query(fn (): Builder => Product::query())
             ->modifyQueryUsing(function (Builder $query) use (
-                $tenantId,
                 $categoryId,
             ): Builder {
+                $tenantId = Filament::getTenant()?->getKey();
+
                 if (is_numeric($tenantId)) {
                     $query->where('team_id', (int) $tenantId);
                 }

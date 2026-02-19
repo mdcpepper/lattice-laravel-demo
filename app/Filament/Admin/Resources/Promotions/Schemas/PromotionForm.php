@@ -64,9 +64,14 @@ class PromotionForm
                         ])
                         ->schema([
                             TextInput::make('application_budget')
-                                ->label('Applications')
+                                ->label('Redemptions')
                                 ->numeric()
-                                ->minValue(fn (?Promotion $record): int => max(1, $record?->redemptions()->count() ?? 0))
+                                ->minValue(
+                                    fn (?Promotion $record): int => max(
+                                        1,
+                                        $record?->redemptions()->count() ?? 0,
+                                    ),
+                                )
                                 ->step(1)
                                 ->nullable(),
 
@@ -76,17 +81,28 @@ class PromotionForm
                                 ->step(0.01)
                                 ->prefix('£')
                                 ->nullable()
-                                ->minValue(function (?Promotion $record): float {
+                                ->minValue(function (
+                                    ?Promotion $record,
+                                ): float {
                                     if ($record === null) {
                                         return 0.0;
                                     }
 
-                                    $redeemedPence = (int) (PromotionRedemption::query()
-                                        ->where('promotion_id', $record->getKey())
-                                        ->where('redeemable_type', CartItem::class)
-                                        ->toBase()
-                                        ->selectRaw('COALESCE(SUM(original_price - final_price), 0) as total')
-                                        ->value('total') ?? 0);
+                                    $redeemedPence =
+                                        (int) (PromotionRedemption::query()
+                                            ->where(
+                                                'promotion_id',
+                                                $record->getKey(),
+                                            )
+                                            ->where(
+                                                'redeemable_type',
+                                                CartItem::class,
+                                            )
+                                            ->toBase()
+                                            ->selectRaw(
+                                                'COALESCE(SUM(original_price - final_price), 0) as total',
+                                            )
+                                            ->value('total') ?? 0);
 
                                     return round($redeemedPence / 100, 2);
                                 }),

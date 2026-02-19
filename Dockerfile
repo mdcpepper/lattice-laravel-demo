@@ -1,4 +1,4 @@
-ARG PHP_BASE_IMAGE=php:8.4-cli-bookworm
+ARG PHP_BASE_IMAGE=dunglas/frankenphp:1-php8.4-bookworm
 FROM ${PHP_BASE_IMAGE}
 
 ARG LATTICE_EXT_REPO=mdcpepper/lattice
@@ -12,7 +12,7 @@ ENV COMPOSER_ALLOW_SUPERUSER=1
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates curl git jq libicu-dev libsqlite3-dev libzip-dev unzip zlib1g-dev \
-    && docker-php-ext-install bcmath intl pdo_sqlite zip \
+    && docker-php-ext-install bcmath intl pcntl pdo_sqlite zip \
     && rm -rf /var/lib/apt/lists/*
 
 RUN set -eux; \
@@ -29,13 +29,14 @@ COPY docker/install-lattice-extension.sh /usr/local/bin/install-lattice-extensio
 
 COPY docker/start-laravel.sh /usr/local/bin/start-laravel
 
-RUN chmod +x /usr/local/bin/start-laravel
+RUN chmod +x /usr/local/bin/install-lattice-extension /usr/local/bin/start-laravel
 
 RUN /usr/local/bin/install-lattice-extension \
     && php -m | grep -Eiq '^intl$' \
+    && php -m | grep -Eiq '^pcntl$' \
     && php -m | grep -Eiq '^zip$' \
     && php -m | grep -Eiq '^lattice-php-ext$'
 
 WORKDIR /app
 
-CMD ["php", "-v"]
+CMD ["php", "artisan", "octane:frankenphp", "--host=0.0.0.0", "--port=8080"]

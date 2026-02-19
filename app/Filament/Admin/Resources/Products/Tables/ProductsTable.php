@@ -17,10 +17,6 @@ class ProductsTable
 {
     public static function configure(Table $table): Table
     {
-        $checker = resolve(ProductQualificationChecker::class);
-        $tenantKey = Filament::getTenant()?->getKey();
-        $teamId = is_numeric($tenantKey) ? (int) $tenantKey : null;
-
         return $table
             ->modifyQueryUsing(
                 fn (Builder $query): Builder => $query->with('tags'),
@@ -44,11 +40,11 @@ class ProductsTable
                 TextColumn::make('qualifying_promotions')
                     ->label('Qualifying Promotions')
                     ->state(
-                        fn (
-                            Product $record,
-                        ): array => $checker->qualifyingPromotionNames(
+                        fn (Product $record): array => resolve(
+                            ProductQualificationChecker::class,
+                        )->qualifyingPromotionNames(
                             $record,
-                            $teamId,
+                            self::currentTeamId(),
                         ),
                     )
                     ->listWithLineBreaks()
@@ -67,11 +63,24 @@ class ProductsTable
             ])
             ->filters([
                 ProductTagsFilter::make(),
-                QualifyingPromotionsFilter::make($checker, $teamId),
+                QualifyingPromotionsFilter::make(
+                    fn (): ?int => self::currentTeamId(),
+                ),
             ])
             ->recordActions([EditAction::make()])
             ->toolbarActions([
                 BulkActionGroup::make([DeleteBulkAction::make()]),
             ]);
+    }
+
+    private static function currentTeamId(): ?int
+    {
+        $tenantKey = Filament::getTenant()?->getKey();
+
+        if (! is_numeric($tenantKey)) {
+            return null;
+        }
+
+        return (int) $tenantKey;
     }
 }

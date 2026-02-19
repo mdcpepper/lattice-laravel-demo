@@ -144,7 +144,7 @@ test(
             ->toBeFalse()
             ->and($latticePromotion->discount->percentage?->value())
             ->toBe(0.1)
-            ->and($latticePromotion->budget->applicationLimit)
+            ->and($latticePromotion->budget->redemptionLimit)
             ->toBe(12)
             ->and($latticePromotion->budget->monetaryLimit?->amount)
             ->toBe(2500);

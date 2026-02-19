@@ -75,9 +75,15 @@ test('the home page returns a successful response', function (): void {
     $response->assertSee($fallbackProduct->thumb_url, escape: false);
     $response->assertSee($fallbackProduct->image_url, escape: false);
     $response->assertSee(
+        "srcset=\"{$mainProduct->thumb_url} 300w, {$mainProduct->image_url} 1000w\"",
+        escape: false,
+    );
+    $response->assertSee(
         'sizes="(max-width: 320px) 100vw, 320px"',
         escape: false,
     );
+    $response->assertSee('width="300"', escape: false);
+    $response->assertSee('height="300"', escape: false);
 });
 
 test('it scopes home categories to the default team', function (): void {
@@ -152,6 +158,8 @@ test(
             escape: false,
         );
         $response->assertSee($product->thumb_url, escape: false);
+        $response->assertSee('width="300"', escape: false);
+        $response->assertSee('height="300"', escape: false);
         $response->assertSeeText('Sidebar Cart Product');
         $response->assertSeeText('× 1');
         $response->assertSee(

@@ -63,22 +63,22 @@ class PromotionRedemption extends Model
         return $this->belongsTo(PromotionStack::class);
     }
 
-    public static function createFromApplication(
-        \Lattice\PromotionApplication $application,
+    public static function createFromRedemption(
+        \Lattice\PromotionRedemption $redemption,
         PromotionStack $stack,
         \Illuminate\Database\Eloquent\Model $redeemable,
         int $sortOrder = 0,
     ): self {
         return self::query()->create([
-            'promotion_id' => $application->promotion->reference->id,
+            'promotion_id' => $redemption->promotion->reference->id,
             'promotion_stack_id' => $stack->id,
             'redeemable_type' => $redeemable->getMorphClass(),
             'redeemable_id' => $redeemable->getKey(),
             'sort_order' => $sortOrder,
-            'original_price' => $application->originalPrice->amount,
-            'original_price_currency' => $application->originalPrice->currency,
-            'final_price' => $application->finalPrice->amount,
-            'final_price_currency' => $application->finalPrice->currency,
+            'original_price' => $redemption->originalPrice->amount,
+            'original_price_currency' => $redemption->originalPrice->currency,
+            'final_price' => $redemption->finalPrice->amount,
+            'final_price_currency' => $redemption->finalPrice->currency,
         ]);
     }
 }

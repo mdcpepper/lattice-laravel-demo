@@ -85,10 +85,10 @@ class ProcessCartBacktestJob implements ShouldQueue
             'solve_time' => $solveTime,
         ]);
 
-        /** @var array<int, list<\Lattice\PromotionApplication>> $applicationsByCartItemId */
+        /** @var array<int, list<\Lattice\PromotionRedemption>> $applicationsByCartItemId */
         $applicationsByCartItemId = [];
 
-        foreach ($receipt->promotionApplications as $application) {
+        foreach ($receipt->promotionRedemptions as $application) {
             /** @var CartItem $cartItem */
             $cartItem = $application->item->reference;
             $applicationsByCartItemId[$cartItem->id][] = $application;
@@ -123,7 +123,7 @@ class ProcessCartBacktestJob implements ShouldQueue
             ]);
 
             foreach ($applications as $index => $application) {
-                PromotionRedemption::createFromApplication(
+                PromotionRedemption::createFromRedemption(
                     $application,
                     $promotionStack,
                     $backtestedCartItem,

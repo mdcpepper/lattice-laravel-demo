@@ -145,7 +145,7 @@ test(
                     ?->itemCountThreshold,
             )
             ->toBe(4)
-            ->and($latticePromotion->budget->applicationLimit)
+            ->and($latticePromotion->budget->redemptionLimit)
             ->toBe(15)
             ->and($latticePromotion->budget->monetaryLimit?->amount)
             ->toBe(5000);

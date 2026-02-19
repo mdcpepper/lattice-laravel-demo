@@ -6,6 +6,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ $title ?? config('app.name') }}</title>
+    <link rel="dns-prefetch" href="//cdn.dummyjson.com">
+    <link rel="preconnect" href="https://cdn.dummyjson.com" crossorigin>
     @vite(['resources/css/app.css'])
 </head>
 <body>

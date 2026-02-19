@@ -220,7 +220,7 @@ it('can be turned into a Lattice Graph', function (): void {
         ->toBeFalse()
         ->and($latticePromotion->discount->percentage?->value())
         ->toBe(0.1)
-        ->and($latticePromotion->budget->applicationLimit)
+        ->and($latticePromotion->budget->redemptionLimit)
         ->toBe(100)
         ->and($latticePromotion->budget->monetaryLimit?->amount)
         ->toBe(500000);
@@ -263,17 +263,17 @@ it('can be turned into a Lattice Graph', function (): void {
         ->toBe(600)
         ->and($receipt->total->amount)
         ->toBe(570)
-        ->and($receipt->promotionApplications)
+        ->and($receipt->promotionRedemptions)
         ->toHaveCount(1)
-        ->and($receipt->promotionApplications[0]->promotion->reference)
+        ->and($receipt->promotionRedemptions[0]->promotion->reference)
         ->toBeInstanceOf(Promotion::class)
         ->and(
-            $receipt->promotionApplications[0]->promotion->reference->is(
+            $receipt->promotionRedemptions[0]->promotion->reference->is(
                 $promotion,
             ),
         )
         ->toBeTrue()
-        ->and($receipt->promotionApplications[0]->finalPrice->amount)
+        ->and($receipt->promotionRedemptions[0]->finalPrice->amount)
         ->toBe(270)
         ->and($receipt->subtotal->amount - $receipt->total->amount)
         ->toBe(30);

@@ -24,6 +24,12 @@ if [ ! -f .env ] && [ -f .env.example ]; then
     cp .env.example .env
 fi
 
+if [ "${LATTICE_KEEP_VITE_HOT_FILE:-0}" != "1" ] && [ -f public/hot ]; then
+    if ! curl -fsS --max-time 1 http://node:5173 >/dev/null 2>&1; then
+        rm -f public/hot
+    fi
+fi
+
 if ! grep -Eq '^APP_KEY=base64:' .env; then
     php artisan key:generate --force --ansi
 fi
@@ -53,4 +59,4 @@ fi
 
 php artisan migrate --force --graceful --ansi
 
-exec php artisan serve --host=0.0.0.0 --port=8080
+exec php artisan octane:frankenphp --host=0.0.0.0 --port=8080
