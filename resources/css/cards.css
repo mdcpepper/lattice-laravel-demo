@@ -1,5 +1,5 @@
 .card {
-    --card-min-width: 10em;
+    --card-min-width: 12em;
     --card-padding: 0;
     --card-transition: none;
     --card-hover-shadow: none;

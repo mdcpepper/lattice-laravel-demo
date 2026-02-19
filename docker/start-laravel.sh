@@ -24,8 +24,10 @@ if [ ! -f .env ] && [ -f .env.example ]; then
     cp .env.example .env
 fi
 
+vite_port="${VITE_PORT:-5173}"
+
 if [ "${LATTICE_KEEP_VITE_HOT_FILE:-0}" != "1" ] && [ -f public/hot ]; then
-    if ! curl -fsS --max-time 1 http://node:5173 >/dev/null 2>&1; then
+    if ! curl -fsS --max-time 1 "http://127.0.0.1:${vite_port}" >/dev/null 2>&1; then
         rm -f public/hot
     fi
 fi
@@ -64,6 +66,22 @@ set -- php artisan octane:frankenphp --host=0.0.0.0 --port=8080
 is_local="${APP_ENV:-}"
 if [ -z "${is_local}" ] && [ -f .env ]; then
     is_local="$(grep -E '^APP_ENV=' .env | tail -n 1 | cut -d '=' -f 2- | tr -d '"' | tr -d "'")"
+fi
+
+if [ "${is_local}" = "local" ] && [ "${LATTICE_START_VITE_DEV_SERVER:-1}" = "1" ]; then
+    if command -v npm >/dev/null 2>&1; then
+        if [ ! -d node_modules ]; then
+            echo "info: installing npm dependencies for Vite..." >&2
+            npm install --no-audit --no-fund
+        fi
+
+        if ! curl -fsS --max-time 1 "http://127.0.0.1:${vite_port}" >/dev/null 2>&1; then
+            echo "info: starting Vite dev server on port ${vite_port}..." >&2
+            npm run dev -- --host 0.0.0.0 --port "${vite_port}" >/tmp/vite.log 2>&1 &
+        fi
+    else
+        echo "warning: npm is unavailable; Vite dev server was not started." >&2
+    fi
 fi
 
 if [ "${is_local}" = "local" ]; then

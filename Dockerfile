@@ -12,7 +12,14 @@ ENV COMPOSER_ALLOW_SUPERUSER=1
 ENV NODE_PATH=/usr/local/lib/node_modules:/usr/lib/node_modules
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends ca-certificates curl git jq libicu-dev libsqlite3-dev libzip-dev nodejs npm unzip zlib1g-dev \
+    && apt-get install -y --no-install-recommends ca-certificates curl git gnupg jq libicu-dev libsqlite3-dev libzip-dev unzip zlib1g-dev \
+    && mkdir -p /etc/apt/keyrings \
+    && curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key \
+    | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg \
+    && echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_20.x nodistro main" \
+    > /etc/apt/sources.list.d/nodesource.list \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends nodejs \
     && docker-php-ext-install bcmath intl pcntl pdo_sqlite zip \
     && rm -rf /var/lib/apt/lists/*
 
