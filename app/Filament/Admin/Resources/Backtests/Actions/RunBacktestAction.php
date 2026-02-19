@@ -10,23 +10,40 @@ use App\Models\Cart;
 use Filament\Actions\Action;
 use Filament\Facades\Filament;
 use Illuminate\Support\Facades\Bus;
+use RuntimeException;
 
 class RunBacktestAction
 {
     public static function make(): Action
     {
-        $tenant = Filament::getTenant();
-
         return Action::make('runBacktest')
             ->label('Run Backtest')
             ->requiresConfirmation()
-            ->modalDescription(function () use ($tenant) {
-                $count = Cart::query()->where('team_id', $tenant->id)->count();
+            ->modalDescription(function (): string {
+                $tenant = Filament::getTenant();
+
+                if ($tenant === null) {
+                    throw new RuntimeException(
+                        'A tenant must be selected to run backtests.',
+                    );
+                }
+
+                $count = Cart::query()
+                    ->where('team_id', (int) $tenant->getKey())
+                    ->count();
 
                 return "This will backtest {$count} cart(s) through this promotion stack. No actual records will be modified.";
             })
-            ->action(function ($record, Action $action) use ($tenant): void {
-                $teamId = $tenant->id;
+            ->action(function ($record, Action $action): void {
+                $tenant = Filament::getTenant();
+
+                if ($tenant === null) {
+                    throw new RuntimeException(
+                        'A tenant must be selected to run backtests.',
+                    );
+                }
+
+                $teamId = (int) $tenant->getKey();
 
                 $cartIds = Cart::query()
                     ->where('team_id', $teamId)

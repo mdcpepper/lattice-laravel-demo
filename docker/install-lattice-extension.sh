@@ -12,6 +12,7 @@ if [[ -n "${GITHUB_TOKEN:-}" ]]; then
 fi
 
 php_version="$(php -r 'echo PHP_MAJOR_VERSION . "." . PHP_MINOR_VERSION;')"
+php_thread_safety="$(php -r 'echo (defined("PHP_ZTS") && PHP_ZTS) ? "zts" : "nts";')"
 extension_dir="$(php -r 'echo ini_get("extension_dir");')"
 
 if [[ -z "${extension_dir}" ]]; then
@@ -29,7 +30,13 @@ fi
 release_json="$(curl -fsSL "${headers[@]}" "${release_url}")"
 
 escaped_php_version="${php_version//./\\.}"
-asset_pattern="^lattice-[A-Za-z0-9._-]+-linux-php${escaped_php_version}\\.so$"
+asset_suffix=""
+
+if [[ "${php_thread_safety}" == "zts" ]]; then
+  asset_suffix="-zts"
+fi
+
+asset_pattern="^lattice-[A-Za-z0-9._-]+-linux-php${escaped_php_version}${asset_suffix}\\.so$"
 
 asset_name="$(
   printf '%s' "${release_json}" \
@@ -39,14 +46,14 @@ asset_name="$(
 )"
 
 if [[ -z "${asset_name}" ]]; then
-  echo "No release asset found for PHP ${php_version} in ${LATTICE_EXT_REPO} (${LATTICE_EXT_TAG})."
-  echo "Expected pattern: lattice-<tag>-linux-php${php_version}.so"
+  echo "No release asset found for PHP ${php_version} (${php_thread_safety}) in ${LATTICE_EXT_REPO} (${LATTICE_EXT_TAG})."
+  echo "Expected pattern: lattice-<tag>-linux-php${php_version}${asset_suffix}.so"
   echo "Allowed characters in <tag>: A-Z a-z 0-9 . _ -"
 
   exit 1
 fi
 
-if ! [[ "${asset_name}" =~ ^lattice-[A-Za-z0-9._-]+-linux-php${php_version}\.so$ ]]; then
+if ! [[ "${asset_name}" =~ ^lattice-[A-Za-z0-9._-]+-linux-php${php_version}${asset_suffix}\.so$ ]]; then
   echo "Unsafe asset name: ${asset_name}"
   exit 1
 fi

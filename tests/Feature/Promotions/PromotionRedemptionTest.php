@@ -102,13 +102,13 @@ it('saves promotion redemptions from a Lattice receipt', function (): void {
 
     $receipt = $stackBuilder->build()->process([$latticeItem]);
 
-    $redemptions = collect($receipt->promotionApplications)
+    $redemptions = collect($receipt->promotionRedemptions)
         ->values()
         ->map(
             fn (
                 $application,
                 int $index,
-            ) => PromotionRedemption::createFromApplication(
+            ) => PromotionRedemption::createFromRedemption(
                 $application,
                 $stack,
                 $cartItem,

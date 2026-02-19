@@ -14,14 +14,14 @@ trait BuildsLatticeBudget
 {
     protected function makeBudget(PromotionModel $promotion): ?Budget
     {
-        $applicationBudget = $promotion->application_budget;
+        $redemptionBudget = $promotion->application_budget;
         $monetaryBudget = $promotion->getRawOriginal('monetary_budget');
 
-        if (is_null($applicationBudget) && is_null($monetaryBudget)) {
+        if (is_null($redemptionBudget) && is_null($monetaryBudget)) {
             return Budget::unlimited();
         }
 
-        $consumedApplicationBudget = 0;
+        $consumedRedemptionBudget = 0;
         $consumedMonetaryBudget = 0;
 
         if ($promotion->exists && ! is_null($promotion->id)) {
@@ -29,8 +29,8 @@ trait BuildsLatticeBudget
                 ->where('promotion_id', $promotion->id)
                 ->where('redeemable_type', new CartItem()->getMorphClass());
 
-            if (! is_null($applicationBudget)) {
-                $consumedApplicationBudget = (clone $baseRedemptionsQuery)->count();
+            if (! is_null($redemptionBudget)) {
+                $consumedRedemptionBudget = (clone $baseRedemptionsQuery)->count();
             }
 
             if (! is_null($monetaryBudget)) {
@@ -43,33 +43,30 @@ trait BuildsLatticeBudget
             }
         }
 
-        $remainingApplicationBudget = is_null($applicationBudget)
+        $remainingRedemptionBudget = is_null($redemptionBudget)
             ? null
-            : max(
-                0,
-                (int) $applicationBudget - (int) $consumedApplicationBudget,
-            );
+            : max(0, (int) $redemptionBudget - (int) $consumedRedemptionBudget);
 
         $remainingMonetaryBudget = is_null($monetaryBudget)
             ? null
             : max(0, (int) $monetaryBudget - (int) $consumedMonetaryBudget);
 
         if (
-            $remainingApplicationBudget === 0 ||
+            $remainingRedemptionBudget === 0 ||
             $remainingMonetaryBudget === 0
         ) {
             return null;
         }
 
         if (
-            ! is_null($remainingApplicationBudget) &&
+            ! is_null($remainingRedemptionBudget) &&
             is_null($remainingMonetaryBudget)
         ) {
-            return Budget::withApplicationLimit($remainingApplicationBudget);
+            return Budget::withRedemptionLimit($remainingRedemptionBudget);
         }
 
         if (
-            is_null($remainingApplicationBudget) &&
+            is_null($remainingRedemptionBudget) &&
             ! is_null($remainingMonetaryBudget)
         ) {
             return Budget::withMonetaryLimit(
@@ -78,7 +75,7 @@ trait BuildsLatticeBudget
         }
 
         return Budget::withBothLimits(
-            $remainingApplicationBudget,
+            $remainingRedemptionBudget,
             new Money($remainingMonetaryBudget, $this->defaultCurrency()),
         );
     }

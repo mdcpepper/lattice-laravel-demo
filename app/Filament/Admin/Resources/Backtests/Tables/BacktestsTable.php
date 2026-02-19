@@ -19,17 +19,21 @@ class BacktestsTable
 {
     public static function configure(Table $table): Table
     {
-        $tenant = Filament::getTenant();
-
         return $table
             // ->poll('5s')
-            ->modifyQueryUsing(
-                fn (Builder $query): Builder => $query
+            ->modifyQueryUsing(function (Builder $query): Builder {
+                $tenant = Filament::getTenant();
+
+                if ($tenant === null) {
+                    return $query->whereRaw('1 = 0');
+                }
+
+                return $query
                     ->whereHas(
                         'promotionStack',
                         fn (Builder $q): Builder => $q->where(
                             'team_id',
-                            $tenant->id,
+                            $tenant->getKey(),
                         ),
                     )
                     ->withCount([
@@ -54,8 +58,8 @@ class BacktestsTable
                         self::p50PerBacktestSubquery('solve_time'),
                         'solve_time_p50',
                     )
-                    ->latest(),
-            )
+                    ->latest();
+            })
             ->columns([
                 TextColumn::make('ulid')
                     ->label('ID')

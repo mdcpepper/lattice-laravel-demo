@@ -11,6 +11,8 @@
                                 class="cart-sidebar-item-thumb"
                                 src="{{ $productThumbnail($item) }}"
                                 alt="{{ $productName($item) }}"
+                                width="300"
+                                height="300"
                             >
                         @endif
 

@@ -102,7 +102,7 @@ test(
             ->toBe(200)
             ->and($receipt->total->amount)
             ->toBe(181)
-            ->and($receipt->promotionApplications)
+            ->and($receipt->promotionRedemptions)
             ->toHaveCount(2);
     },
 );

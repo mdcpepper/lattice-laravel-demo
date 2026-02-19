@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Resources\Products\Tables;
 use App\Models\Product;
 use App\Models\Promotion;
 use App\Services\ProductQualificationChecker;
+use Closure;
 use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -13,22 +14,23 @@ class QualifyingPromotionsFilter
 {
     private const NONE_FILTER_VALUE = '__none__';
 
-    public static function make(
-        ProductQualificationChecker $checker,
-        ?int $teamId,
-    ): SelectFilter {
+    /**
+     * @param  Closure(): ?int  $teamIdResolver
+     */
+    public static function make(Closure $teamIdResolver): SelectFilter
+    {
         return SelectFilter::make('qualifying_promotions')
             ->label('Qualifying Promotions')
             ->searchable()
-            ->options(fn (): array => self::options($teamId))
+            ->options(fn (): array => self::options($teamIdResolver()))
             ->multiple()
             ->attribute(fn (): string => 'id')
             ->query(
                 fn (Builder $query, array $data): Builder => self::applyQuery(
                     $query,
                     $data,
-                    $checker,
-                    $teamId,
+                    resolve(ProductQualificationChecker::class),
+                    $teamIdResolver(),
                 ),
             );
     }
@@ -96,8 +98,9 @@ class QualifyingPromotionsFilter
      * @param  Collection<int, mixed>  $selectedValues
      * @return int[]
      */
-    private static function selectedPromotionIds(Collection $selectedValues): array
-    {
+    private static function selectedPromotionIds(
+        Collection $selectedValues,
+    ): array {
         return $selectedValues
             ->filter(fn (mixed $value): bool => is_numeric($value))
             ->map(fn (mixed $value): int => (int) $value)
@@ -136,7 +139,8 @@ class QualifyingPromotionsFilter
         Collection $selectedPromotions,
         bool $includeNone,
     ): bool {
-        $matchesSelectedPromotions = $selectedPromotions->isNotEmpty() &&
+        $matchesSelectedPromotions =
+            $selectedPromotions->isNotEmpty() &&
             $checker->qualifiesForAnyPromotion($product, $selectedPromotions);
 
         if (! $includeNone) {

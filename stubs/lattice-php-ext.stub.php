@@ -150,8 +150,8 @@ if (! class_exists(StackBuilder::class)) {
     }
 }
 
-if (! class_exists(PromotionApplication::class)) {
-    class PromotionApplication
+if (! class_exists(PromotionRedemption::class)) {
+    class PromotionRedemption
     {
         public Promotions\Promotion $promotion;
 
@@ -183,12 +183,12 @@ if (! class_exists(Receipt::class)) {
         /** @var Item[] */
         public array $fullPriceItems;
 
-        /** @var PromotionApplication[] */
-        public array $promotionApplications;
+        /** @var PromotionRedemption[] */
+        public array $promotionRedemptions;
 
         /**
          * @param  Item[]  $full_price_items
-         * @param  PromotionApplication[]  $promotion_applications
+         * @param  PromotionRedemption[]  $promotion_applications
          */
         public function __construct(
             Money $subtotal,
@@ -368,7 +368,7 @@ use Lattice\Qualification;
 if (! class_exists(Budget::class)) {
     class Budget
     {
-        public ?int $applicationLimit;
+        public ?int $redemptionLimit;
 
         public ?Money $monetaryLimit;
 
@@ -376,7 +376,7 @@ if (! class_exists(Budget::class)) {
 
         public static function unlimited(): self {}
 
-        public static function withApplicationLimit(int $limit): self {}
+        public static function withRedemptionLimit(int $limit): self {}
 
         public static function withMonetaryLimit(Money $limit): self {}
 

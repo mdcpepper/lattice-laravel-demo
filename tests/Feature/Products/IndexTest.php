@@ -90,11 +90,17 @@ test('it shows products for a category loaded by slug', function (): void {
 
     $response->assertSee($firstProduct->thumb_url, escape: false);
     $response->assertSee($firstProduct->image_url, escape: false);
+    $response->assertSee(
+        "srcset=\"{$firstProduct->thumb_url} 300w, {$firstProduct->image_url} 1000w\"",
+        escape: false,
+    );
 
     $response->assertSee(
         'sizes="(max-width: 320px) 100vw, 320px"',
         escape: false,
     );
+    $response->assertSee('width="300"', escape: false);
+    $response->assertSee('height="300"', escape: false);
 });
 
 test('it scopes product pages to the default team', function (): void {

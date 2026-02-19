@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        PHP_BASE_IMAGE: ${PHP_BASE_IMAGE:-php:8.4-cli-bookworm}
+        PHP_BASE_IMAGE: ${PHP_BASE_IMAGE:-dunglas/frankenphp:1-php8.4-bookworm}
         LATTICE_EXT_REPO: ${LATTICE_EXT_REPO:-mdcpepper/lattice}
         LATTICE_EXT_TAG: ${LATTICE_EXT_TAG:-latest}
         HOST_UID: ${HOST_UID:-1000}
@@ -22,7 +22,7 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        PHP_BASE_IMAGE: ${PHP_BASE_IMAGE:-php:8.4-cli-bookworm}
+        PHP_BASE_IMAGE: ${PHP_BASE_IMAGE:-dunglas/frankenphp:1-php8.4-bookworm}
         LATTICE_EXT_REPO: ${LATTICE_EXT_REPO:-mdcpepper/lattice}
         LATTICE_EXT_TAG: ${LATTICE_EXT_TAG:-latest}
         HOST_UID: ${HOST_UID:-1000}

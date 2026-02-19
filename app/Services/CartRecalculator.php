@@ -43,8 +43,8 @@ class CartRecalculator
                 /** @var \Lattice\Receipt|null $receipt */
                 $receipt = null;
 
-                /** @var array<int, list<\Lattice\PromotionApplication>> $applicationsByCartItemId */
-                $applicationsByCartItemId = [];
+                /** @var array<int, list<\Lattice\PromotionRedemption>> $redemptionsByCartItemId */
+                $redemptionsByCartItemId = [];
 
                 if (
                     $cart->promotionStack instanceof PromotionStack &&
@@ -56,13 +56,11 @@ class CartRecalculator
 
                     $receipt = $latticeStack->process($latticeItems);
 
-                    foreach ($receipt->promotionApplications as $application) {
+                    foreach ($receipt->promotionRedemptions as $redemption) {
                         /** @var CartItem $cartItem */
-                        $cartItem = $application->item->reference;
+                        $cartItem = $redemption->item->reference;
 
-                        $applicationsByCartItemId[
-                            $cartItem->id
-                        ][] = $application;
+                        $redemptionsByCartItemId[$cartItem->id][] = $redemption;
                     }
                 }
 
@@ -73,22 +71,22 @@ class CartRecalculator
                 foreach ($items as $item) {
                     $product = $item->product;
 
-                    $applications = $applicationsByCartItemId[$item->id] ?? [];
+                    $redemptions = $redemptionsByCartItemId[$item->id] ?? [];
 
                     $price = (int) $product->price->getAmount();
 
                     $priceCurrency = $product->price->getCurrency()->getCode();
 
-                    $finalApplication =
-                        $applications !== []
-                            ? $applications[array_key_last($applications)]
+                    $finalRedemption =
+                        $redemptions !== []
+                            ? $redemptions[array_key_last($redemptions)]
                             : null;
 
                     $offerPrice =
-                        $finalApplication?->finalPrice->amount ?? $price;
+                        $finalRedemption?->finalPrice->amount ?? $price;
 
                     $offerPriceCurrency =
-                        $finalApplication?->finalPrice->currency ??
+                        $finalRedemption?->finalPrice->currency ??
                         $priceCurrency;
 
                     $item->update([
@@ -99,9 +97,9 @@ class CartRecalculator
                     ]);
 
                     if ($cart->promotionStack instanceof PromotionStack) {
-                        foreach ($applications as $index => $application) {
-                            PromotionRedemption::createFromApplication(
-                                $application,
+                        foreach ($redemptions as $index => $redemption) {
+                            PromotionRedemption::createFromRedemption(
+                                $redemption,
                                 $cart->promotionStack,
                                 $item,
                                 $index,

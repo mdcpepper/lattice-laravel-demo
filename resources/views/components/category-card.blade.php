@@ -9,6 +9,8 @@
                     sizes="{{ $imageSizes() }}"
                 @endif
                 alt="{{ $imageAlt() }}"
+                width="{{ $imageWidth() }}"
+                height="{{ $imageHeight() }}"
             >
         @endif
 
