@@ -17,7 +17,10 @@ use Illuminate\Support\Collection;
 class User extends Authenticatable implements FilamentUser, HasTenants
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, HasRouteUlid, Notifiable;
+    use HasFactory;
+
+    use HasRouteUlid;
+    use Notifiable;
 
     /**
      * The attributes that are mass assignable.

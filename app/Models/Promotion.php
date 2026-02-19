@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\QualificationContext;
 use App\Jobs\DispatchCartRecalculationRequest;
+use App\Models\Concerns\BelongsToCurrentTeam;
 use App\Models\Concerns\HasRouteUlid;
 use Cknow\Money\Casts\MoneyIntegerCast;
 use Illuminate\Database\Eloquent\Builder;
@@ -17,8 +18,12 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class Promotion extends Model
 {
+    use BelongsToCurrentTeam;
+
     /** @use HasFactory<\Database\Factories\PromotionFactory> */
-    use HasFactory, HasRouteUlid;
+    use HasFactory;
+
+    use HasRouteUlid;
 
     protected static function booted(): void
     {

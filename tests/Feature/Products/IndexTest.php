@@ -80,7 +80,9 @@ test('it shows products for a category loaded by slug', function (): void {
         'class="button button--primary button--add-to-cart"',
         escape: false,
     );
+    $response->assertSee('action="/cart/items"', escape: false);
     $response->assertSee('value="Add to cart"', escape: false);
+    $response->assertSee('name="_token"', escape: false);
     $response->assertSee('name="product"', escape: false);
     $response->assertSeeText('A crisp and refreshing drink.');
     $response->assertDontSeeText('Works well with meals.');
@@ -95,6 +97,47 @@ test('it shows products for a category loaded by slug', function (): void {
     );
 });
 
+test('it scopes product pages to the default team', function (): void {
+    $defaultTeam = Team::factory()->create();
+
+    $defaultCategory = Category::factory()
+        ->for($defaultTeam)
+        ->create([
+            'slug' => 'beverages',
+        ]);
+
+    $defaultTeamProduct = Product::factory()
+        ->for($defaultTeam)
+        ->for($defaultCategory)
+        ->create([
+            'name' => 'Default Team Product',
+        ]);
+
+    $otherTeam = Team::factory()->create();
+
+    $otherCategory = Category::factory()
+        ->for($otherTeam)
+        ->create([
+            'slug' => 'beverages',
+        ]);
+
+    $otherTeamProduct = Product::factory()
+        ->for($otherTeam)
+        ->for($otherCategory)
+        ->create([
+            'name' => 'Other Team Product',
+        ]);
+
+    $response = $this->get('/beverages');
+
+    $response->assertSuccessful();
+
+    $response->assertSeeText($defaultTeamProduct->name);
+    $response->assertDontSeeText($otherTeamProduct->name);
+});
+
 test('it returns not found for an unknown category slug', function (): void {
+    Team::factory()->create();
+
     $this->get('/does-not-exist')->assertNotFound();
 });

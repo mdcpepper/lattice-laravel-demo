@@ -15,7 +15,8 @@
     <p class="product-card-price">{{ $price() }}</p>
     <p class="card-meta product-card-meta">{{ $description() }}</p>
 
-    <form class="add-to-cart-form" method="get" action="{{ request()->url() }}">
+    <form class="add-to-cart-form" method="post" action="{{ route('cart.items.store', absolute: false) }}">
+        @csrf
         <input type="hidden" name="product" value="{{ $productId() }}">
         <input class="button button--primary button--add-to-cart" type="submit" value="Add to cart">
     </form>

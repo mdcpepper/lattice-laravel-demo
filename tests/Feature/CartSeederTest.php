@@ -16,8 +16,10 @@ it('dispatches cart recalculation for each seeded cart', function (): void {
     Event::fake([CartRecalculationRequested::class]);
 
     $team = Team::factory()->create();
+
     $customerA = Customer::factory()->for($team)->create();
     $customerB = Customer::factory()->for($team)->create();
+
     $productA = Product::factory()->for($team)->create();
     $productB = Product::factory()->for($team)->create();
 
@@ -72,6 +74,7 @@ it('dispatches cart recalculation for each seeded cart', function (): void {
     $seeder->run();
 
     Event::assertDispatchedTimes(CartRecalculationRequested::class, 2);
+
     Event::assertDispatched(
         CartRecalculationRequested::class,
         fn (CartRecalculationRequested $event): bool => Cart::query()

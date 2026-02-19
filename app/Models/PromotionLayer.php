@@ -13,7 +13,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class PromotionLayer extends Model
 {
     /** @use HasFactory<\Database\Factories\PromotionLayerFactory> */
-    use HasFactory, HasRouteUlid;
+    use HasFactory;
+
+    use HasRouteUlid;
 
     protected $fillable = [
         'promotion_stack_id',

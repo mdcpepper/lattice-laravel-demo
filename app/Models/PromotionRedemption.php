@@ -11,7 +11,10 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class PromotionRedemption extends Model
 {
-    use HasFactory, HasRouteUlid;
+    /** @use HasFactory<\Database\Factories\PromotionRedemptionFactory> */
+    use HasFactory;
+
+    use HasRouteUlid;
 
     protected $fillable = [
         'promotion_id',
