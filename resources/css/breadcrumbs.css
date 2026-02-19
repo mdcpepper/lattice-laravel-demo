@@ -1,0 +1,26 @@
+.breadcrumbs {
+    color: var(--text-muted);
+}
+
+.breadcrumbs-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2xs);
+}
+
+.breadcrumbs-item + .breadcrumbs-item::before {
+    content: "/";
+    margin-right: var(--space-2xs);
+}
+
+.breadcrumbs a {
+    color: var(--text-primary);
+    text-decoration: none;
+}
+
+.breadcrumbs a:hover {
+    text-decoration: underline;
+}

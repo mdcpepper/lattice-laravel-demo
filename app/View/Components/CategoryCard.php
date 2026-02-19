@@ -1,0 +1,102 @@
+<?php
+
+namespace App\View\Components;
+
+use App\Models\Category;
+use App\Models\Product;
+use Closure;
+use Illuminate\Contracts\View\View;
+use Illuminate\View\Component;
+
+class CategoryCard extends Component
+{
+    private ?Product $resolvedCardProduct = null;
+
+    private bool $hasResolvedCardProduct = false;
+
+    public function __construct(private Category $category) {}
+
+    public function url(): string
+    {
+        return route(
+            'products.index',
+            ['slug' => $this->category->slug],
+            false,
+        );
+    }
+
+    public function name(): string
+    {
+        return $this->category->name;
+    }
+
+    public function imageSrc(): ?string
+    {
+        return $this->thumbnailUrl() ?? $this->imageUrl();
+    }
+
+    public function imageSrcset(): ?string
+    {
+        if (! $this->hasResponsiveSources()) {
+            return null;
+        }
+
+        return "{$this->thumbnailUrl()} 300w, {$this->imageUrl()} 1200w";
+    }
+
+    public function imageSizes(): ?string
+    {
+        if (! $this->hasResponsiveSources()) {
+            return null;
+        }
+
+        return '(max-width: 320px) 100vw, 320px';
+    }
+
+    public function imageAlt(): string
+    {
+        return ($this->cardProduct()?->name ?? $this->category->name).
+            ' image';
+    }
+
+    public function hasImage(): bool
+    {
+        return $this->imageSrc() !== null;
+    }
+
+    public function hasResponsiveSources(): bool
+    {
+        return $this->thumbnailUrl() !== null && $this->imageUrl() !== null;
+    }
+
+    /**
+     * Get the view / contents that represent the component.
+     */
+    public function render(): View|Closure|string
+    {
+        return view('components.category-card');
+    }
+
+    private function cardProduct(): ?Product
+    {
+        if (! $this->hasResolvedCardProduct) {
+            $this->resolvedCardProduct =
+                $this->category->mainProduct ??
+                $this->category->highestPricedProduct;
+
+            $this->hasResolvedCardProduct = true;
+        }
+
+        return $this->resolvedCardProduct;
+    }
+
+    private function thumbnailUrl(): ?string
+    {
+        return $this->cardProduct()?->thumb_url;
+    }
+
+    private function imageUrl(): ?string
+    {
+        return $this->cardProduct()?->image_url;
+    }
+}

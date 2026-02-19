@@ -12,6 +12,11 @@ use Illuminate\Contracts\Session\Session;
 
 class CartManager
 {
+    public function currentCartForCurrentTeam(Session $session): Cart
+    {
+        return $this->currentCart(app(CurrentTeam::class)->team, $session);
+    }
+
     public function currentCart(Team $team, Session $session): Cart
     {
         $ulid = $session->get('cart_ulid');

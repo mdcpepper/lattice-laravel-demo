@@ -2,22 +2,26 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCurrentTeam;
 use App\Models\Concerns\HasRouteUlid;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * @property string $name
  * @property string $slug
+ * @property int|null $main_product_id
  */
 class Category extends Model
 {
+    use BelongsToCurrentTeam;
     use HasFactory;
     use HasRouteUlid;
 
-    protected $fillable = ['team_id', 'name', 'slug'];
+    protected $fillable = ['team_id', 'name', 'slug', 'main_product_id'];
 
     /**
      * @return BelongsTo<Team, Category>
@@ -33,5 +37,21 @@ class Category extends Model
     public function products(): HasMany
     {
         return $this->hasMany(Product::class);
+    }
+
+    /**
+     * @return BelongsTo<Product, Category>
+     */
+    public function mainProduct(): BelongsTo
+    {
+        return $this->belongsTo(Product::class, 'main_product_id');
+    }
+
+    /**
+     * @return HasOne<Product, Category>
+     */
+    public function highestPricedProduct(): HasOne
+    {
+        return $this->hasOne(Product::class)->ofMany('price', 'max');
     }
 }

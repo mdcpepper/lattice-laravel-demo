@@ -14,8 +14,10 @@ it(
         $promotion = createSaleDiscountPromotion($team);
 
         $stack = PromotionStack::factory()->for($team)->create();
+
         $backtest = Backtest::factory()->for($stack)->create();
         $backtestedCart = BacktestedCart::factory()->for($backtest)->create();
+
         $item = BacktestedCartItem::factory()
             ->for($backtestedCart)
             ->create(['backtest_id' => $backtest->id]);

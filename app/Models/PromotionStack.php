@@ -13,7 +13,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class PromotionStack extends Model
 {
     /** @use HasFactory<\Database\Factories\PromotionStackFactory> */
-    use HasFactory, HasRouteUlid;
+    use HasFactory;
+
+    use HasRouteUlid;
 
     protected static function booted(): void
     {

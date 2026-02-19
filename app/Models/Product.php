@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\BelongsToCurrentTeam;
 use App\Models\Concerns\HasRouteUlid;
 use Cknow\Money\Casts\MoneyIntegerCast;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -11,7 +12,13 @@ use Spatie\Tags\HasTags;
 
 class Product extends Model
 {
-    use HasFactory, HasRouteUlid, HasTags;
+    use BelongsToCurrentTeam;
+
+    /** @use HasFactory<\Database\Factories\ProductFactory> */
+    use HasFactory;
+
+    use HasRouteUlid;
+    use HasTags;
 
     protected $casts = [
         'price' => MoneyIntegerCast::class.':GBP',

@@ -13,7 +13,9 @@ use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 class Backtest extends Model
 {
     /** @use HasFactory<\Database\Factories\BacktestFactory> */
-    use HasFactory, HasRouteUlid;
+    use HasFactory;
+
+    use HasRouteUlid;
 
     protected static function booted(): void
     {

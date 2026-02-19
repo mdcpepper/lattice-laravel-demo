@@ -12,7 +12,8 @@ use Spatie\Tags\HasTags;
 
 class QualificationRule extends Model
 {
-    use HasRouteUlid, HasTags;
+    use HasRouteUlid;
+    use HasTags;
 
     protected $fillable = [
         'qualification_id',

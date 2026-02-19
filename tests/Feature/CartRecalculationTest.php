@@ -17,6 +17,7 @@ it(
         $product = Product::factory()
             ->for($team)
             ->create(['price' => 5_00]);
+
         $product->syncTags(['sale']);
         $product->load('tags');
 
@@ -168,6 +169,7 @@ it(
         $product = Product::factory()
             ->for($team)
             ->create(['price' => 5_00]);
+
         $product->syncTags(['sale']);
         $product->load('tags');
 

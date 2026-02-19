@@ -10,7 +10,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Team extends Model
 {
+    /** @use HasFactory<\Database\Factories\TeamFactory> */
     use HasFactory;
+
     use HasRouteUlid;
 
     protected $fillable = ['name'];

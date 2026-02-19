@@ -15,6 +15,7 @@
         "laravel/framework": "^12.0",
         "laravel/tinker": "^2.10.1",
         "spatie/laravel-tags": "^4.10",
+        "spatie/laravel-view-models": "^1.6",
         "tomatophp/filament-users": "^5.0"
     },
     "require-dev": {

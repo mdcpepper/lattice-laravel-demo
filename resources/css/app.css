@@ -1,11 +1,85 @@
-@import 'tailwindcss';
+@import "./vars.css";
+@import "./breadcrumbs.css";
+@import "./sidebar.css";
+@import "./switcher.css";
+@import "./cards.css";
+@import "./buttons.css";
+@import "./cart.css";
+@import "./categories.css";
+@import "./products.css";
 
-@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../storage/framework/views/*.php';
-@source '../**/*.blade.php';
-@source '../**/*.js';
+* {
+    box-sizing: border-box;
+}
 
-@theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+}
+
+body {
+    margin: 0;
+    font-family:
+        Seravek, "Gill Sans Nova", Ubuntu, Calibri, "DejaVu Sans",
+        source-sans-pro, sans-serif;
+    font-weight: normal;
+    font-size: var(--step--1);
+    background: var(--page-background);
+    color: var(--text-primary);
+}
+
+.site-header {
+    background: var(--card-background);
+    border-bottom: 1px solid var(--card-border);
+    color: var(--text-primary);
+}
+
+.site-header-inner {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-2xs) var(--space-s);
+    padding-top: var(--space-s);
+    padding-bottom: var(--space-s);
+}
+
+.site-header-brand {
+    color: var(--text-primary);
+    margin: 0;
+    font-size: var(--step-0);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.site-header-brand:hover {
+    text-decoration: underline;
+}
+
+.page {
+    margin: 0 auto;
+    max-width: 100rem;
+    padding: var(--space-l) var(--space-s);
+}
+
+.page-title {
+    margin: 0 0 var(--space-m);
+    font-size: var(--step-2);
 }

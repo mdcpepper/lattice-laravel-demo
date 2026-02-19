@@ -1,0 +1,5 @@
+.category-card {
+    --card-transition: box-shadow 0.2s ease-in-out;
+    --card-hover-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+    --card-link-padding: var(--space-s) var(--space-m);
+}
