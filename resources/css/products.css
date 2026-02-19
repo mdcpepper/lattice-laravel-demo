@@ -22,3 +22,14 @@
     --button-padding-inline: var(--space-s);
     --button-font-size: var(--step--2);
 }
+
+.product-card-image {
+    aspect-ratio: auto;
+    width: 100%;
+    max-width: 14rem;
+    height: auto;
+    object-fit: contain;
+    background: var(--card-background);
+    margin-right: auto;
+    margin-left: auto;
+}

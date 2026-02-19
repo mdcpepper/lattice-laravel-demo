@@ -3,3 +3,14 @@
     --card-hover-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
     --card-link-padding: var(--space-s) var(--space-m);
 }
+
+.category-card-image {
+    aspect-ratio: auto;
+    width: 100%;
+    max-width: 14rem;
+    height: auto;
+    object-fit: contain;
+    background: var(--card-background);
+    margin-right: auto;
+    margin-left: auto;
+}
