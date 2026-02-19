@@ -1,16 +1,21 @@
 <aside class="cart-sidebar" aria-label="Cart">
     <article class="card cart-sidebar-card">
-        <h2 class="card-title cart-sidebar-title">Cart</h2>
+        <h2 class="card-title cart-sidebar-title">
+            Cart
+            @if ($itemsCount() > 0)
+                ({{ $itemsCount() }})
+            @endif
+        </h2>
 
         @if ($hasItems())
             <ul class="cart-sidebar-items">
-                @foreach ($items() as $item)
+                @foreach ($groupedItems() as $itemGroup)
                     <li class="cart-sidebar-item">
-                        @if ($productThumbnail($item) !== null)
+                        @if ($productThumbnail($itemGroup) !== null)
                             <img
                                 class="cart-sidebar-item-thumb"
-                                src="{{ $productThumbnail($item) }}"
-                                alt="{{ $productName($item) }}"
+                                src="{{ $productThumbnail($itemGroup) }}"
+                                alt="{{ $productName($itemGroup) }}"
                                 width="300"
                                 height="300"
                             >
@@ -18,28 +23,28 @@
 
                         <div class="cart-sidebar-item-copy">
                             <p class="cart-sidebar-item-heading">
-                                <span class="cart-sidebar-item-name" title="{{ $productName($item) }}">{{ $productName($item) }}</span>
-                                <span class="cart-sidebar-item-quantity">{{ $quantityLabel($item) }}</span>
+                                <span class="cart-sidebar-item-name" title="{{ $productName($itemGroup) }}">{{ $productName($itemGroup) }}</span>
+                                <span class="cart-sidebar-item-quantity">{{ $quantityLabel($itemGroup) }}</span>
                             </p>
                             <p class="cart-sidebar-item-pricing">
-                                @if ($hasDiscountedItemTotal($item))
-                                    <span>{{ $formattedItemTotal($item) }}</span>
-                                    <del>{{ $formattedItemSubtotal($item) }}</del>
+                                @if ($hasDiscountedItemTotal($itemGroup))
+                                    <span>{{ $formattedItemTotal($itemGroup) }}</span>
+                                    <del>{{ $formattedItemSubtotal($itemGroup) }}</del>
                                 @else
-                                    <span>{{ $formattedItemTotal($item) }}</span>
+                                    <span>{{ $formattedItemTotal($itemGroup) }}</span>
                                 @endif
                             </p>
                         </div>
 
                         <form class="cart-sidebar-item-actions" method="post">
                             @csrf
-                            <input type="hidden" name="product" value="{{ $item->product_id }}">
+                            <input type="hidden" name="product" value="{{ $groupedItemProductId($itemGroup) }}">
                             <input
                                 class="button button--primary cart-sidebar-item-action"
                                 type="submit"
                                 value="-"
                                 aria-label="Decrease quantity"
-                                formaction="{{ route('cart.items.remove', ['item' => $item->id], absolute: false) }}"
+                                formaction="{{ route('cart.items.remove', ['item' => $groupedItemRemovalId($itemGroup)], absolute: false) }}"
                             >
                             <input
                                 class="button button--primary cart-sidebar-item-action"

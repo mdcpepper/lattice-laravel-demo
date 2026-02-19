@@ -76,7 +76,6 @@
 
 .cart-sidebar-item-quantity {
     flex-shrink: 0;
-    color: var(--text-muted);
     font-size: var(--step--2);
 }
 

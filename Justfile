@@ -15,3 +15,6 @@ migrate:
 
 rollback:
     docker compose run --rm app php artisan migrate:rollback --step=1
+
+npm *args='':
+    docker compose run --rm app npm {{ args }}
