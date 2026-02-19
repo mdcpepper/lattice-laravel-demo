@@ -10,7 +10,7 @@
     <link rel="preconnect" href="https://cdn.dummyjson.com" crossorigin>
     @vite(['resources/css/app.css'])
 </head>
-<body>
+<body hx-boost="true">
 <header class="site-header">
     <div class="page site-header-inner">
         <a href="{{ route('categories.index', absolute: false) }}" class="site-header-brand">{{ config('app.name') }}</a>
