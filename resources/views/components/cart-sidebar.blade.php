@@ -2,8 +2,8 @@
     <article class="card cart-sidebar-card">
         <h2 class="card-title cart-sidebar-title">
             Cart
-            @if ($itemsCount() > 0)
-                ({{ $itemsCount() }})
+            @if ($itemCount() > 0)
+                ({{ $itemCount() }})
             @endif
         </h2>
 
@@ -34,6 +34,13 @@
                                     <span>{{ $formattedItemTotal($itemGroup) }}</span>
                                 @endif
                             </p>
+                            @if ($itemGroupPromotionNames($itemGroup) !== [])
+                                <ul class="cart-sidebar-item-promotions">
+                                    @foreach ($itemGroupPromotionNames($itemGroup) as $name)
+                                        <li class="cart-sidebar-item-promotion">{{ $name }}</li>
+                                    @endforeach
+                                </ul>
+                            @endif
                         </div>
 
                         <form class="cart-sidebar-item-actions" method="post">
@@ -72,6 +79,23 @@
                         <dt>Subtotal</dt>
                         <dd>{{ $formattedSubtotal() }}</dd>
                     </div>
+                @endif
+
+                @if ($hasPromotionSavings())
+                    <div class="cart-sidebar-row savings">
+                        <dt>Savings</dt>
+                        <dd>-{{ $formattedSavings() }}</dd>
+                    </div>
+
+                    @foreach ($promotionSavings() as $saving)
+                        <div class="cart-sidebar-row savings-detail">
+                            <dt>
+                                {{ $saving->promotionName() }} × {{ $saving->redemptionCount() }}
+                                ({{ $saving->itemCount() }} {{ $saving->itemCount() === 1 ? 'item' : 'items' }})
+                            </dt>
+                            <dd>-{{ $formattedPromotionSavingAmount($saving) }}</dd>
+                        </div>
+                    @endforeach
                 @endif
 
                 <div class="cart-sidebar-row total">

@@ -6,6 +6,9 @@ use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\Promotion;
+use App\Models\PromotionRedemption;
+use App\Models\PromotionStack;
 use App\Models\Team;
 
 test(
@@ -150,16 +153,163 @@ test(
 );
 
 test(
+    'it shows per-item promotion labels on discounted items',
+    function (): void {
+        $team = Team::factory()->create();
+
+        $category = Category::factory()->for($team)->create();
+        $product = Product::factory()
+            ->for($team)
+            ->for($category)
+            ->create(['name' => 'Sandwich']);
+        $fullPriceProduct = Product::factory()
+            ->for($team)
+            ->for($category)
+            ->create(['name' => 'Water']);
+
+        $cart = Cart::factory()
+            ->for($team)
+            ->create(['subtotal' => 500, 'total' => 400]);
+        $stack = PromotionStack::factory()->for($team)->create();
+        $promotion = Promotion::factory()
+            ->for($team)
+            ->create(['name' => 'Summer Sale']);
+
+        $discountedItem = CartItem::factory()
+            ->for($cart)
+            ->for($product)
+            ->create(['price' => 300, 'offer_price' => 200]);
+        $fullPriceItem = CartItem::factory()
+            ->for($cart)
+            ->for($fullPriceProduct)
+            ->create(['price' => 200, 'offer_price' => 200]);
+
+        PromotionRedemption::factory()->create([
+            'promotion_id' => $promotion->id,
+            'promotion_stack_id' => $stack->id,
+            'redeemable_type' => $discountedItem->getMorphClass(),
+            'redeemable_id' => $discountedItem->id,
+            'sort_order' => 0,
+            'redemption_idx' => 0,
+            'original_price' => 300,
+            'original_price_currency' => 'GBP',
+            'final_price' => 200,
+            'final_price_currency' => 'GBP',
+        ]);
+
+        $response = $this->withSession(['cart_ulid' => $cart->ulid])->get('/');
+
+        $response->assertSuccessful();
+        $response->assertSee(
+            'class="cart-sidebar-item-promotions"',
+            escape: false,
+        );
+        $response->assertSee(
+            'class="cart-sidebar-item-promotion"',
+            escape: false,
+        );
+        $response->assertSeeText('Summer Sale');
+
+        $content = (string) $response->getContent();
+        expect(
+            substr_count($content, 'class="cart-sidebar-item-promotions"'),
+        )->toBe(1);
+    },
+);
+
+test(
+    'it shows a savings breakdown between subtotal and total',
+    function (): void {
+        $team = Team::factory()->create();
+
+        $category = Category::factory()->for($team)->create();
+        $productA = Product::factory()
+            ->for($team)
+            ->for($category)
+            ->create(['name' => 'Cola']);
+        $productB = Product::factory()
+            ->for($team)
+            ->for($category)
+            ->create(['name' => 'Crisps']);
+
+        $cart = Cart::factory()
+            ->for($team)
+            ->create(['subtotal' => 600, 'total' => 400]);
+        $stack = PromotionStack::factory()->for($team)->create();
+        $promotionA = Promotion::factory()
+            ->for($team)
+            ->create(['name' => 'Meal Deal']);
+        $promotionB = Promotion::factory()
+            ->for($team)
+            ->create(['name' => 'Weekend Offer']);
+
+        $itemA = CartItem::factory()
+            ->for($cart)
+            ->for($productA)
+            ->create(['price' => 300, 'offer_price' => 200]);
+        $itemB = CartItem::factory()
+            ->for($cart)
+            ->for($productB)
+            ->create(['price' => 300, 'offer_price' => 200]);
+
+        PromotionRedemption::factory()->create([
+            'promotion_id' => $promotionA->id,
+            'promotion_stack_id' => $stack->id,
+            'redeemable_type' => $itemA->getMorphClass(),
+            'redeemable_id' => $itemA->id,
+            'sort_order' => 0,
+            'redemption_idx' => 0,
+            'original_price' => 300,
+            'original_price_currency' => 'GBP',
+            'final_price' => 200,
+            'final_price_currency' => 'GBP',
+        ]);
+
+        PromotionRedemption::factory()->create([
+            'promotion_id' => $promotionB->id,
+            'promotion_stack_id' => $stack->id,
+            'redeemable_type' => $itemB->getMorphClass(),
+            'redeemable_id' => $itemB->id,
+            'sort_order' => 0,
+            'redemption_idx' => 0,
+            'original_price' => 300,
+            'original_price_currency' => 'GBP',
+            'final_price' => 200,
+            'final_price_currency' => 'GBP',
+        ]);
+
+        $response = $this->withSession(['cart_ulid' => $cart->ulid])->get('/');
+
+        $response->assertSuccessful();
+        $response->assertSeeText('Savings');
+        $response->assertSeeText('Meal Deal');
+        $response->assertSeeText('Weekend Offer');
+        $response->assertSeeText('× 1');
+        $response->assertSeeText('(1 item)');
+        $response->assertSeeText('Total');
+        $response->assertSeeText('£4.00');
+        $response->assertSee('class="cart-sidebar-row savings"', escape: false);
+        $response->assertSee(
+            'class="cart-sidebar-row savings-detail"',
+            escape: false,
+        );
+    },
+);
+
+test(
     'it lists current cart item product names in the sidebar',
     function (): void {
         $team = Team::factory()->create();
+
         $category = Category::factory()->for($team)->create();
+
         $product = Product::factory()
             ->for($team)
             ->for($category)
             ->create([
                 'name' => 'Sidebar Cart Product',
             ]);
+
         $fullPriceProduct = Product::factory()
             ->for($team)
             ->for($category)
@@ -173,6 +323,7 @@ test(
                 'subtotal' => 2499,
                 'total' => 1999,
             ]);
+
         $item = CartItem::factory()
             ->for($cart)
             ->for($product)
@@ -180,6 +331,7 @@ test(
                 'price' => 2499,
                 'offer_price' => 1999,
             ]);
+
         CartItem::factory()
             ->for($cart)
             ->for($fullPriceProduct)
