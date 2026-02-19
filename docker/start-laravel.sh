@@ -59,4 +59,22 @@ fi
 
 php artisan migrate --force --graceful --ansi
 
-exec php artisan octane:frankenphp --host=0.0.0.0 --port=8080
+set -- php artisan octane:frankenphp --host=0.0.0.0 --port=8080
+
+is_local="${APP_ENV:-}"
+if [ -z "${is_local}" ] && [ -f .env ]; then
+    is_local="$(grep -E '^APP_ENV=' .env | tail -n 1 | cut -d '=' -f 2- | tr -d '"' | tr -d "'")"
+fi
+
+if [ "${is_local}" = "local" ]; then
+    if command -v node >/dev/null 2>&1 && node -e "require.resolve('chokidar')" >/dev/null 2>&1; then
+        set -- "$@" --watch --poll
+        echo "info: Octane watch mode enabled (--watch --poll)." >&2
+    else
+        max_requests="${OCTANE_MAX_REQUESTS:-1}"
+        set -- "$@" --max-requests="${max_requests}"
+        echo "warning: node/chokidar missing; using --max-requests=${max_requests} for local auto-refresh." >&2
+    fi
+fi
+
+exec "$@"

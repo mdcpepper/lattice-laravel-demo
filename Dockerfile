@@ -9,11 +9,15 @@ ARG HOST_GID=1000
 ENV LATTICE_EXT_REPO=${LATTICE_EXT_REPO}
 ENV LATTICE_EXT_TAG=${LATTICE_EXT_TAG}
 ENV COMPOSER_ALLOW_SUPERUSER=1
+ENV NODE_PATH=/usr/local/lib/node_modules:/usr/lib/node_modules
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends ca-certificates curl git jq libicu-dev libsqlite3-dev libzip-dev unzip zlib1g-dev \
+    && apt-get install -y --no-install-recommends ca-certificates curl git jq libicu-dev libsqlite3-dev libzip-dev nodejs npm unzip zlib1g-dev \
     && docker-php-ext-install bcmath intl pcntl pdo_sqlite zip \
     && rm -rf /var/lib/apt/lists/*
+
+RUN npm install --global chokidar@^4 \
+    && node -e "require('chokidar')"
 
 RUN set -eux; \
     if ! getent group "${HOST_GID}" >/dev/null; then \

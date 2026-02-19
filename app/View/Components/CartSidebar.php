@@ -2,12 +2,14 @@
 
 namespace App\View\Components;
 
+use App\DTOs\CartItemGroup;
 use App\Models\Cart;
 use App\Models\CartItem;
 use Closure;
 use Illuminate\Contracts\Session\Session;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Collection as SupportCollection;
 use Illuminate\View\Component;
 
 class CartSidebar extends Component
@@ -21,7 +23,17 @@ class CartSidebar extends Component
      */
     private ?Collection $resolvedItems = null;
 
+    /**
+     * @var SupportCollection<int, CartItemGroup>|null
+     */
+    private ?SupportCollection $resolvedGroupedItems = null;
+
     public function __construct(private Session $session) {}
+
+    public function itemsCount(): int
+    {
+        return $this->items()->count();
+    }
 
     /**
      * @return Collection<int, CartItem>
@@ -43,7 +55,52 @@ class CartSidebar extends Component
 
     public function hasItems(): bool
     {
-        return $this->items()->isNotEmpty();
+        return $this->groupedItems()->isNotEmpty();
+    }
+
+    /**
+     * @return SupportCollection<int, CartItemGroup>
+     */
+    public function groupedItems(): SupportCollection
+    {
+        if ($this->resolvedGroupedItems !== null) {
+            return $this->resolvedGroupedItems;
+        }
+
+        return $this->resolvedGroupedItems = $this->items()
+            ->groupBy(fn (CartItem $item): string => $this->itemGroupKey($item))
+            ->map(function (Collection $groupedItems): ?CartItemGroup {
+                $firstItem = $groupedItems->first();
+
+                if (! $firstItem instanceof CartItem) {
+                    return null;
+                }
+
+                $product = $firstItem->product;
+
+                if ($product === null) {
+                    return null;
+                }
+
+                return new CartItemGroup(
+                    product: $product,
+                    quantity: $groupedItems->count(),
+                    subtotalInMinorUnits: (int) $groupedItems->sum(
+                        fn (
+                            CartItem $item,
+                        ): int => $this->itemSubtotalInMinorUnits($item),
+                    ),
+                    totalInMinorUnits: (int) $groupedItems->sum(
+                        fn (CartItem $item): int => $this->itemTotalInMinorUnits(
+                            $item,
+                        ),
+                    ),
+                );
+            })
+            ->filter(
+                fn (?CartItemGroup $itemGroup): bool => $itemGroup instanceof CartItemGroup,
+            )
+            ->values();
     }
 
     public function hasDiscountedTotal(): bool
@@ -61,35 +118,63 @@ class CartSidebar extends Component
         return $this->formatMinorUnits($this->totalInMinorUnits());
     }
 
-    public function productName(CartItem $item): string
+    public function productName(CartItemGroup $itemGroup): string
     {
-        return $item->product?->name ?? 'Unknown product';
+        return $itemGroup->product()->name;
     }
 
-    public function productThumbnail(CartItem $item): ?string
+    public function productThumbnail(CartItemGroup $itemGroup): ?string
     {
-        return $item->product?->thumb_url;
+        return $itemGroup->product()->thumb_url;
     }
 
-    public function quantityLabel(CartItem $item): string
+    public function quantityLabel(CartItemGroup $itemGroup): string
     {
-        return '× 1';
+        return '× '.$itemGroup->quantity();
     }
 
-    public function hasDiscountedItemTotal(CartItem $item): bool
+    public function hasDiscountedItemTotal(CartItemGroup $itemGroup): bool
     {
-        return $this->itemSubtotalInMinorUnits($item) !==
-            $this->itemTotalInMinorUnits($item);
+        return $this->itemGroupSubtotalUnitInMinorUnits($itemGroup) !==
+            $this->itemGroupTotalUnitInMinorUnits($itemGroup);
     }
 
-    public function formattedItemSubtotal(CartItem $item): string
+    public function formattedItemSubtotal(CartItemGroup $itemGroup): string
     {
-        return $this->formatMinorUnits($this->itemSubtotalInMinorUnits($item));
+        return $this->formatMinorUnits(
+            $this->itemGroupSubtotalUnitInMinorUnits($itemGroup),
+        );
     }
 
-    public function formattedItemTotal(CartItem $item): string
+    public function formattedItemTotal(CartItemGroup $itemGroup): string
     {
-        return $this->formatMinorUnits($this->itemTotalInMinorUnits($item));
+        return $this->formatMinorUnits(
+            $this->itemGroupTotalUnitInMinorUnits($itemGroup),
+        );
+    }
+
+    public function groupedItemProductId(CartItemGroup $itemGroup): int
+    {
+        return (int) $itemGroup->product()->getKey();
+    }
+
+    public function groupedItemRemovalId(CartItemGroup $itemGroup): int
+    {
+        $offerPriceInMinorUnits = $this->itemGroupTotalUnitInMinorUnits(
+            $itemGroup,
+        );
+
+        $matchingItem = $this->items()
+            ->filter(
+                fn (CartItem $item): bool => (int) $item->product_id ===
+                    $this->groupedItemProductId($itemGroup) &&
+                    $this->itemTotalInMinorUnits($item) ===
+                        $offerPriceInMinorUnits,
+            )
+            ->sortBy('id')
+            ->first();
+
+        return $matchingItem instanceof CartItem ? (int) $matchingItem->id : 0;
     }
 
     private function cart(): ?Cart
@@ -152,6 +237,31 @@ class CartSidebar extends Component
     private function itemTotalInMinorUnits(CartItem $item): int
     {
         return (int) $item->getRawOriginal('offer_price');
+    }
+
+    private function itemGroupKey(CartItem $item): string
+    {
+        return (string) $item->product_id.
+            ':'.
+            $this->itemTotalInMinorUnits($item);
+    }
+
+    private function itemGroupSubtotalUnitInMinorUnits(
+        CartItemGroup $itemGroup,
+    ): int {
+        return intdiv(
+            $itemGroup->subtotalInMinorUnits(),
+            max($itemGroup->quantity(), 1),
+        );
+    }
+
+    private function itemGroupTotalUnitInMinorUnits(
+        CartItemGroup $itemGroup,
+    ): int {
+        return intdiv(
+            $itemGroup->totalInMinorUnits(),
+            max($itemGroup->quantity(), 1),
+        );
     }
 
     /**
