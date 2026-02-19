@@ -1,5 +1,5 @@
 .product-card {
-    --card-min-width: 15em;
+    --card-min-width: 20em;
     --card-padding: var(--space-s) var(--space-m);
     --card-meta-text-align: left;
 
