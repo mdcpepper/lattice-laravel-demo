@@ -1,8 +1,5 @@
 .cart-sidebar {
     align-self: start;
-}
-
-.with-sidebar.is-sidebar .cart-sidebar {
     position: sticky;
     top: var(--space-s);
 }

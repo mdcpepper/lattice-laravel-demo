@@ -24,6 +24,8 @@
             @endforelse
         </section>
 
-        <x-cart-sidebar />
+        <div id="cart-sidebar" class="cart-sidebar" hx-boost="false">
+            <x-cart-sidebar />
+        </div>
     </div>
 </x-layout>

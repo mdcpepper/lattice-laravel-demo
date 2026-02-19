@@ -1,4 +1,4 @@
-<aside class="cart-sidebar" aria-label="Cart">
+<aside aria-label="Cart">
     <article class="card cart-sidebar-card">
         <h2 class="card-title cart-sidebar-title">
             Cart
@@ -45,6 +45,10 @@
                                 value="-"
                                 aria-label="Decrease quantity"
                                 formaction="{{ route('cart.items.remove', ['item' => $groupedItemRemovalId($itemGroup)], absolute: false) }}"
+                                hx-post="{{ route('cart.items.remove', ['item' => $groupedItemRemovalId($itemGroup)], absolute: false) }}"
+                                hx-target="#cart-sidebar"
+                                hx-swap="innerHTML"
+                                hx-include="closest form"
                             >
                             <input
                                 class="button button--primary cart-sidebar-item-action"
@@ -52,6 +56,10 @@
                                 value="+"
                                 aria-label="Increase quantity"
                                 formaction="{{ route('cart.items.store', absolute: false) }}"
+                                hx-post="{{ route('cart.items.store', absolute: false) }}"
+                                hx-target="#cart-sidebar"
+                                hx-swap="innerHTML"
+                                hx-include="closest form"
                             >
                          </form>
                     </li>

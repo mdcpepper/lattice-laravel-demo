@@ -17,7 +17,14 @@
     <p class="product-card-price">{{ $price() }}</p>
     <p class="card-meta product-card-meta">{{ $description() }}</p>
 
-    <form class="add-to-cart-form" method="post" action="{{ route('cart.items.store', absolute: false) }}">
+    <form
+        class="add-to-cart-form"
+        method="post"
+        action="{{ route('cart.items.store', absolute: false) }}"
+        hx-post="{{ route('cart.items.store', absolute: false) }}"
+        hx-target="#cart-sidebar"
+        hx-swap="innerHTML"
+    >
         @csrf
         <input type="hidden" name="product" value="{{ $productId() }}">
         <input class="button button--primary button--add-to-cart" type="submit" value="Add to cart">
