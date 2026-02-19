@@ -5,6 +5,7 @@ namespace Tests\Feature\Filament;
 use App\Filament\Admin\Resources\Carts\Tables\ProductSelectionTable;
 use App\Filament\Admin\Resources\Categories\Pages\CreateCategory;
 use App\Filament\Admin\Resources\Categories\Pages\EditCategory;
+use App\Filament\Admin\Resources\Categories\Pages\ListCategories;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\Team;
@@ -52,6 +53,30 @@ it('can create a category with a main product', function (): void {
         ->and($category?->main_product_id)
         ->toBe($mainProduct->id);
 });
+
+it(
+    'shows the main product thumbnail in the categories table',
+    function (): void {
+        $category = Category::factory()->for($this->team)->create();
+
+        $mainProduct = Product::factory()
+            ->for($this->team)
+            ->for($category)
+            ->create([
+                'thumb_url' => 'https://example.test/thumb.jpg',
+                'image_url' => 'https://example.test/image.jpg',
+            ]);
+
+        $category->update(['main_product_id' => $mainProduct->id]);
+
+        Livewire::test(ListCategories::class)
+            ->assertCanSeeTableRecords([$category])
+            ->assertSee('Thumbnail')
+            ->assertSee('Featured Product')
+            ->assertSee($mainProduct->name)
+            ->assertSee('https://example.test/thumb.jpg');
+    },
+);
 
 it('can update the main product on a category', function (): void {
     $category = Category::factory()->for($this->team)->create();

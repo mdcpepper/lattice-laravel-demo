@@ -7,10 +7,11 @@ use App\Models\Category;
 use App\Models\Product;
 use Closure;
 use Filament\Forms\Components\Hidden;
-use Filament\Forms\Components\TableSelect;
+use Filament\Forms\Components\ModalTableSelect;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
+use Illuminate\Support\HtmlString;
 
 class CategoryForm
 {
@@ -30,9 +31,24 @@ class CategoryForm
                 })
                 ->dehydrated(false),
 
-            TableSelect::make('main_product_id')
-                ->label('Main Product')
-                ->columnSpanFull()
+            ModalTableSelect::make('main_product_id')
+                ->label('Featured Product')
+                ->placeholder('Select a featured product')
+                ->relationship('mainProduct', 'name')
+                ->getOptionLabelFromRecordUsing(function (
+                    Product $record,
+                ): HtmlString {
+                    $name = e($record->name);
+                    $thumbnailUrl = e($record->thumb_url ?: $record->image_url);
+
+                    if (blank($thumbnailUrl)) {
+                        return new HtmlString($name);
+                    }
+
+                    return new HtmlString(
+                        "<span><img src=\"{$thumbnailUrl}\" alt=\"{$name} thumbnail\" style=\"width: 1.5rem; height: 1.5rem; object-fit: cover; border-radius: 0.25rem; display: inline-block; vertical-align: middle; margin-right: 0.5rem;\">{$name}</span>",
+                    );
+                })
                 ->tableConfiguration(ProductSelectionTable::class)
                 ->tableArguments(
                     fn (Get $get, ?Category $record, mixed $livewire): array => [
