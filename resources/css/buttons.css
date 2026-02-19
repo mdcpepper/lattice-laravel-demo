@@ -1,0 +1,44 @@
+.button {
+    --button-padding-block: var(--space-xs);
+    --button-padding-inline: var(--space-m);
+    --button-font-size: var(--step--1);
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid transparent;
+    border-radius: var(--space-3xs);
+    padding: var(--button-padding-block) var(--button-padding-inline);
+    font: inherit;
+    font-size: var(--button-font-size);
+    font-weight: 600;
+    line-height: 1.2;
+    text-decoration: none;
+    appearance: none;
+    cursor: pointer;
+    transition:
+        background-color 0.2s ease-in-out,
+        border-color 0.2s ease-in-out,
+        color 0.2s ease-in-out,
+        box-shadow 0.2s ease-in-out;
+}
+
+.button:focus-visible {
+    outline: 3px solid var(--button-focus-outline);
+    outline-offset: 2px;
+}
+
+.button--primary {
+    background: var(--button-primary-bg);
+    border-color: var(--button-primary-border);
+    color: var(--button-primary-text);
+}
+
+.button--primary:hover {
+    background: var(--button-primary-hover-bg);
+    border-color: var(--button-primary-hover-border);
+}
+
+.button--primary:focus-visible {
+    box-shadow: 0 0 0 3px var(--button-primary-focus-ring);
+}

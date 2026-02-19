@@ -67,11 +67,21 @@ test('it shows products for a category loaded by slug', function (): void {
         escape: false,
     );
 
+    $response->assertSee('class="with-sidebar"', escape: false);
+    $response->assertSee('aria-label="Cart"', escape: false);
+    $response->assertSeeText('Your cart is empty.');
+
     $response->assertSeeText($category->name);
     $response->assertSeeText($firstProduct->name);
     $response->assertSeeText($secondProduct->name);
     $response->assertSeeText('£1.99');
     $response->assertSeeText('£3.49');
+    $response->assertSee(
+        'class="button button--primary button--add-to-cart"',
+        escape: false,
+    );
+    $response->assertSee('value="Add to cart"', escape: false);
+    $response->assertSee('name="product"', escape: false);
     $response->assertSeeText('A crisp and refreshing drink.');
     $response->assertDontSeeText('Works well with meals.');
     $response->assertDontSeeText('Potato Chips');

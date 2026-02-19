@@ -1,0 +1,24 @@
+.cart-sidebar {
+    align-self: start;
+}
+
+.with-sidebar.is-sidebar .cart-sidebar {
+    position: sticky;
+    top: var(--space-s);
+}
+
+.cart-sidebar-card {
+    --card-min-width: auto;
+    --card-padding: var(--space-s) var(--space-m);
+    --card-meta-text-align: left;
+
+    text-align: left;
+}
+
+.cart-sidebar-title {
+    font-size: var(--step-1);
+}
+
+.cart-sidebar-meta {
+    margin-top: var(--space-xs);
+}

@@ -14,4 +14,9 @@
     <h2 class="card-title product-card-title">{{ $name() }}</h2>
     <p class="product-card-price">{{ $price() }}</p>
     <p class="card-meta product-card-meta">{{ $description() }}</p>
+
+    <form class="add-to-cart-form" method="get" action="{{ request()->url() }}">
+        <input type="hidden" name="product" value="{{ $productId() }}">
+        <input class="button button--primary button--add-to-cart" type="submit" value="Add to cart">
+    </form>
 </article>

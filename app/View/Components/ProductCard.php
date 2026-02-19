@@ -66,6 +66,11 @@ class ProductCard extends Component
         return "{$this->name()} image";
     }
 
+    public function productId(): int
+    {
+        return $this->product->id;
+    }
+
     public function hasImage(): bool
     {
         return $this->imageSrc() !== null;

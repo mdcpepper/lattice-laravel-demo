@@ -67,6 +67,10 @@ test('the home page returns a successful response', function (): void {
         escape: false,
     );
 
+    $response->assertSee('class="with-sidebar"', escape: false);
+    $response->assertSee('aria-label="Cart"', escape: false);
+    $response->assertSeeText('Your cart is empty.');
+
     $response->assertSeeText($categoryWithMainProduct->name);
     $response->assertSeeText($categoryWithoutMainProduct->name);
 

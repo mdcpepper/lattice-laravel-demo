@@ -1,10 +1,24 @@
 .product-card {
-    --card-min-width: 20em;
+    --card-min-width: 15em;
     --card-padding: var(--space-s) var(--space-m);
     --card-meta-text-align: left;
+
+    display: flex;
+    flex-direction: column;
 }
 
 .product-card-price {
     margin: var(--space-2xs) 0 0;
     font-weight: 600;
+}
+
+.add-to-cart-form {
+    margin-top: auto;
+    padding-top: var(--space-s);
+}
+
+.button--add-to-cart {
+    --button-padding-block: var(--space-2xs);
+    --button-padding-inline: var(--space-s);
+    --button-font-size: var(--step--2);
 }
