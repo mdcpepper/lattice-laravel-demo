@@ -91,7 +91,9 @@
                         <div class="cart-sidebar-row savings-detail">
                             <dt>
                                 {{ $saving->promotionName() }} × {{ $saving->redemptionCount() }}
-                                ({{ $saving->itemCount() }} {{ $saving->itemCount() === 1 ? 'item' : 'items' }})
+                                @if($saving->redemptionCount() != $saving->itemCount())
+                                    ({{ $saving->itemCount() }} {{ $saving->itemCount() === 1 ? 'item' : 'items' }})
+                                @endif
                             </dt>
                             <dd>-{{ $formattedPromotionSavingAmount($saving) }}</dd>
                         </div>
