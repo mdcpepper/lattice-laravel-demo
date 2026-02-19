@@ -1,6 +1,6 @@
 <?php
 
-namespace App\ViewModels;
+namespace App\ViewModels\Categories;
 
 use App\Models\Category;
 use Illuminate\Database\Eloquent\Collection;

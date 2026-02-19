@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\ViewModels\IndexViewModel;
+use App\ViewModels\Categories\IndexViewModel;
 
 class IndexController extends Controller
 {
     public function __invoke(): IndexViewModel
     {
-        return new IndexViewModel()->view('index');
+        return new IndexViewModel()->view('categories.index');
     }
 }

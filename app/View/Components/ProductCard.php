@@ -2,32 +2,40 @@
 
 namespace App\View\Components;
 
-use App\Models\Category;
 use App\Models\Product;
 use Closure;
 use Illuminate\Contracts\View\View;
 use Illuminate\View\Component;
 
-class CategoryCard extends Component
+class ProductCard extends Component
 {
-    private ?Product $resolvedCardProduct = null;
-
-    private bool $hasResolvedCardProduct = false;
-
-    public function __construct(private Category $category) {}
-
-    public function url(): string
-    {
-        return route(
-            'products.index',
-            ['slug' => $this->category->slug],
-            false,
-        );
-    }
+    public function __construct(private Product $product) {}
 
     public function name(): string
     {
-        return $this->category->name;
+        return $this->product->name;
+    }
+
+    public function description(): string
+    {
+        $description = trim(
+            (string) preg_replace("/\s+/", ' ', $this->product->description),
+        );
+
+        if ($description === '') {
+            return '';
+        }
+
+        if (preg_match('/^.*?[.!?](?:\s|$)/u', $description, $matches) === 1) {
+            return trim($matches[0]);
+        }
+
+        return $description;
+    }
+
+    public function price(): string
+    {
+        return '£'.number_format($this->priceInMinorUnits() / 100, 2);
     }
 
     public function imageSrc(): ?string
@@ -55,8 +63,7 @@ class CategoryCard extends Component
 
     public function imageAlt(): string
     {
-        return ($this->cardProduct()?->name ?? $this->category->name).
-            ' image';
+        return "{$this->name()} image";
     }
 
     public function hasImage(): bool
@@ -74,29 +81,21 @@ class CategoryCard extends Component
      */
     public function render(): View|Closure|string
     {
-        return view('components.category-card');
-    }
-
-    private function cardProduct(): ?Product
-    {
-        if (! $this->hasResolvedCardProduct) {
-            $this->resolvedCardProduct =
-                $this->category->mainProduct ??
-                $this->category->highestPricedProduct;
-
-            $this->hasResolvedCardProduct = true;
-        }
-
-        return $this->resolvedCardProduct;
+        return view('components.product-card');
     }
 
     private function thumbnailUrl(): ?string
     {
-        return $this->cardProduct()?->thumb_url;
+        return $this->product->thumb_url;
     }
 
     private function imageUrl(): ?string
     {
-        return $this->cardProduct()?->image_url;
+        return $this->product->image_url;
+    }
+
+    private function priceInMinorUnits(): int
+    {
+        return (int) $this->product->getRawOriginal('price');
     }
 }

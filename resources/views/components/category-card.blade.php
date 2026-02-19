@@ -1,8 +1,8 @@
-<article class="category-card">
-    <a href="{{ $url() }}">
+<article class="card category-card">
+    <a class="card-link category-card-link" href="{{ $url() }}">
         @if ($hasImage())
             <img
-                class="category-card-image"
+                class="card-image category-card-image"
                 src="{{ $imageSrc() }}"
                 @if ($hasResponsiveSources())
                     srcset="{{ $imageSrcset() }}"
@@ -12,6 +12,6 @@
             >
         @endif
 
-        <h2 class="category-card-title">{{ $name() }}</h2>
+        <h2 class="card-title category-card-title">{{ $name() }}</h2>
     </a>
 </article>

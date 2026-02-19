@@ -1,0 +1,10 @@
+.product-card {
+    --card-min-width: 20em;
+    --card-padding: var(--space-s) var(--space-m);
+    --card-meta-text-align: left;
+}
+
+.product-card-price {
+    margin: var(--space-2xs) 0 0;
+    font-weight: 600;
+}

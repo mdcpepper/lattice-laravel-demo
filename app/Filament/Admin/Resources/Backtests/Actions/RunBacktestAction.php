@@ -39,7 +39,6 @@ class RunBacktestAction
                     'status' => BacktestStatus::Running,
                 ]);
 
-                /** @var PendingChain $chain */
                 $chain = Bus::chain(
                     $cartIds
                         ->map(

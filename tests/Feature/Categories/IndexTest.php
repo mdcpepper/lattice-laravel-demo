@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests\Feature\Categories;
 
 use App\Models\Category;
 use App\Models\Product;
@@ -58,6 +58,15 @@ test('the home page returns a successful response', function (): void {
 
     $response->assertSuccessful();
 
+    $response->assertSee('class="site-header-brand"', escape: false);
+    $response->assertSeeText(config('app.name'));
+
+    $response->assertSee('aria-label="Breadcrumb"', escape: false);
+    $response->assertSee(
+        '<span aria-current="page">Categories</span>',
+        escape: false,
+    );
+
     $response->assertSeeText($categoryWithMainProduct->name);
     $response->assertSeeText($categoryWithoutMainProduct->name);
 
@@ -66,7 +75,7 @@ test('the home page returns a successful response', function (): void {
     $response->assertSee($fallbackProduct->thumb_url, escape: false);
     $response->assertSee($fallbackProduct->image_url, escape: false);
     $response->assertSee(
-        'sizes="(max-width: 300px) 100vw, 300px"',
+        'sizes="(max-width: 320px) 100vw, 320px"',
         escape: false,
     );
 });
