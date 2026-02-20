@@ -326,6 +326,44 @@ it(
     },
 );
 
+it('can save a stack as a new stack', function (): void {
+    $promo = createDirectPromotion($this->team, 'Promo');
+
+    $stack = PromotionStack::query()->create([
+        'team_id' => $this->team->id,
+        'name' => 'Original Stack',
+        'root_layer_reference' => 'root',
+        'active_from' => now()->toDateString(),
+        'active_to' => now()->addMonth()->toDateString(),
+    ]);
+
+    $layer = $stack->layers()->create([
+        'reference' => 'root',
+        'name' => 'Root Layer',
+        'sort_order' => 0,
+        'output_mode' => 'pass_through',
+    ]);
+    $layer->promotions()->sync([$promo->id => ['sort_order' => 0]]);
+
+    $originalCount = PromotionStack::query()->count();
+
+    Livewire::test(EditPromotionStack::class, ['record' => $stack->ulid])
+        ->callAction('saveAsNew', data: ['name' => 'Cloned Stack'])
+        ->assertHasNoActionErrors();
+
+    expect(PromotionStack::query()->count())->toBe($originalCount + 1);
+
+    $newStack = PromotionStack::query()->latest('id')->first();
+    expect($newStack->name)
+        ->toBe('Cloned Stack')
+        ->and($newStack->active_from)
+        ->toBeNull()
+        ->and($newStack->active_to)
+        ->toBeNull()
+        ->and($newStack->layers()->count())
+        ->toBe(1);
+});
+
 function createDirectPromotion(Team $team, string $name): Promotion
 {
     $discount = SimpleDiscount::query()->create([
