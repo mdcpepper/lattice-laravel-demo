@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Services\Lattice\Concerns;
 
-use App\Models\Promotion as PromotionModel;
+use App\Models\Promotions\Promotion;
 use RuntimeException;
 
 trait HandlesUnsupportedPromotionableType
 {
     protected function unsupportedPromotionableType(
-        PromotionModel $promotion,
+        Promotion $promotion,
     ): RuntimeException {
         $promotionable = $promotion->relationLoaded('promotionable')
             ? $promotion->getRelation('promotionable')

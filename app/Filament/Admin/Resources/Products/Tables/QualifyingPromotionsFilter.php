@@ -3,7 +3,7 @@
 namespace App\Filament\Admin\Resources\Products\Tables;
 
 use App\Models\Product;
-use App\Models\Promotion;
+use App\Models\Promotions\Promotion;
 use App\Services\ProductQualificationChecker;
 use Closure;
 use Filament\Tables\Filters\SelectFilter;

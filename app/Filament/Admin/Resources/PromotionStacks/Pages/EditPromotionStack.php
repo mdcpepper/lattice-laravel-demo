@@ -4,7 +4,7 @@ namespace App\Filament\Admin\Resources\PromotionStacks\Pages;
 
 use App\Filament\Admin\Resources\PromotionStacks\Concerns\InteractsWithPromotionStackLayers;
 use App\Filament\Admin\Resources\PromotionStacks\PromotionStackResource;
-use App\Models\PromotionStack;
+use App\Models\Promotions\PromotionStack;
 use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Database\Eloquent\Model;

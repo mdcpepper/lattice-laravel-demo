@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Services\Lattice;
 
-use App\Models\Promotion;
+use App\Models\Promotions\Promotion;
 use App\Services\Lattice\Promotions\LatticePromotionFactory;
 use Lattice\Discount\Percentage;
 use Lattice\Discount\Simple;

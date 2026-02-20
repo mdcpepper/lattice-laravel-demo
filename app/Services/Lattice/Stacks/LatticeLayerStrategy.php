@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Lattice\Stacks;
 
-use App\Models\PromotionLayer as PromotionLayerModel;
+use App\Models\Promotions\PromotionLayer as PromotionLayerModel;
 use Lattice\Stack\Layer as LatticeLayer;
 
 interface LatticeLayerStrategy

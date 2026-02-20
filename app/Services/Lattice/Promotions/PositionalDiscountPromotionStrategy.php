@@ -5,17 +5,17 @@ declare(strict_types=1);
 namespace App\Services\Lattice\Promotions;
 
 use App\Enums\QualificationContext;
-use App\Models\PositionalDiscountPosition as PositionalDiscountPositionModel;
-use App\Models\PositionalDiscountPromotion as PositionalDiscountPromotionModel;
-use App\Models\Promotion as PromotionModel;
-use App\Models\Qualification as QualificationModel;
-use App\Models\SimpleDiscount as SimpleDiscountModel;
+use App\Models\Promotions\PositionalDiscountPosition;
+use App\Models\Promotions\PositionalDiscountPromotion;
+use App\Models\Promotions\Promotion;
+use App\Models\Promotions\Qualification;
+use App\Models\Promotions\SimpleDiscount;
 use App\Services\Lattice\Concerns\BuildsLatticeBudget;
 use App\Services\Lattice\Concerns\BuildsLatticeDiscountValues;
 use App\Services\Lattice\Concerns\BuildsLatticeQualification;
 use App\Services\Lattice\Concerns\BuildsSimpleLatticeDiscount;
 use App\Services\Lattice\Concerns\HandlesUnsupportedPromotionableType;
-use Lattice\Promotion\Positional as PositionalDiscountPromotion;
+use Lattice\Promotion\Positional as LatticePositional;
 use Lattice\Promotion\PromotionInterface as LatticePromotion;
 use RuntimeException;
 
@@ -27,22 +27,22 @@ class PositionalDiscountPromotionStrategy implements LatticePromotionStrategy
     use BuildsSimpleLatticeDiscount;
     use HandlesUnsupportedPromotionableType;
 
-    public function supports(PromotionModel $promotion): bool
+    public function supports(Promotion $promotion): bool
     {
-        return $promotion->promotionable instanceof PositionalDiscountPromotionModel;
+        return $promotion->promotionable instanceof PositionalDiscountPromotion;
     }
 
-    public function make(PromotionModel $promotion): ?LatticePromotion
+    public function make(Promotion $promotion): ?LatticePromotion
     {
         $promotionable = $promotion->promotionable;
 
-        if (! $promotionable instanceof PositionalDiscountPromotionModel) {
+        if (! $promotionable instanceof PositionalDiscountPromotion) {
             throw $this->unsupportedPromotionableType($promotion);
         }
 
         $discount = $promotionable->discount;
 
-        if (! $discount instanceof SimpleDiscountModel) {
+        if (! $discount instanceof SimpleDiscount) {
             throw new RuntimeException(
                 'Positional discount promotion is missing its simple discount relation.',
             );
@@ -66,12 +66,12 @@ class PositionalDiscountPromotionStrategy implements LatticePromotionStrategy
             ->values()
             ->map(
                 fn (
-                    PositionalDiscountPositionModel $position,
+                    PositionalDiscountPosition $position,
                 ): int => $position->position,
             )
             ->all();
 
-        return new PositionalDiscountPromotion(
+        return new LatticePositional(
             reference: $promotion,
             qualification: $this->makeQualification(
                 $rootQualification,
@@ -85,21 +85,21 @@ class PositionalDiscountPromotionStrategy implements LatticePromotionStrategy
     }
 
     private function resolveRootQualification(
-        PromotionModel $promotion,
-        PositionalDiscountPromotionModel $positionalPromotion,
-    ): QualificationModel {
+        Promotion $promotion,
+        PositionalDiscountPromotion $positionalPromotion,
+    ): Qualification {
         $positionalQualification = $positionalPromotion->relationLoaded(
             'qualification',
         )
             ? $positionalPromotion->qualification
             : null;
 
-        if ($positionalQualification instanceof QualificationModel) {
+        if ($positionalQualification instanceof Qualification) {
             return $positionalQualification;
         }
 
         $qualification = $promotion->qualifications->first(
-            fn (QualificationModel $candidate): bool => $candidate->context ===
+            fn (Qualification $candidate): bool => $candidate->context ===
                 QualificationContext::Primary->value &&
                 $candidate->qualifiable_type ===
                     $positionalPromotion->getMorphClass() &&
@@ -107,7 +107,7 @@ class PositionalDiscountPromotionStrategy implements LatticePromotionStrategy
                     (int) $positionalPromotion->getKey(),
         );
 
-        if ($qualification instanceof QualificationModel) {
+        if ($qualification instanceof Qualification) {
             return $qualification;
         }
 

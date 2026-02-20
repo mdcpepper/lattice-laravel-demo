@@ -7,8 +7,8 @@ namespace Tests\Unit\Services\Lattice;
 use App\Enums\QualificationContext;
 use App\Enums\QualificationOp;
 use App\Enums\QualificationRuleKind;
-use App\Models\Qualification;
-use App\Models\QualificationRule;
+use App\Models\Promotions\Qualification;
+use App\Models\Promotions\QualificationRule;
 
 function qualification(
     int $id,

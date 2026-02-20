@@ -2,7 +2,7 @@
 
 namespace App\Filament\Admin\Resources\Backtests\Widgets;
 
-use App\Models\Backtest;
+use App\Models\Backtests\Backtest;
 use Filament\Widgets\ChartWidget;
 
 class DiscountDistributionChartWidget extends ChartWidget

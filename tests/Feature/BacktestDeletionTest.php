@@ -1,10 +1,10 @@
 <?php
 
-use App\Models\Backtest;
-use App\Models\BacktestedCart;
-use App\Models\BacktestedCartItem;
-use App\Models\PromotionRedemption;
-use App\Models\PromotionStack;
+use App\Models\Backtests\Backtest;
+use App\Models\Backtests\BacktestedCart;
+use App\Models\Backtests\BacktestedCartItem;
+use App\Models\Promotions\PromotionRedemption;
+use App\Models\Promotions\PromotionStack;
 use App\Models\Team;
 
 it(

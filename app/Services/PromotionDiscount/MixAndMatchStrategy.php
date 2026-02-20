@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Services\PromotionDiscount;
 
 use App\Enums\MixAndMatchDiscountKind;
-use App\Models\MixAndMatchDiscount;
-use App\Models\MixAndMatchPromotion;
-use App\Models\Promotion;
+use App\Models\Promotions\MixAndMatchDiscount;
+use App\Models\Promotions\MixAndMatchPromotion;
+use App\Models\Promotions\Promotion;
 
 class MixAndMatchStrategy implements PromotionDiscountStrategy
 {

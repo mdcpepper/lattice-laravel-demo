@@ -7,7 +7,7 @@ use App\Filament\Admin\Resources\PromotionStacks\Pages\EditPromotionStack;
 use App\Filament\Admin\Resources\PromotionStacks\Pages\ListPromotionStacks;
 use App\Filament\Admin\Resources\PromotionStacks\Schemas\PromotionStackForm;
 use App\Filament\Admin\Resources\PromotionStacks\Tables\PromotionStacksTable;
-use App\Models\PromotionStack;
+use App\Models\Promotions\PromotionStack;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;

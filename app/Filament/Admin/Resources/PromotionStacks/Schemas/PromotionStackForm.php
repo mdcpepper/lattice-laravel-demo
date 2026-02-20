@@ -4,7 +4,7 @@ namespace App\Filament\Admin\Resources\PromotionStacks\Schemas;
 
 use App\Enums\PromotionLayerOutputMode;
 use App\Enums\PromotionLayerOutputTargetMode;
-use App\Models\Promotion;
+use App\Models\Promotions\Promotion;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Repeater;

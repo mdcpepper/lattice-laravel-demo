@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Services\Lattice\Concerns;
 
-use App\Models\CartItem;
-use App\Models\Promotion as PromotionModel;
-use App\Models\PromotionRedemption;
+use App\Models\Cart\CartItem;
+use App\Models\Promotions\Promotion;
+use App\Models\Promotions\PromotionRedemption;
 use Lattice\Money as LatticeMoney;
 use Lattice\Promotion\Budget as LatticeBudget;
 
 trait BuildsLatticeBudget
 {
-    protected function makeBudget(PromotionModel $promotion): ?LatticeBudget
+    protected function makeBudget(Promotion $promotion): ?LatticeBudget
     {
         $redemptionBudget = $promotion->application_budget;
         $monetaryBudget = $promotion->getRawOriginal('monetary_budget');

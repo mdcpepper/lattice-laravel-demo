@@ -2,23 +2,21 @@
 
 namespace Tests\Feature\Models;
 
-use App\Models\Cart;
-use App\Models\CartItem;
+use App\Models\Cart\Cart;
+use App\Models\Cart\CartItem;
 use App\Models\Product;
 
 it('adding a product creates a CartItem row', function (): void {
     $cart = Cart::factory()->create();
     $product = Product::factory()->create();
 
-    $item = $cart
-        ->items()
-        ->create([
-            'product_id' => $product->id,
-            'price' => 1000,
-            'price_currency' => 'GBP',
-            'offer_price' => 1000,
-            'offer_price_currency' => 'GBP',
-        ]);
+    $item = $cart->items()->create([
+        'product_id' => $product->id,
+        'price' => 1000,
+        'price_currency' => 'GBP',
+        'offer_price' => 1000,
+        'offer_price_currency' => 'GBP',
+    ]);
 
     expect($item)
         ->toBeInstanceOf(CartItem::class)
@@ -34,24 +32,20 @@ it(
         $cart = Cart::factory()->create();
         $product = Product::factory()->create();
 
-        $cart
-            ->items()
-            ->create([
-                'product_id' => $product->id,
-                'price' => 1000,
-                'price_currency' => 'GBP',
-                'offer_price' => 1000,
-                'offer_price_currency' => 'GBP',
-            ]);
-        $cart
-            ->items()
-            ->create([
-                'product_id' => $product->id,
-                'price' => 1000,
-                'price_currency' => 'GBP',
-                'offer_price' => 1000,
-                'offer_price_currency' => 'GBP',
-            ]);
+        $cart->items()->create([
+            'product_id' => $product->id,
+            'price' => 1000,
+            'price_currency' => 'GBP',
+            'offer_price' => 1000,
+            'offer_price_currency' => 'GBP',
+        ]);
+        $cart->items()->create([
+            'product_id' => $product->id,
+            'price' => 1000,
+            'price_currency' => 'GBP',
+            'offer_price' => 1000,
+            'offer_price_currency' => 'GBP',
+        ]);
 
         expect($cart->items()->count())->toBe(2);
     },
@@ -74,26 +68,22 @@ it('re-adding after remove creates a fresh row', function (): void {
     $cart = Cart::factory()->create();
     $product = Product::factory()->create();
 
-    $first = $cart
-        ->items()
-        ->create([
-            'product_id' => $product->id,
-            'price' => 1000,
-            'price_currency' => 'GBP',
-            'offer_price' => 1000,
-            'offer_price_currency' => 'GBP',
-        ]);
+    $first = $cart->items()->create([
+        'product_id' => $product->id,
+        'price' => 1000,
+        'price_currency' => 'GBP',
+        'offer_price' => 1000,
+        'offer_price_currency' => 'GBP',
+    ]);
     $first->delete();
 
-    $second = $cart
-        ->items()
-        ->create([
-            'product_id' => $product->id,
-            'price' => 1000,
-            'price_currency' => 'GBP',
-            'offer_price' => 1000,
-            'offer_price_currency' => 'GBP',
-        ]);
+    $second = $cart->items()->create([
+        'product_id' => $product->id,
+        'price' => 1000,
+        'price_currency' => 'GBP',
+        'offer_price' => 1000,
+        'offer_price_currency' => 'GBP',
+    ]);
 
     expect($second->id)
         ->not->toBe($first->id)

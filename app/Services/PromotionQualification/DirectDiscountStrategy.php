@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Services\PromotionQualification;
 
 use App\Enums\QualificationContext;
-use App\Models\DirectDiscountPromotion;
-use App\Models\Promotion;
-use App\Models\Qualification;
+use App\Models\Promotions\DirectDiscountPromotion;
+use App\Models\Promotions\Promotion;
+use App\Models\Promotions\Qualification;
 use Illuminate\Support\Collection;
 use RuntimeException;
 

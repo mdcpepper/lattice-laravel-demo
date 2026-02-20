@@ -7,7 +7,7 @@ use App\Filament\Admin\Resources\Promotions\Pages\EditPromotion;
 use App\Filament\Admin\Resources\Promotions\Pages\ListPromotions;
 use App\Filament\Admin\Resources\Promotions\Schemas\PromotionForm;
 use App\Filament\Admin\Resources\Promotions\Tables\PromotionsTable;
-use App\Models\Promotion;
+use App\Models\Promotions\Promotion;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;

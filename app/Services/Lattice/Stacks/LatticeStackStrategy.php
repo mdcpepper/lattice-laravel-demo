@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Lattice\Stacks;
 
-use App\Models\PromotionStack as PromotionStackModel;
+use App\Models\Promotions\PromotionStack as PromotionStackModel;
 use Lattice\Stack\Stack as LatticeStack;
 
 interface LatticeStackStrategy

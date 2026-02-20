@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\PromotionDiscount;
 
-use App\Models\PositionalDiscountPromotion;
-use App\Models\Promotion;
+use App\Models\Promotions\PositionalDiscountPromotion;
+use App\Models\Promotions\Promotion;
 
 class PositionalDiscountStrategy implements PromotionDiscountStrategy
 {

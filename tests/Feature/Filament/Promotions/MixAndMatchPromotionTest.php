@@ -9,9 +9,9 @@ use App\Enums\QualificationOp;
 use App\Enums\QualificationRuleKind;
 use App\Filament\Admin\Resources\Promotions\Pages\CreatePromotion;
 use App\Filament\Admin\Resources\Promotions\Pages\EditPromotion;
-use App\Models\MixAndMatchDiscount;
-use App\Models\MixAndMatchPromotion;
-use App\Models\Promotion;
+use App\Models\Promotions\MixAndMatchDiscount;
+use App\Models\Promotions\MixAndMatchPromotion;
+use App\Models\Promotions\Promotion;
 use App\Models\Team;
 use App\Models\User;
 use Filament\Facades\Filament;
@@ -526,7 +526,7 @@ it(
             ->assertHasNoFormErrors();
 
         $this->assertDatabaseMissing('taggables', [
-            'taggable_type' => \App\Models\QualificationRule::class,
+            'taggable_type' => \App\Models\Promotions\QualificationRule::class,
             'taggable_id' => $oldRuleId,
         ]);
     },

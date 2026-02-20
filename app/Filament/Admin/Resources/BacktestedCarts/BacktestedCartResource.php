@@ -7,7 +7,7 @@ use App\Filament\Admin\Resources\BacktestedCarts\RelationManagers\ItemsRelationM
 use App\Filament\Admin\Resources\BacktestedCarts\Schemas\BacktestedCartInfolist;
 use App\Filament\Admin\Resources\BacktestedCarts\Widgets\BacktestedCartStatsWidget;
 use App\Filament\Admin\Resources\Backtests\BacktestResource;
-use App\Models\BacktestedCart;
+use App\Models\Backtests\BacktestedCart;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;

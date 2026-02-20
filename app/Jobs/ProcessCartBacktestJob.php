@@ -3,12 +3,12 @@
 namespace App\Jobs;
 
 use App\Enums\BacktestStatus;
-use App\Models\Backtest;
-use App\Models\BacktestedCart;
-use App\Models\BacktestedCartItem;
-use App\Models\Cart;
-use App\Models\CartItem;
-use App\Models\PromotionRedemption;
+use App\Models\Backtests\Backtest;
+use App\Models\Backtests\BacktestedCart;
+use App\Models\Backtests\BacktestedCartItem;
+use App\Models\Cart\Cart;
+use App\Models\Cart\CartItem;
+use App\Models\Promotions\PromotionRedemption;
 use App\Services\Lattice\Stacks\LatticeStackFactory;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;

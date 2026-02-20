@@ -1,7 +1,7 @@
 <?php
 
 use App\Events\CartRecalculationRequested;
-use App\Models\Cart;
+use App\Models\Cart\Cart;
 use App\Models\Customer;
 use App\Models\Product;
 use App\Models\Team;

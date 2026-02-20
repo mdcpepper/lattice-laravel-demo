@@ -6,8 +6,8 @@ namespace App\Services\PromotionQualification;
 
 use App\Enums\QualificationOp;
 use App\Enums\QualificationRuleKind;
-use App\Models\Qualification;
-use App\Models\QualificationRule;
+use App\Models\Promotions\Qualification;
+use App\Models\Promotions\QualificationRule;
 use Illuminate\Support\Collection;
 use RuntimeException;
 

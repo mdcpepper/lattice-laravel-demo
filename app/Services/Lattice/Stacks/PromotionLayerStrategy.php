@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\Lattice\Stacks;
 
-use App\Models\Promotion;
-use App\Models\PromotionLayer as PromotionLayerModel;
+use App\Models\Promotions\Promotion;
+use App\Models\Promotions\PromotionLayer as PromotionLayerModel;
 use App\Services\Lattice\Promotions\LatticePromotionFactory;
 use Lattice\Promotion\PromotionInterface as LatticePromotion;
 use Lattice\Stack\Layer as LatticeLayer;

@@ -2,7 +2,7 @@
 
 namespace Tests\Unit\Models;
 
-use App\Models\SimpleDiscount;
+use App\Models\Promotions\SimpleDiscount;
 
 test('percentage is stored as basis points', function (): void {
     $discount = new SimpleDiscount;

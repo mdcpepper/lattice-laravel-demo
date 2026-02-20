@@ -3,8 +3,8 @@
 namespace App\Filament\Admin\Resources\Backtests\Tables;
 
 use App\Enums\BacktestStatus;
-use App\Models\Backtest;
-use App\Models\BacktestedCartItem;
+use App\Models\Backtests\Backtest;
+use App\Models\Backtests\BacktestedCartItem;
 use App\Services\NanosecondDurationFormatter;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ViewAction;

@@ -4,8 +4,8 @@ namespace App\Filament\Admin\Resources\PromotionStacks\Concerns;
 
 use App\Enums\PromotionLayerOutputMode;
 use App\Enums\PromotionLayerOutputTargetMode;
-use App\Models\PromotionLayer;
-use App\Models\PromotionStack;
+use App\Models\Promotions\PromotionLayer;
+use App\Models\Promotions\PromotionStack;
 use Filament\Facades\Filament;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Validation\ValidationException;

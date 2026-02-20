@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\PromotionQualification;
 
-use App\Models\Promotion;
+use App\Models\Promotions\Promotion;
 
 interface PromotionQualificationStrategy
 {

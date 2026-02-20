@@ -9,7 +9,7 @@ use App\Filament\Admin\Resources\Backtests\Tables\BacktestsTable;
 use App\Filament\Admin\Resources\Backtests\Widgets\BacktestStatsWidget;
 use App\Filament\Admin\Resources\Backtests\Widgets\CartSavingDistributionChartWidget;
 use App\Filament\Admin\Resources\Backtests\Widgets\DiscountDistributionChartWidget;
-use App\Models\Backtest;
+use App\Models\Backtests\Backtest;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Support\Icons\Heroicon;

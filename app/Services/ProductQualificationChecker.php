@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\Product;
-use App\Models\Promotion;
+use App\Models\Promotions\Promotion;
 use App\Services\PromotionQualification\PromotionQualificationStrategy;
 use Illuminate\Support\Collection;
 

@@ -2,7 +2,7 @@
 
 namespace App\Filament\Admin\Resources\Carts\Tables;
 
-use App\Models\Cart;
+use App\Models\Cart\Cart;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;

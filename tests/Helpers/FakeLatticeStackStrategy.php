@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Helpers;
 
-use App\Models\PromotionStack;
+use App\Models\Promotions\PromotionStack;
 use App\Services\Lattice\Stacks\LatticeStackStrategy;
 use Closure;
 use Lattice\Stack\Stack as LatticeStack;
