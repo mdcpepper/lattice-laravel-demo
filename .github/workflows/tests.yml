@@ -32,12 +32,20 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Resolve latest Lattice extension tag
+        id: lattice-ext
+        run: |
+          tag=$(curl -fsSL https://api.github.com/repos/mdcpepper/lattice/releases/latest | jq -r '.tag_name')
+          echo "tag=${tag}" >> "$GITHUB_OUTPUT"
+
       - name: Build test image
         uses: docker/build-push-action@v6
         with:
           context: .
           load: true
           tags: lattice-laravel-demo-test:latest
+          build-args: |
+            LATTICE_EXT_TAG=${{ steps.lattice-ext.outputs.tag }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
