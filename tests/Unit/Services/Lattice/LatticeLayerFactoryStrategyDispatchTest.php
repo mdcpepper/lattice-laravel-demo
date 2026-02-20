@@ -6,8 +6,8 @@ namespace Tests\Unit\Services\Lattice;
 
 use App\Models\PromotionLayer;
 use App\Services\Lattice\Stacks\LatticeLayerFactory;
-use Lattice\Layer as LatticeLayer;
-use Lattice\LayerOutput;
+use Lattice\Stack\Layer as LatticeLayer;
+use Lattice\Stack\LayerOutput;
 use RuntimeException;
 use Tests\Helpers\FakeLatticeLayerStrategy;
 

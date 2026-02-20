@@ -7,7 +7,7 @@ namespace Tests\Helpers;
 use App\Models\Promotion;
 use App\Services\Lattice\Promotions\LatticePromotionStrategy;
 use Closure;
-use Lattice\Promotions\Promotion as LatticePromotion;
+use Lattice\Promotion\PromotionInterface as LatticePromotion;
 
 class FakeLatticePromotionStrategy implements LatticePromotionStrategy
 {

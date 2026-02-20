@@ -6,8 +6,8 @@ namespace App\Services\Lattice\Stacks;
 
 use App\Enums\PromotionLayerOutputMode;
 use App\Models\PromotionLayer as PromotionLayerModel;
-use Lattice\Layer as LatticeLayer;
-use Lattice\LayerOutput as LatticeLayerOutput;
+use Lattice\Stack\Layer as LatticeLayer;
+use Lattice\Stack\LayerOutput as LatticeLayerOutput;
 
 class PassThroughLayerOutputStrategy implements LatticeLayerOutputStrategy
 {

@@ -14,8 +14,8 @@ use App\Services\Lattice\Concerns\BuildsLatticeDiscountValues;
 use App\Services\Lattice\Concerns\BuildsLatticeQualification;
 use App\Services\Lattice\Concerns\BuildsSimpleLatticeDiscount;
 use App\Services\Lattice\Concerns\HandlesUnsupportedPromotionableType;
-use Lattice\Promotions\DirectDiscountPromotion;
-use Lattice\Promotions\Promotion as LatticePromotion;
+use Lattice\Promotion\Direct as LatticeDirect;
+use Lattice\Promotion\PromotionInterface as LatticePromotion;
 use RuntimeException;
 
 class DirectDiscountPromotionStrategy implements LatticePromotionStrategy
@@ -60,7 +60,7 @@ class DirectDiscountPromotionStrategy implements LatticePromotionStrategy
             $promotionable,
         );
 
-        return new DirectDiscountPromotion(
+        return new LatticeDirect(
             reference: $promotion,
             qualification: $this->makeQualification(
                 $rootQualification,

@@ -15,10 +15,10 @@ use App\Models\SimpleDiscount;
 use App\Models\Team;
 use App\Services\Lattice\Promotions\LatticePromotionFactory;
 use Lattice\Item;
-use Lattice\Layer;
-use Lattice\LayerOutput;
 use Lattice\Money;
-use Lattice\StackBuilder;
+use Lattice\Stack\Layer;
+use Lattice\Stack\LayerOutput;
+use Lattice\Stack\StackBuilder;
 
 it('saves promotion redemptions from a Lattice receipt', function (): void {
     $team = Team::factory()->create();

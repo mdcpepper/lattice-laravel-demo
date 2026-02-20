@@ -7,7 +7,7 @@ namespace Tests\Helpers;
 use App\Models\PromotionLayer;
 use App\Services\Lattice\Stacks\LatticeLayerStrategy;
 use Closure;
-use Lattice\Layer as LatticeLayer;
+use Lattice\Stack\Layer as LatticeLayer;
 
 class FakeLatticeLayerStrategy implements LatticeLayerStrategy
 {

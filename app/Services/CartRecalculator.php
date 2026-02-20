@@ -8,8 +8,8 @@ use App\Models\PromotionRedemption;
 use App\Models\PromotionStack;
 use App\Services\Lattice\Stacks\LatticeStackFactory;
 use Illuminate\Support\Collection;
-use Lattice\Item;
-use Lattice\Money;
+use Lattice\Item as LatticeItem;
+use Lattice\Money as LatticeMoney;
 use Lattice\Product as LatticeProduct;
 
 class CartRecalculator
@@ -25,7 +25,7 @@ class CartRecalculator
         /** @var Collection<int, CartItem> $items */
         $items = $cart->items->values();
 
-        /** @var array<int, Item> $latticeItems */
+        /** @var array<int, LatticeItem> $latticeItems */
         $latticeItems = [];
 
         if (
@@ -123,7 +123,7 @@ class CartRecalculator
 
     /**
      * @param  Collection<int, CartItem>  $items
-     * @return array<int, Item>
+     * @return array<int, LatticeItem>
      */
     private function buildLatticeItems(Collection $items): array
     {
@@ -137,7 +137,10 @@ class CartRecalculator
                 $latticeProductsByProductId[$product->id] = new LatticeProduct(
                     reference: $product,
                     name: $product->name,
-                    price: new Money((int) $product->price->getAmount(), 'GBP'),
+                    price: new LatticeMoney(
+                        (int) $product->price->getAmount(),
+                        'GBP',
+                    ),
                     tags: $product->tags_array,
                 );
             }
@@ -145,7 +148,7 @@ class CartRecalculator
 
         return $items
             ->map(
-                fn (CartItem $item): Item => Item::fromProduct(
+                fn (CartItem $item): LatticeItem => LatticeItem::fromProduct(
                     reference: $item,
                     product: $latticeProductsByProductId[$item->product->id],
                 ),

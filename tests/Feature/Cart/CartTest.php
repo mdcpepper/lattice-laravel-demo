@@ -285,7 +285,7 @@ test(
         $response->assertSeeText('Meal Deal');
         $response->assertSeeText('Weekend Offer');
         $response->assertSeeText('× 1');
-        $response->assertSeeText('(1 item)');
+        $response->assertDontSeeText('(1 item)');
         $response->assertSeeText('Total');
         $response->assertSeeText('£4.00');
         $response->assertSee('class="cart-sidebar-row savings"', escape: false);

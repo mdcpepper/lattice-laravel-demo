@@ -7,10 +7,10 @@ namespace Tests\Unit\Services\Lattice;
 use App\Models\Promotion;
 use App\Services\Lattice\Promotions\LatticePromotionFactory;
 use Lattice\Discount\Percentage;
-use Lattice\Discount\SimpleDiscount;
-use Lattice\Promotions\Budget;
-use Lattice\Promotions\DirectDiscountPromotion;
-use Lattice\Promotions\Promotion as LatticePromotion;
+use Lattice\Discount\Simple;
+use Lattice\Promotion\Budget;
+use Lattice\Promotion\Direct;
+use Lattice\Promotion\PromotionInterface as LatticePromotion;
 use Lattice\Qualification;
 use Lattice\Qualification\BoolOp;
 use RuntimeException;
@@ -43,7 +43,7 @@ test(
         $result = $factory->make($promotion);
 
         expect($result)
-            ->toBeInstanceOf(DirectDiscountPromotion::class)
+            ->toBeInstanceOf(Direct::class)
             ->and($nonSupportingStrategy->builtPromotionNames)
             ->toBeEmpty()
             ->and($supportingStrategy->builtPromotionNames)
@@ -73,10 +73,10 @@ test('throws when no strategy supports the promotion', function (): void {
 
 function fakeLatticePromotion(Promotion $promotion): LatticePromotion
 {
-    return new DirectDiscountPromotion(
+    return new Direct(
         reference: $promotion,
         qualification: new Qualification(BoolOp::AndOp, []),
-        discount: SimpleDiscount::percentageOff(Percentage::fromDecimal(0.1)),
+        discount: Simple::percentageOff(Percentage::fromDecimal(0.1)),
         budget: Budget::unlimited(),
     );
 }

@@ -7,9 +7,9 @@ namespace App\Services\Lattice\Concerns;
 use App\Contracts\Discount as DiscountContract;
 use App\Enums\SimpleDiscountKind;
 use App\Models\SimpleDiscount as SimpleDiscountModel;
-use Lattice\Discount\Percentage;
-use Lattice\Discount\SimpleDiscount;
-use Lattice\Money;
+use Lattice\Discount\Percentage as LatticePercentage;
+use Lattice\Discount\Simple as LatticeSimple;
+use Lattice\Money as LatticeMoney;
 
 trait BuildsSimpleLatticeDiscount
 {
@@ -19,24 +19,26 @@ trait BuildsSimpleLatticeDiscount
 
     abstract protected function discountAmount(
         DiscountContract $discount,
-    ): Money;
+    ): LatticeMoney;
 
     protected function makeSimpleDiscount(
         SimpleDiscountModel $discount,
-    ): SimpleDiscount {
+    ): LatticeSimple {
         $kind =
             $discount->kind instanceof SimpleDiscountKind
                 ? $discount->kind
                 : SimpleDiscountKind::from((string) $discount->kind);
 
         return match ($kind) {
-            SimpleDiscountKind::PercentageOff => SimpleDiscount::percentageOff(
-                Percentage::fromDecimal($this->normalizedPercentage($discount)),
+            SimpleDiscountKind::PercentageOff => LatticeSimple::percentageOff(
+                LatticePercentage::fromDecimal(
+                    $this->normalizedPercentage($discount),
+                ),
             ),
-            SimpleDiscountKind::AmountOverride => SimpleDiscount::amountOverride(
+            SimpleDiscountKind::AmountOverride => LatticeSimple::amountOverride(
                 $this->discountAmount($discount),
             ),
-            SimpleDiscountKind::AmountOff => SimpleDiscount::amountOff(
+            SimpleDiscountKind::AmountOff => LatticeSimple::amountOff(
                 $this->discountAmount($discount),
             ),
         };

@@ -30,7 +30,10 @@ class Product extends Model
 
     protected $fillable = ['team_id', 'name'];
 
-    public function syncTags(string|array|ArrayAccess $tags): static
+    /**
+     * @param  string|mixed[]|ArrayAccess  $tags
+     */
+    public function syncTags(string|array|ArrayAccess $tags): Product
     {
         $originalTagIds = $this->tagIds();
 

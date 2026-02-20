@@ -15,10 +15,10 @@ use App\Services\Lattice\Concerns\BuildsLatticeDiscountValues;
 use App\Services\Lattice\Concerns\BuildsLatticeQualification;
 use App\Services\Lattice\Concerns\HandlesUnsupportedPromotionableType;
 use Lattice\Discount\Percentage;
-use Lattice\Promotions\MixAndMatch\Discount as LatticeMixAndMatchDiscount;
-use Lattice\Promotions\MixAndMatch\Slot as LatticeMixAndMatchSlot;
-use Lattice\Promotions\MixAndMatchPromotion as LatticeMixAndMatchPromotion;
-use Lattice\Promotions\Promotion as LatticePromotion;
+use Lattice\Promotion\MixAndMatch\Discount as LatticeMixAndMatchDiscount;
+use Lattice\Promotion\MixAndMatch\MixAndMatch as LatticeMixAndMatchPromotion;
+use Lattice\Promotion\MixAndMatch\Slot as LatticeMixAndMatchSlot;
+use Lattice\Promotion\PromotionInterface as LatticePromotion;
 use RuntimeException;
 
 class MixAndMatchPromotionStrategy implements LatticePromotionStrategy

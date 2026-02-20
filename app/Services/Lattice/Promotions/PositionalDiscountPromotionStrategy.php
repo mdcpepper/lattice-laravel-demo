@@ -15,8 +15,8 @@ use App\Services\Lattice\Concerns\BuildsLatticeDiscountValues;
 use App\Services\Lattice\Concerns\BuildsLatticeQualification;
 use App\Services\Lattice\Concerns\BuildsSimpleLatticeDiscount;
 use App\Services\Lattice\Concerns\HandlesUnsupportedPromotionableType;
-use Lattice\Promotions\PositionalDiscountPromotion;
-use Lattice\Promotions\Promotion as LatticePromotion;
+use Lattice\Promotion\Positional as PositionalDiscountPromotion;
+use Lattice\Promotion\PromotionInterface as LatticePromotion;
 use RuntimeException;
 
 class PositionalDiscountPromotionStrategy implements LatticePromotionStrategy

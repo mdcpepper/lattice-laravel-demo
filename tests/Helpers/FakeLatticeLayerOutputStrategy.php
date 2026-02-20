@@ -7,8 +7,8 @@ namespace Tests\Helpers;
 use App\Models\PromotionLayer;
 use App\Services\Lattice\Stacks\LatticeLayerOutputStrategy;
 use Closure;
-use Lattice\Layer as LatticeLayer;
-use Lattice\LayerOutput as LatticeLayerOutput;
+use Lattice\Stack\Layer as LatticeLayer;
+use Lattice\Stack\LayerOutput as LatticeLayerOutput;
 
 class FakeLatticeLayerOutputStrategy implements LatticeLayerOutputStrategy
 {

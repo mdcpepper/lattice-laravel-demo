@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Lattice\Stacks;
 
 use App\Models\PromotionStack as PromotionStackModel;
-use Lattice\Stack as LatticeStack;
+use Lattice\Stack\Stack as LatticeStack;
 use RuntimeException;
 
 class LatticeStackFactory
