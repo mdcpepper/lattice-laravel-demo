@@ -13,6 +13,7 @@ use App\Models\Team;
 use Cknow\Money\Casts\MoneyIntegerCast;
 use Database\Factories\PromotionFactory;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -67,7 +68,11 @@ class Promotion extends Model
             'qualifications.parent',
             'qualifications.children',
             'qualifications.rules.tags',
-        ]);
+        ])->afterQuery(function (Collection $promotions): void {
+            $promotions->each(
+                fn (self $promotion) => $promotion->hydratePromotionableQualifications(),
+            );
+        });
     }
 
     /**
@@ -149,6 +154,54 @@ class Promotion extends Model
             'redeemable_type',
             CartItem::getMorphString(),
         );
+    }
+
+    public function hydratePromotionableQualifications(): void
+    {
+        if (! $this->relationLoaded('qualifications') || ! $this->relationLoaded('promotionable')) {
+            return;
+        }
+
+        $promotionable = $this->promotionable;
+
+        if (! $promotionable instanceof Model) {
+            return;
+        }
+
+        $qualifications = $this->qualifications;
+
+        $this->hydrateQualificationOn($promotionable, $qualifications);
+
+        if ($promotionable instanceof MixAndMatchPromotion && $promotionable->relationLoaded('slots')) {
+            foreach ($promotionable->slots as $slot) {
+                $this->hydrateQualificationOn($slot, $qualifications);
+            }
+        }
+
+        if ($promotionable instanceof TieredThresholdPromotion && $promotionable->relationLoaded('tiers')) {
+            foreach ($promotionable->tiers as $tier) {
+                $this->hydrateQualificationOn($tier, $qualifications);
+            }
+        }
+    }
+
+    /**
+     * @param  Collection<int, Qualification>  $qualifications
+     */
+    private function hydrateQualificationOn(Model $model, Collection $qualifications): void
+    {
+        $morphClass = $model->getMorphClass();
+        $modelKey = $model->getKey();
+
+        $qualification = $qualifications->first(
+            fn (Qualification $q): bool => $q->qualifiable_type === $morphClass
+                && $q->qualifiable_id == $modelKey
+                && $q->context === QualificationContext::Primary->value,
+        );
+
+        if ($qualification instanceof Qualification) {
+            $model->setRelation('qualification', $qualification);
+        }
     }
 
     private function queueRecalculationsForLinkedCarts(): void
