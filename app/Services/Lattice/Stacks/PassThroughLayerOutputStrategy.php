@@ -6,6 +6,7 @@ namespace App\Services\Lattice\Stacks;
 
 use App\Enums\PromotionLayerOutputMode;
 use App\Models\Promotions\PromotionLayer as PromotionLayerModel;
+use BackedEnum;
 use Lattice\Stack\Layer as LatticeLayer;
 use Lattice\Stack\LayerOutput as LatticeLayerOutput;
 
@@ -29,7 +30,7 @@ class PassThroughLayerOutputStrategy implements LatticeLayerOutputStrategy
     {
         $outputMode = $layer->output_mode;
 
-        if ($outputMode instanceof \BackedEnum) {
+        if ($outputMode instanceof BackedEnum) {
             return (string) $outputMode->value;
         }
 

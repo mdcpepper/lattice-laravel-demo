@@ -42,6 +42,7 @@ class DatabaseSeeder extends Seeder
         $this->command?->line("  password: {$generatedPassword}");
 
         $this->call(PromotionStackSeeder::class);
+        $this->call(PromotionSeeder::class);
         $this->call(ProductSeeder::class);
         $this->call(CustomerSeeder::class);
         $this->call(CartSeeder::class);

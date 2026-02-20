@@ -4,20 +4,28 @@ namespace App\Models\Backtests;
 
 use App\Enums\BacktestStatus;
 use App\Models\Concerns\HasRouteUlid;
+use App\Models\Model;
 use App\Models\Promotions\PromotionRedemption;
 use App\Models\Promotions\PromotionStack;
+use Database\Factories\BacktestFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 class Backtest extends Model
 {
-    /** @use HasFactory<\Database\Factories\BacktestFactory> */
+    /** @use HasFactory<BacktestFactory> */
     use HasFactory;
 
     use HasRouteUlid;
+
+    protected $fillable = [
+        'promotion_stack_id',
+        'total_carts',
+        'processed_carts',
+        'status',
+    ];
 
     protected static function booted(): void
     {
@@ -37,12 +45,10 @@ class Backtest extends Model
         });
     }
 
-    protected $fillable = [
-        'promotion_stack_id',
-        'total_carts',
-        'processed_carts',
-        'status',
-    ];
+    public function getMorphClass(): string
+    {
+        return 'backtest';
+    }
 
     /**
      * @return array<string, string>

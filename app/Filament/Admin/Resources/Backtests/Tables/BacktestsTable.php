@@ -14,6 +14,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
 
 class BacktestsTable
 {
@@ -243,7 +244,7 @@ class BacktestsTable
     private static function p50PerBacktestSubquery(string $column): QueryBuilder
     {
         if (! in_array($column, ['processing_time', 'solve_time'], true)) {
-            throw new \InvalidArgumentException(
+            throw new InvalidArgumentException(
                 "Unsupported percentile column [{$column}].",
             );
         }

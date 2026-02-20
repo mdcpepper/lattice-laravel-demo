@@ -3,7 +3,7 @@
 namespace App\Models\Promotions;
 
 use App\Models\Concerns\HasRouteUlid;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 
@@ -12,6 +12,11 @@ class TieredThresholdPromotion extends Model
     use HasRouteUlid;
 
     protected $fillable = [];
+
+    public function getMorphClass(): string
+    {
+        return 'tiered_threshold_promotion';
+    }
 
     /**
      * @return HasMany<TieredThresholdTier, TieredThresholdPromotion>

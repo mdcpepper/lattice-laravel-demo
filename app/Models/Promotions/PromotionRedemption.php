@@ -3,16 +3,17 @@
 namespace App\Models\Promotions;
 
 use App\Models\Concerns\HasRouteUlid;
+use App\Models\Model;
 use Cknow\Money\Casts\MoneyIntegerCast;
+use Database\Factories\PromotionRedemptionFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Lattice\PromotionRedemption as LatticePromotionRedemption;
 
 class PromotionRedemption extends Model
 {
-    /** @use HasFactory<\Database\Factories\PromotionRedemptionFactory> */
+    /** @use HasFactory<PromotionRedemptionFactory> */
     use HasFactory;
 
     use HasRouteUlid;
@@ -59,6 +60,11 @@ class PromotionRedemption extends Model
             'original_price' => MoneyIntegerCast::class.':GBP',
             'final_price' => MoneyIntegerCast::class.':GBP',
         ];
+    }
+
+    public function getMorphClass(): string
+    {
+        return 'promotion_redemption';
     }
 
     /**

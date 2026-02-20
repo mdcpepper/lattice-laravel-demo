@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Models\Promotions;
 
 use App\Models\Concerns\HasRouteUlid;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
@@ -23,6 +23,11 @@ class PositionalDiscountPromotion extends Model
     protected $casts = [
         'size' => 'integer',
     ];
+
+    public function getMorphClass(): string
+    {
+        return 'positional_discount_promotion';
+    }
 
     /**
      * @return BelongsTo<SimpleDiscount, PositionalDiscountPromotion>

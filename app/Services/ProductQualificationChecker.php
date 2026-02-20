@@ -22,12 +22,12 @@ class ProductQualificationChecker
     ) {}
 
     /**
-     * @return string[]
+     * @return Collection<int, Promotion>
      */
-    public function qualifyingPromotionNames(
+    public function qualifyingPromotions(
         Product $product,
         ?int $teamId = null,
-    ): array {
+    ): Collection {
         $productTagNames = $this->productTagNames($product);
 
         return $this->getPromotions($teamId)
@@ -37,6 +37,17 @@ class ProductQualificationChecker
                     $promotion,
                 ),
             )
+            ->values();
+    }
+
+    /**
+     * @return string[]
+     */
+    public function qualifyingPromotionNames(
+        Product $product,
+        ?int $teamId = null,
+    ): array {
+        return $this->qualifyingPromotions($product, $teamId)
             ->pluck('name')
             ->toArray();
     }
@@ -93,6 +104,8 @@ class ProductQualificationChecker
     /** @return string[] */
     private function productTagNames(Product $product): array
     {
+        $product->loadMissing('tags');
+
         return $product->tags
             ->map(fn ($tag): string => strtolower((string) $tag->name))
             ->values()

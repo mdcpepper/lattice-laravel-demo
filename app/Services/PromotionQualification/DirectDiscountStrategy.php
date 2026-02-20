@@ -11,10 +11,10 @@ use App\Models\Promotions\Qualification;
 use Illuminate\Support\Collection;
 use RuntimeException;
 
-class DirectDiscountStrategy implements PromotionQualificationStrategy
+readonly class DirectDiscountStrategy implements PromotionQualificationStrategy
 {
     public function __construct(
-        private readonly QualificationEvaluator $qualificationEvaluator,
+        private QualificationEvaluator $qualificationEvaluator,
     ) {}
 
     public function supports(Promotion $promotion): bool

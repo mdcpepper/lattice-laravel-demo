@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\DB;
 use Lattice\Item;
 use Lattice\Money;
 use Lattice\Product;
+use Lattice\Promotion\MixAndMatch\MixAndMatch;
 use Lattice\Stack\Layer;
 use Lattice\Stack\LayerOutput;
 use Lattice\Stack\StackBuilder;
@@ -271,7 +272,7 @@ it('can be turned into a Lattice Graph', function (): void {
     $latticePromotion = app(LatticePromotionFactory::class)->make($promotion);
 
     expect($latticePromotion)
-        ->toBeInstanceOf(\Lattice\Promotion\MixAndMatch\MixAndMatch::class)
+        ->toBeInstanceOf(MixAndMatch::class)
         ->and($latticePromotion->reference)
         ->toBeInstanceOf(Promotion::class)
         ->and($latticePromotion->reference->is($promotion))

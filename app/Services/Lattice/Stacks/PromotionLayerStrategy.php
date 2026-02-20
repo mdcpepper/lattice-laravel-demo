@@ -11,10 +11,10 @@ use Lattice\Promotion\PromotionInterface as LatticePromotion;
 use Lattice\Stack\Layer as LatticeLayer;
 use Lattice\Stack\LayerOutput as LatticeLayerOutput;
 
-class PromotionLayerStrategy implements LatticeLayerStrategy
+readonly class PromotionLayerStrategy implements LatticeLayerStrategy
 {
     public function __construct(
-        private readonly LatticePromotionFactory $latticePromotionFactory,
+        private LatticePromotionFactory $latticePromotionFactory,
     ) {}
 
     public function supports(PromotionLayerModel $layer): bool

@@ -5,17 +5,18 @@ declare(strict_types=1);
 namespace App\Services\Lattice\Stacks;
 
 use App\Models\Promotions\PromotionLayer as PromotionLayerModel;
+use BackedEnum;
 use Lattice\Stack\Layer as LatticeLayer;
 use Lattice\Stack\LayerOutput as LatticeLayerOutput;
 use RuntimeException;
 
-class LatticeLayerOutputFactory
+readonly class LatticeLayerOutputFactory
 {
     /**
      * @param  array<int, LatticeLayerOutputStrategy>  $latticeLayerOutputStrategies
      */
     public function __construct(
-        private readonly array $latticeLayerOutputStrategies,
+        private array $latticeLayerOutputStrategies,
     ) {}
 
     /**
@@ -54,7 +55,7 @@ class LatticeLayerOutputFactory
     {
         $outputMode = $layer->output_mode;
 
-        if ($outputMode instanceof \BackedEnum) {
+        if ($outputMode instanceof BackedEnum) {
             return (string) $outputMode->value;
         }
 

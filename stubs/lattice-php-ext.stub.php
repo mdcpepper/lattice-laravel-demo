@@ -154,6 +154,8 @@ if (! class_exists(Receipt::class)) {
 
 namespace Lattice\Qualification;
 
+use Lattice\Qualification;
+
 if (! enum_exists(BoolOp::class)) {
     enum BoolOp: string
     {
@@ -180,7 +182,7 @@ if (! class_exists(Rule::class)) {
         /** @var string[] */
         public array $tags;
 
-        public ?\Lattice\Qualification $group;
+        public ?Qualification $group;
 
         public function __construct() {}
 
@@ -200,7 +202,7 @@ if (! class_exists(Rule::class)) {
         public static function hasNone(?array $tags = []): self {}
 
         public static function group(
-            \Lattice\Qualification $qualification,
+            Qualification $qualification,
         ): self {}
 
         /**
@@ -212,24 +214,25 @@ if (! class_exists(Rule::class)) {
 
 namespace Lattice\Discount;
 
+use Exception;
 use Lattice\Money;
 
 if (! class_exists(InvalidPercentageException::class)) {
-    class InvalidPercentageException extends \Exception {}
+    class InvalidPercentageException extends Exception {}
 }
 
 if (! class_exists(PercentageOutOfRangeException::class)) {
-    class PercentageOutOfRangeException extends \Exception {}
+    class PercentageOutOfRangeException extends Exception {}
 }
 
 if (! class_exists(InvalidDiscountException::class)) {
-    class InvalidDiscountException extends \Exception {}
+    class InvalidDiscountException extends Exception {}
 }
 
 if (! class_exists(Percentage::class)) {
-    class Percentage
+    readonly class Percentage
     {
-        public readonly float $value;
+        public float $value;
 
         public function __construct(string $value) {}
 
@@ -269,8 +272,12 @@ if (! class_exists(Simple::class)) {
 
 namespace Lattice\Stack;
 
+use Exception;
+use Lattice\Item;
+use Lattice\Receipt;
+
 if (! class_exists(InvalidStackException::class)) {
-    class InvalidStackException extends \Exception {}
+    class InvalidStackException extends Exception {}
 }
 
 if (! class_exists(LayerOutput::class)) {
@@ -344,9 +351,9 @@ if (! class_exists(Stack::class)) {
         public function validateGraph(): bool {}
 
         /**
-         * @param  \Lattice\Item[]  $items
+         * @param  Item[]  $items
          */
-        public function process(array $items): \Lattice\Receipt {}
+        public function process(array $items): Receipt {}
     }
 }
 

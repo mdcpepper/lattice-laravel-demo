@@ -187,7 +187,7 @@ it(
         PromotionRedemption::query()->create([
             'promotion_id' => $promotion->id,
             'promotion_stack_id' => $stack->id,
-            'redeemable_type' => BacktestedCartItem::class,
+            'redeemable_type' => BacktestedCartItem::getMorphString(),
             'redeemable_id' => $backtestedCartItem->id,
             'sort_order' => 0,
             'original_price' => 1000,
@@ -262,7 +262,7 @@ it(
         PromotionRedemption::query()->create([
             'promotion_id' => $promotion->id,
             'promotion_stack_id' => $stack->id,
-            'redeemable_type' => BacktestedCartItem::class,
+            'redeemable_type' => BacktestedCartItem::getMorphString(),
             'redeemable_id' => $backtestedCartItem->id,
             'sort_order' => 0,
             'original_price' => 1000,

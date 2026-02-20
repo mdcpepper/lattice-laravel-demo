@@ -11,6 +11,7 @@ use App\Filament\Admin\Resources\Promotions\Pages\CreatePromotion;
 use App\Filament\Admin\Resources\Promotions\Pages\EditPromotion;
 use App\Models\Promotions\DirectDiscountPromotion;
 use App\Models\Promotions\Promotion;
+use App\Models\Promotions\QualificationRule;
 use App\Models\Promotions\SimpleDiscount;
 use App\Models\Team;
 use App\Models\User;
@@ -440,7 +441,7 @@ it(
             ->assertHasNoFormErrors();
 
         $this->assertDatabaseMissing('taggables', [
-            'taggable_type' => \App\Models\Promotions\QualificationRule::class,
+            'taggable_type' => QualificationRule::class,
             'taggable_id' => $oldRuleId,
         ]);
     },

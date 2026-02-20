@@ -8,11 +8,12 @@ use App\Models\Cart\Cart;
 use App\Models\Cart\CartItem;
 use App\Models\Concerns\BelongsToCurrentTeam;
 use App\Models\Concerns\HasRouteUlid;
+use App\Models\Model;
 use App\Models\Team;
 use Cknow\Money\Casts\MoneyIntegerCast;
+use Database\Factories\PromotionFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -23,7 +24,7 @@ class Promotion extends Model
 {
     use BelongsToCurrentTeam;
 
-    /** @use HasFactory<\Database\Factories\PromotionFactory> */
+    /** @use HasFactory<PromotionFactory> */
     use HasFactory;
 
     use HasRouteUlid;
@@ -33,6 +34,11 @@ class Promotion extends Model
         static::saved(function (self $promotion): void {
             $promotion->queueRecalculationsForLinkedCarts();
         });
+    }
+
+    public function getMorphClass(): string
+    {
+        return 'promotion';
     }
 
     protected $casts = [
@@ -72,20 +78,17 @@ class Promotion extends Model
         return [
             DirectDiscountPromotion::class => [
                 'discount',
-                'qualification.rules.tags',
             ],
             PositionalDiscountPromotion::class => [
                 'discount',
-                'qualification.rules.tags',
                 'positions',
             ],
             MixAndMatchPromotion::class => [
                 'discount',
-                'slots.qualification.rules.tags',
+                'slots',
             ],
             TieredThresholdPromotion::class => [
                 'tiers.discount',
-                'tiers.qualification.rules.tags',
             ],
         ];
     }
@@ -137,12 +140,14 @@ class Promotion extends Model
 
     /**
      * @return HasMany<PromotionRedemption, Promotion>
+     *
+     * @throws \Exception
      */
     public function redemptions(): HasMany
     {
         return $this->hasMany(PromotionRedemption::class)->where(
             'redeemable_type',
-            CartItem::class,
+            CartItem::getMorphString(),
         );
     }
 

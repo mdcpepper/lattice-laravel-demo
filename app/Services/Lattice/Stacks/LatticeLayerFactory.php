@@ -8,13 +8,13 @@ use App\Models\Promotions\PromotionLayer as PromotionLayerModel;
 use Lattice\Stack\Layer as LatticeLayer;
 use RuntimeException;
 
-class LatticeLayerFactory
+readonly class LatticeLayerFactory
 {
     /**
      * @param  array<int, LatticeLayerStrategy>  $latticeLayerStrategies
      */
     public function __construct(
-        private readonly array $latticeLayerStrategies,
+        private array $latticeLayerStrategies,
     ) {}
 
     public function make(PromotionLayerModel $layer): LatticeLayer

@@ -5,14 +5,15 @@ namespace App\Models\Promotions;
 use App\Enums\PromotionLayerOutputMode;
 use App\Enums\PromotionLayerOutputTargetMode;
 use App\Models\Concerns\HasRouteUlid;
+use App\Models\Model;
+use Database\Factories\PromotionLayerFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class PromotionLayer extends Model
 {
-    /** @use HasFactory<\Database\Factories\PromotionLayerFactory> */
+    /** @use HasFactory<PromotionLayerFactory> */
     use HasFactory;
 
     use HasRouteUlid;
@@ -35,6 +36,11 @@ class PromotionLayer extends Model
         'participating_output_mode' => PromotionLayerOutputTargetMode::class,
         'non_participating_output_mode' => PromotionLayerOutputTargetMode::class,
     ];
+
+    public function getMorphClass(): string
+    {
+        return 'promotion_layer';
+    }
 
     /**
      * @return BelongsTo<PromotionStack, PromotionLayer>

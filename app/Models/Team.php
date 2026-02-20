@@ -3,19 +3,26 @@
 namespace App\Models;
 
 use App\Models\Concerns\HasRouteUlid;
+use App\Models\Promotions\Promotion;
+use App\Models\Promotions\PromotionStack;
+use Database\Factories\TeamFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Team extends Model
 {
-    /** @use HasFactory<\Database\Factories\TeamFactory> */
+    /** @use HasFactory<TeamFactory> */
     use HasFactory;
 
     use HasRouteUlid;
 
     protected $fillable = ['name'];
+
+    public function getMorphClass(): string
+    {
+        return 'team';
+    }
 
     /**
      * @return BelongsToMany<User, Team>

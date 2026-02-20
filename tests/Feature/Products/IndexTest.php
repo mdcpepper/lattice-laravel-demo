@@ -2,8 +2,11 @@
 
 namespace Tests\Feature\Products;
 
+use App\Models\Cart\Cart;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\Promotions\PromotionLayer;
+use App\Models\Promotions\PromotionStack;
 use App\Models\Team;
 
 test('it shows products for a category loaded by slug', function (): void {
@@ -146,4 +149,82 @@ test('it returns not found for an unknown category slug', function (): void {
     Team::factory()->create();
 
     $this->get('/does-not-exist')->assertNotFound();
+});
+
+test('it shows promotion badges for qualifying products when the cart has a matching stack', function (): void {
+    $team = Team::factory()->create();
+
+    $category = Category::factory()
+        ->for($team)
+        ->create(['slug' => 'beverages']);
+
+    $promotion = createSaleDiscountPromotion($team);
+
+    $stack = PromotionStack::factory()->for($team)->create();
+    $layer = PromotionLayer::factory()->for($stack, 'stack')->create();
+    $layer->promotions()->attach($promotion->id, ['sort_order' => 0]);
+
+    $cart = Cart::factory()->for($team)->create(['promotion_stack_id' => $stack->id]);
+
+    $qualifyingProduct = Product::factory()
+        ->for($team)
+        ->for($category)
+        ->create(['name' => 'Sparkling Water']);
+
+    $qualifyingProduct->syncTags(['sale']);
+
+    Product::factory()
+        ->for($team)
+        ->for($category)
+        ->create(['name' => 'Still Water']);
+
+    $response = $this->withSession(['cart_ulid' => $cart->ulid])->get("/{$category->slug}");
+
+    $response->assertSuccessful();
+    $response->assertSee('class="product-card-promotion-badge"', escape: false);
+    $response->assertSeeText($promotion->name);
+    $response->assertSee('aria-label="Qualifying promotions"', escape: false);
+});
+
+test('it shows no promotion badges when no products qualify', function (): void {
+    $team = Team::factory()->create();
+
+    $category = Category::factory()
+        ->for($team)
+        ->create(['slug' => 'beverages']);
+
+    Product::factory()
+        ->for($team)
+        ->for($category)
+        ->create(['name' => 'Still Water']);
+
+    $response = $this->get("/{$category->slug}");
+
+    $response->assertSuccessful();
+    $response->assertDontSee('class="product-card-promotion-badge"', escape: false);
+});
+
+test('it shows no promotion badges when the cart has no promotion stack', function (): void {
+    $team = Team::factory()->create();
+
+    $category = Category::factory()
+        ->for($team)
+        ->create(['slug' => 'beverages']);
+
+    $promotion = createSaleDiscountPromotion($team);
+
+    $cart = Cart::factory()->for($team)->create(['promotion_stack_id' => null]);
+
+    $qualifyingProduct = Product::factory()
+        ->for($team)
+        ->for($category)
+        ->create(['name' => 'Sparkling Water']);
+
+    $qualifyingProduct->syncTags(['sale']);
+
+    $response = $this->withSession(['cart_ulid' => $cart->ulid])->get("/{$category->slug}");
+
+    $response->assertSuccessful();
+    $response->assertDontSee('class="product-card-promotion-badge"', escape: false);
+    $response->assertDontSeeText($promotion->name);
 });

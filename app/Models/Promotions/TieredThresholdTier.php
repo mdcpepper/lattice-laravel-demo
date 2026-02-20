@@ -4,7 +4,7 @@ namespace App\Models\Promotions;
 
 use App\Enums\QualificationContext;
 use App\Models\Concerns\HasRouteUlid;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 
@@ -31,6 +31,11 @@ class TieredThresholdTier extends Model
         'upper_monetary_threshold_minor' => 'integer',
         'upper_item_count_threshold' => 'integer',
     ];
+
+    public function getMorphClass(): string
+    {
+        return 'tiered_threshold_tier';
+    }
 
     /**
      * @return BelongsTo<TieredThresholdPromotion, TieredThresholdTier>

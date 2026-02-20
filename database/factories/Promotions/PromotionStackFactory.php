@@ -2,11 +2,12 @@
 
 namespace Database\Factories\Promotions;
 
+use App\Models\Promotions\PromotionStack;
 use App\Models\Team;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Promotions\PromotionStack>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<PromotionStack>
  */
 class PromotionStackFactory extends Factory
 {

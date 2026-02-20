@@ -15,7 +15,7 @@
     <div class="with-sidebar">
         <section class="switcher" aria-label="Products in {{ $category->name }}">
             @forelse ($products as $product)
-                <x-product-card :product="$product" />
+                <x-product-card :product="$product" :promotions="$promotionsByProductId[$product->id] ?? collect()" />
             @empty
                 <article class="card product-card">
                     <h2 class="card-title product-card-title">No products found</h2>

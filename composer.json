@@ -9,15 +9,17 @@
     ],
     "license": "MIT",
     "require": {
-        "php": "^8.2",
+        "php": "^8.4",
         "cknow/laravel-money": "^8.4",
         "filament/filament": "^5.0",
         "laravel/framework": "^12.0",
         "laravel/octane": "^2.13",
         "laravel/tinker": "^2.10.1",
+        "spatie/laravel-morph-map-generator": "^1.3",
         "spatie/laravel-tags": "^4.10",
         "spatie/laravel-view-models": "^1.6",
-        "tomatophp/filament-users": "^5.0"
+        "tomatophp/filament-users": "^5.0",
+        "ext-pdo": "*"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

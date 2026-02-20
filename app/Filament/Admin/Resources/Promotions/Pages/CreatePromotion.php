@@ -26,6 +26,8 @@ class CreatePromotion extends CreateRecord
 
     /**
      * @param  array<string, mixed>  $data
+     *
+     * @throws \Throwable
      */
     protected function handleRecordCreation(array $data): Model
     {
@@ -41,6 +43,8 @@ class CreatePromotion extends CreateRecord
 
     /**
      * @param  array<string, mixed>  $data
+     *
+     * @throws \Exception
      */
     private function buildPositionalDiscountPromotion(array $data): Promotion
     {
@@ -107,6 +111,8 @@ class CreatePromotion extends CreateRecord
 
     /**
      * @param  array<string, mixed>  $data
+     *
+     * @throws \Exception
      */
     private function buildDirectDiscountPromotion(array $data): Promotion
     {
@@ -148,6 +154,8 @@ class CreatePromotion extends CreateRecord
 
     /**
      * @param  array<string, mixed>  $data
+     *
+     * @throws \Exception
      */
     private function buildMixAndMatchPromotion(array $data): Promotion
     {
@@ -212,6 +220,8 @@ class CreatePromotion extends CreateRecord
 
     /**
      * @param  array<string, mixed>  $data
+     *
+     * @throws \Exception
      */
     private function buildTieredThresholdPromotion(array $data): Promotion
     {

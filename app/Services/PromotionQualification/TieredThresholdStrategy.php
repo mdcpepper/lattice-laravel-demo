@@ -11,10 +11,10 @@ use App\Models\Promotions\TieredThresholdTier;
 use Illuminate\Support\Collection;
 use RuntimeException;
 
-class TieredThresholdStrategy implements PromotionQualificationStrategy
+readonly class TieredThresholdStrategy implements PromotionQualificationStrategy
 {
     public function __construct(
-        private readonly QualificationEvaluator $qualificationEvaluator,
+        private QualificationEvaluator $qualificationEvaluator,
     ) {}
 
     public function supports(Promotion $promotion): bool

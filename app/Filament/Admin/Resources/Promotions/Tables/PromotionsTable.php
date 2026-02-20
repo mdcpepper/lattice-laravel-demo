@@ -50,7 +50,7 @@ class PromotionsTable
                                 'COALESCE(SUM(original_price - final_price), 0)',
                             )
                             ->whereColumn('promotion_id', 'promotions.id')
-                            ->where('redeemable_type', CartItem::class),
+                            ->where('redeemable_type', CartItem::getMorphString()),
                     ]),
             )
             ->columns([
@@ -60,10 +60,10 @@ class PromotionsTable
                     ->label('Type')
                     ->formatStateUsing(
                         fn (string $state): string => match ($state) {
-                            DirectDiscountPromotion::class => 'Direct Discount',
-                            MixAndMatchPromotion::class => 'Mix and Match',
-                            PositionalDiscountPromotion::class => 'Positional Discount',
-                            TieredThresholdPromotion::class => 'Tiered Threshold',
+                            DirectDiscountPromotion::getMorphString() => 'Direct Discount',
+                            MixAndMatchPromotion::getMorphString() => 'Mix and Match',
+                            PositionalDiscountPromotion::getMorphString() => 'Positional Discount',
+                            TieredThresholdPromotion::getMorphString() => 'Tiered Threshold',
                             default => $state,
                         },
                     ),

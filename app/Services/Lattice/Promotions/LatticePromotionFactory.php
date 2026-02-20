@@ -8,13 +8,13 @@ use App\Models\Promotions\Promotion;
 use Lattice\Promotion\PromotionInterface as LatticePromotion;
 use RuntimeException;
 
-class LatticePromotionFactory
+readonly class LatticePromotionFactory
 {
     /**
      * @param  array<int, LatticePromotionStrategy>  $latticePromotionStrategies
      */
     public function __construct(
-        private readonly array $latticePromotionStrategies,
+        private array $latticePromotionStrategies,
     ) {}
 
     public function make(Promotion $promotion): ?LatticePromotion

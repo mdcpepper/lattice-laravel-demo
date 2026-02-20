@@ -14,6 +14,8 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Collection as SupportCollection;
 use Illuminate\View\Component;
 
+use function is_string;
+
 class CartSidebar extends Component
 {
     private ?Cart $resolvedCart = null;
@@ -189,8 +191,8 @@ class CartSidebar extends Component
                     $this->itemTotalInMinorUnits($item) ===
                         $offerPriceInMinorUnits,
             )
-            ->sortBy('id')
-            ->last();
+            ->sortByDesc('created_at')
+            ->first();
 
         return $matchingItem instanceof CartItem ? (int) $matchingItem->id : 0;
     }
@@ -264,7 +266,7 @@ class CartSidebar extends Component
 
         $ulid = $this->session->get('cart_ulid');
 
-        if (! \is_string($ulid) || $ulid === '') {
+        if (! is_string($ulid) || $ulid === '') {
             $this->hasResolvedCart = true;
 
             return null;

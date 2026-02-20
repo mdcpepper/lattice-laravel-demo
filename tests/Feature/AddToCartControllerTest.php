@@ -24,14 +24,14 @@ test(
             ->for($category)
             ->create();
 
-        $response = $this->from("/{$category->slug}")->post(
+        $response = $this->from("/$category->slug")->post(
             route('cart.items.store', absolute: false),
             [
                 'product' => $product->id,
             ],
         );
 
-        $response->assertRedirect("/{$category->slug}");
+        $response->assertRedirect("/$category->slug");
 
         $cart = Cart::query()->first();
 
@@ -71,7 +71,7 @@ test('it only accepts products from the default team', function (): void {
         ->for($otherCategory)
         ->create();
 
-    $response = $this->from("/{$defaultCategory->slug}")->post(
+    $response = $this->from("/$defaultCategory->slug")->post(
         route('cart.items.store', absolute: false),
         [
             'product' => $otherTeamProduct->id,
@@ -79,7 +79,7 @@ test('it only accepts products from the default team', function (): void {
     );
 
     $response
-        ->assertRedirect("/{$defaultCategory->slug}")
+        ->assertRedirect("/$defaultCategory->slug")
         ->assertSessionHasErrors(['product']);
 
     $this->assertDatabaseCount('cart_items', 0);
@@ -99,11 +99,11 @@ test('it removes an item from the current team cart', function (): void {
     $cart = Cart::factory()->for($defaultTeam)->create();
     $item = CartItem::factory()->for($cart)->for($product)->create();
 
-    $response = $this->from("/{$category->slug}")->post(
+    $response = $this->from("/$category->slug")->post(
         route('cart.items.remove', ['item' => $item->id], absolute: false),
     );
 
-    $response->assertRedirect("/{$category->slug}");
+    $response->assertRedirect("/$category->slug");
     $this->assertSoftDeleted('cart_items', ['id' => $item->id]);
 });
 
@@ -187,7 +187,7 @@ test('it does not remove cart items from another team', function (): void {
         ->for($otherProduct)
         ->create();
 
-    $response = $this->from("/{$defaultCategory->slug}")->post(
+    $response = $this->from("/$defaultCategory->slug")->post(
         route('cart.items.remove', ['item' => $otherItem->id], absolute: false),
     );
 

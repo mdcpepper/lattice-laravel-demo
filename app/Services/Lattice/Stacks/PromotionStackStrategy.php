@@ -8,6 +8,7 @@ use App\Enums\PromotionLayerOutputMode;
 use App\Enums\PromotionLayerOutputTargetMode;
 use App\Models\Promotions\PromotionLayer;
 use App\Models\Promotions\PromotionStack;
+use BackedEnum;
 use Illuminate\Database\Eloquent\Collection;
 use Lattice\Stack\Layer as LatticeLayer;
 use Lattice\Stack\LayerOutput as LatticeLayerOutput;
@@ -15,11 +16,11 @@ use Lattice\Stack\Stack as LatticeStack;
 use Lattice\Stack\StackBuilder as LatticeStackBuilder;
 use RuntimeException;
 
-class PromotionStackStrategy implements LatticeStackStrategy
+readonly class PromotionStackStrategy implements LatticeStackStrategy
 {
     public function __construct(
-        private readonly LatticeLayerFactory $latticeLayerFactory,
-        private readonly LatticeLayerOutputFactory $latticeLayerOutputFactory,
+        private LatticeLayerFactory $latticeLayerFactory,
+        private LatticeLayerOutputFactory $latticeLayerOutputFactory,
     ) {}
 
     public function supports(PromotionStack $stack): bool
@@ -182,7 +183,7 @@ class PromotionStackStrategy implements LatticeStackStrategy
         }
 
         if (
-            $outputMode instanceof \BackedEnum &&
+            $outputMode instanceof BackedEnum &&
             is_string($outputMode->value)
         ) {
             return PromotionLayerOutputMode::tryFrom($outputMode->value);
@@ -201,7 +202,7 @@ class PromotionStackStrategy implements LatticeStackStrategy
             return $mode;
         }
 
-        if ($mode instanceof \BackedEnum && is_string($mode->value)) {
+        if ($mode instanceof BackedEnum && is_string($mode->value)) {
             return PromotionLayerOutputTargetMode::tryFrom($mode->value);
         }
 

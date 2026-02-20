@@ -2,21 +2,30 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Models\Concerns\HasRouteUlid;
+use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasTenants;
 use Filament\Panel;
+use Illuminate\Auth\Authenticatable;
+use Illuminate\Auth\Passwords\CanResetPassword;
+use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
+use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
+use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
 
-class User extends Authenticatable implements FilamentUser, HasTenants
+class User extends Model implements AuthenticatableContract, AuthorizableContract, CanResetPasswordContract, FilamentUser, HasTenants
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
+    use Authenticatable;
+    use Authorizable;
+    use CanResetPassword;
+
+    /** @use HasFactory<UserFactory> */
     use HasFactory;
 
     use HasRouteUlid;
@@ -36,17 +45,14 @@ class User extends Authenticatable implements FilamentUser, HasTenants
      */
     protected $hidden = ['password', 'remember_token'];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+    ];
+
+    public function getMorphClass(): string
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        return 'user';
     }
 
     public function canAccessPanel(Panel $panel): bool
@@ -78,7 +84,7 @@ class User extends Authenticatable implements FilamentUser, HasTenants
         return $this->teams;
     }
 
-    public function canAccessTenant(Model $tenant): bool
+    public function canAccessTenant(EloquentModel $tenant): bool
     {
         return $this->teams()->whereKey($tenant->getKey())->exists();
     }

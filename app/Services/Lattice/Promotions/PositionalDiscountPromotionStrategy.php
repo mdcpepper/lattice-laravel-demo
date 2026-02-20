@@ -73,14 +73,14 @@ class PositionalDiscountPromotionStrategy implements LatticePromotionStrategy
 
         return new LatticePositional(
             reference: $promotion,
+            size: $promotionable->size,
+            positions: $positions,
             qualification: $this->makeQualification(
                 $rootQualification,
                 $qualificationIndex,
             ),
             discount: $this->makeSimpleDiscount($discount),
             budget: $budget,
-            size: $promotionable->size,
-            positions: $positions,
         );
     }
 

@@ -17,6 +17,8 @@ class CreatePromotionStack extends CreateRecord
 
     /**
      * @param  array<string, mixed>  $data
+     *
+     * @throws \Throwable
      */
     protected function handleRecordCreation(array $data): Model
     {

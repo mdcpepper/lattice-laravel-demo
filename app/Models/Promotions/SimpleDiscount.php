@@ -6,7 +6,7 @@ use App\Casts\PercentageBasisPointsCast;
 use App\Contracts\Discount as DiscountContract;
 use App\Enums\SimpleDiscountKind;
 use App\Models\Concerns\HasRouteUlid;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Model;
 
 class SimpleDiscount extends Model implements DiscountContract
 {
@@ -19,6 +19,11 @@ class SimpleDiscount extends Model implements DiscountContract
     ];
 
     protected $fillable = ['kind', 'percentage', 'amount', 'amount_currency'];
+
+    public function getMorphClass(): string
+    {
+        return 'simple_discount';
+    }
 
     public function discountPercentage(): ?float
     {

@@ -8,8 +8,8 @@ use App\Models\Concerns\BelongsToCurrentTeam;
 use App\Models\Concerns\HasRouteUlid;
 use ArrayAccess;
 use Cknow\Money\Casts\MoneyIntegerCast;
+use Database\Factories\ProductFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Spatie\Tags\HasTags;
 
@@ -17,7 +17,7 @@ class Product extends Model
 {
     use BelongsToCurrentTeam;
 
-    /** @use HasFactory<\Database\Factories\ProductFactory> */
+    /** @use HasFactory<ProductFactory> */
     use HasFactory;
 
     use HasRouteUlid;
@@ -25,15 +25,17 @@ class Product extends Model
         syncTags as protected syncModelTags;
     }
 
+    protected $fillable = ['team_id', 'name'];
+
     protected $casts = [
         'price' => MoneyIntegerCast::class.':GBP',
     ];
 
-    protected $fillable = ['team_id', 'name'];
+    public function getMorphClass(): string
+    {
+        return 'product';
+    }
 
-    /**
-     * @param  string|mixed[]|ArrayAccess  $tags
-     */
     public function syncTags(string|array|ArrayAccess $tags): Product
     {
         $originalTagIds = $this->tagIds();

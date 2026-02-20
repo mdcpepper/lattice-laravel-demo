@@ -136,7 +136,7 @@ it('processes a cart and creates backtest records', function (): void {
 
     $this->assertDatabaseHas('promotion_redemptions', [
         'promotion_stack_id' => $stack->id,
-        'redeemable_type' => BacktestedCartItem::class,
+        'redeemable_type' => BacktestedCartItem::getMorphString(),
         'redeemable_id' => $simulatedCartItem->id,
         'sort_order' => 0,
         'original_price' => 500,

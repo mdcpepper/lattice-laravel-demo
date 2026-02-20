@@ -5,11 +5,11 @@ namespace App\Models\Cart;
 use App\Models\Concerns\BelongsToCurrentTeam;
 use App\Models\Concerns\HasRouteUlid;
 use App\Models\Customer;
+use App\Models\Model;
 use App\Models\Promotions\PromotionStack;
 use App\Models\Team;
 use Cknow\Money\Casts\MoneyIntegerCast;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -39,6 +39,11 @@ class Cart extends Model
             'subtotal' => MoneyIntegerCast::class.':GBP',
             'total' => MoneyIntegerCast::class.':GBP',
         ];
+    }
+
+    public function getMorphClass(): string
+    {
+        return 'cart';
     }
 
     /**

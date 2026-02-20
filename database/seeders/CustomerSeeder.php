@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Customer;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Collection;
 use RuntimeException;
@@ -41,12 +42,14 @@ class CustomerSeeder extends Seeder
 
     /**
      * @return Collection<int, array{name: string, email: string, password: string}>
+     *
+     * @throws GuzzleException
+     * @throws \JsonException
      */
     private function fetchCustomers(Client $client): Collection
     {
         $response = $client->request('GET', 'users?limit=0');
 
-        /** @var mixed $payload */
         $payload = json_decode(
             $response->getBody()->getContents(),
             true,

@@ -6,7 +6,7 @@ namespace App\Models\Promotions;
 
 use App\Enums\QualificationRuleKind;
 use App\Models\Concerns\HasRouteUlid;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Spatie\Tags\HasTags;
 
@@ -26,6 +26,11 @@ class QualificationRule extends Model
         'kind' => QualificationRuleKind::class,
         'sort_order' => 'integer',
     ];
+
+    public function getMorphClass(): string
+    {
+        return 'qualification_rule';
+    }
 
     /**
      * @return BelongsTo<Qualification,QualificationRule>

@@ -11,8 +11,10 @@ use App\Models\Team;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Collection;
+use Random\RandomException;
 use RuntimeException;
 
 class CartSeeder extends Seeder
@@ -42,12 +44,14 @@ class CartSeeder extends Seeder
 
     /**
      * @return Collection<int, array<string, mixed>>
+     *
+     * @throws GuzzleException
+     * @throws \JsonException
      */
     private function fetchCarts(Client $client): Collection
     {
         $response = $client->request('GET', 'carts?limit=0');
 
-        /** @var mixed $payload */
         $payload = json_decode(
             $response->getBody()->getContents(),
             true,
@@ -79,6 +83,8 @@ class CartSeeder extends Seeder
     /**
      * @param  array<string, mixed>  $cartData
      * @param  array<int, int>  $validProductIds
+     *
+     * @throws RandomException
      */
     private function seedCart(
         array $cartData,
@@ -128,6 +134,8 @@ class CartSeeder extends Seeder
     /**
      * @param  array<string, mixed>  $item
      * @param  array<int, int>  $validProductIds
+     *
+     * @throws RandomException
      */
     private function seedCartItem(
         Cart $cart,

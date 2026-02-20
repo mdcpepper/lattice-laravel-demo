@@ -4,12 +4,13 @@ namespace Database\Factories\Backtests;
 
 use App\Models\Backtests\Backtest;
 use App\Models\Backtests\BacktestedCart;
+use App\Models\Backtests\BacktestedCartItem;
 use App\Models\Cart\CartItem;
 use App\Models\Product;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Backtests\BacktestedCartItem>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<BacktestedCartItem>
  */
 class BacktestedCartItemFactory extends Factory
 {

@@ -6,10 +6,10 @@ use App\Events\CartRecalculationRequested;
 use App\Models\Cart\Cart;
 use App\Services\CartRecalculator;
 
-class RecalculateCartTotals
+readonly class RecalculateCartTotals
 {
     public function __construct(
-        private readonly CartRecalculator $cartRecalculator,
+        private CartRecalculator $cartRecalculator,
     ) {}
 
     public function handle(CartRecalculationRequested $event): void
