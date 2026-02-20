@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Services\PromotionQualification;
 
-use App\Models\MixAndMatchPromotion;
-use App\Models\Promotion;
-use App\Models\Qualification;
-use App\Models\TieredThresholdPromotion;
-use App\Models\TieredThresholdTier;
+use App\Models\Promotions\MixAndMatchPromotion;
+use App\Models\Promotions\Promotion;
+use App\Models\Promotions\Qualification;
+use App\Models\Promotions\TieredThresholdPromotion;
+use App\Models\Promotions\TieredThresholdTier;
 use App\Services\PromotionQualification\TieredThresholdStrategy;
 use RuntimeException;
 use Tests\Helpers\TieredThresholdFakeQualificationEvaluator;

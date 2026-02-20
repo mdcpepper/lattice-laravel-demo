@@ -2,7 +2,7 @@
 
 namespace App\Filament\Admin\Resources\Carts\Widgets;
 
-use App\Models\Cart;
+use App\Models\Cart\Cart;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 

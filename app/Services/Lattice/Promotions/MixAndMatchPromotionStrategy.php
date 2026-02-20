@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Services\Lattice\Promotions;
 
 use App\Enums\MixAndMatchDiscountKind;
-use App\Models\MixAndMatchDiscount as MixAndMatchDiscountModel;
-use App\Models\MixAndMatchPromotion as MixAndMatchPromotionModel;
-use App\Models\MixAndMatchSlot as MixAndMatchSlotModel;
-use App\Models\Promotion as PromotionModel;
-use App\Models\Qualification as QualificationModel;
+use App\Models\Promotions\MixAndMatchDiscount;
+use App\Models\Promotions\MixAndMatchPromotion;
+use App\Models\Promotions\MixAndMatchSlot;
+use App\Models\Promotions\Promotion;
+use App\Models\Promotions\Qualification;
 use App\Services\Lattice\Concerns\BuildsLatticeBudget;
 use App\Services\Lattice\Concerns\BuildsLatticeDiscountValues;
 use App\Services\Lattice\Concerns\BuildsLatticeQualification;
@@ -28,22 +28,22 @@ class MixAndMatchPromotionStrategy implements LatticePromotionStrategy
     use BuildsLatticeQualification;
     use HandlesUnsupportedPromotionableType;
 
-    public function supports(PromotionModel $promotion): bool
+    public function supports(Promotion $promotion): bool
     {
-        return $promotion->promotionable instanceof MixAndMatchPromotionModel;
+        return $promotion->promotionable instanceof MixAndMatchPromotion;
     }
 
-    public function make(PromotionModel $promotion): ?LatticePromotion
+    public function make(Promotion $promotion): ?LatticePromotion
     {
         $promotionable = $promotion->promotionable;
 
-        if (! $promotionable instanceof MixAndMatchPromotionModel) {
+        if (! $promotionable instanceof MixAndMatchPromotion) {
             throw $this->unsupportedPromotionableType($promotion);
         }
 
         $discount = $promotionable->discount;
 
-        if (! $discount instanceof MixAndMatchDiscountModel) {
+        if (! $discount instanceof MixAndMatchDiscount) {
             throw new RuntimeException(
                 'Mix and match promotion is missing its discount relation.',
             );
@@ -62,7 +62,7 @@ class MixAndMatchPromotionStrategy implements LatticePromotionStrategy
             ->values()
             ->map(
                 fn (
-                    MixAndMatchSlotModel $slot,
+                    MixAndMatchSlot $slot,
                 ): LatticeMixAndMatchSlot => new LatticeMixAndMatchSlot(
                     reference: $slot,
                     qualification: $this->makeQualification(
@@ -84,25 +84,25 @@ class MixAndMatchPromotionStrategy implements LatticePromotionStrategy
     }
 
     private function resolveSlotQualification(
-        PromotionModel $promotion,
-        MixAndMatchSlotModel $slot,
-    ): QualificationModel {
+        Promotion $promotion,
+        MixAndMatchSlot $slot,
+    ): Qualification {
         $slotQualification = $slot->relationLoaded('qualification')
             ? $slot->qualification
             : null;
 
-        if ($slotQualification instanceof QualificationModel) {
+        if ($slotQualification instanceof Qualification) {
             return $slotQualification;
         }
 
         $qualification = $promotion->qualifications->first(
-            fn (QualificationModel $candidate): bool => $candidate->context ===
+            fn (Qualification $candidate): bool => $candidate->context ===
                 'primary' &&
                 $candidate->qualifiable_type === $slot->getMorphClass() &&
                 (int) $candidate->qualifiable_id === (int) $slot->getKey(),
         );
 
-        if ($qualification instanceof QualificationModel) {
+        if ($qualification instanceof Qualification) {
             return $qualification;
         }
 
@@ -115,7 +115,7 @@ class MixAndMatchPromotionStrategy implements LatticePromotionStrategy
     }
 
     private function makeMixAndMatchDiscount(
-        MixAndMatchDiscountModel $discount,
+        MixAndMatchDiscount $discount,
     ): LatticeMixAndMatchDiscount {
         $kind =
             $discount->kind instanceof MixAndMatchDiscountKind

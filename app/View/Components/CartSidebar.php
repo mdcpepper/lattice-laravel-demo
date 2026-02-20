@@ -4,9 +4,9 @@ namespace App\View\Components;
 
 use App\DTOs\CartItemGroup;
 use App\DTOs\CartPromotionSaving;
-use App\Models\Cart;
-use App\Models\CartItem;
-use App\Models\PromotionRedemption;
+use App\Models\Cart\Cart;
+use App\Models\Cart\CartItem;
+use App\Models\Promotions\PromotionRedemption;
 use Closure;
 use Illuminate\Contracts\Session\Session;
 use Illuminate\Contracts\View\View;

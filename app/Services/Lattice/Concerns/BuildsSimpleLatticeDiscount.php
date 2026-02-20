@@ -6,7 +6,7 @@ namespace App\Services\Lattice\Concerns;
 
 use App\Contracts\Discount as DiscountContract;
 use App\Enums\SimpleDiscountKind;
-use App\Models\SimpleDiscount as SimpleDiscountModel;
+use App\Models\Promotions\SimpleDiscount as SimpleDiscountModel;
 use Lattice\Discount\Percentage as LatticePercentage;
 use Lattice\Discount\Simple as LatticeSimple;
 use Lattice\Money as LatticeMoney;

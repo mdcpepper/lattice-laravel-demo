@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Services\PromotionQualification;
 
-use App\Models\Promotion;
-use App\Models\Qualification;
-use App\Models\TieredThresholdPromotion;
-use App\Models\TieredThresholdTier;
+use App\Models\Promotions\Promotion;
+use App\Models\Promotions\Qualification;
+use App\Models\Promotions\TieredThresholdPromotion;
+use App\Models\Promotions\TieredThresholdTier;
 use Illuminate\Support\Collection;
 use RuntimeException;
 

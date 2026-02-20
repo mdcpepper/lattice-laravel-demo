@@ -7,13 +7,13 @@ use App\Filament\Admin\Resources\Backtests\BacktestResource;
 use App\Filament\Admin\Resources\PromotionStacks\Pages\CreatePromotionStack;
 use App\Filament\Admin\Resources\PromotionStacks\Pages\EditPromotionStack;
 use App\Filament\Admin\Resources\PromotionStacks\Pages\ListPromotionStacks;
-use App\Models\Backtest;
-use App\Models\Cart;
-use App\Models\DirectDiscountPromotion;
-use App\Models\Promotion;
-use App\Models\PromotionLayer;
-use App\Models\PromotionStack;
-use App\Models\SimpleDiscount;
+use App\Models\Backtests\Backtest;
+use App\Models\Cart\Cart;
+use App\Models\Promotions\DirectDiscountPromotion;
+use App\Models\Promotions\Promotion;
+use App\Models\Promotions\PromotionLayer;
+use App\Models\Promotions\PromotionStack;
+use App\Models\Promotions\SimpleDiscount;
 use App\Models\Team;
 use App\Models\User;
 use App\Services\CartManager;
@@ -271,10 +271,12 @@ it('prevents creating a stack with overlapping dates', function (): void {
 });
 
 it('allows adjacent non-overlapping stacks', function (): void {
-    PromotionStack::factory()->for($this->team)->create([
-        'active_from' => '2026-01-01',
-        'active_to' => '2026-01-31',
-    ]);
+    PromotionStack::factory()
+        ->for($this->team)
+        ->create([
+            'active_from' => '2026-01-01',
+            'active_to' => '2026-01-31',
+        ]);
 
     Livewire::test(CreatePromotionStack::class)
         ->fillForm([
@@ -304,16 +306,25 @@ it('allows adjacent non-overlapping stacks', function (): void {
 
 it('assigns the active stack to a newly created cart', function (): void {
     $stack = PromotionStack::factory()->for($this->team)->active()->create();
-    $cart = app(CartManager::class)->currentCart($this->team, app('session.store'));
+    $cart = app(CartManager::class)->currentCart(
+        $this->team,
+        app('session.store'),
+    );
 
     expect($cart->promotion_stack_id)->toBe($stack->id);
 });
 
-it('assigns null promotion_stack_id when no stack is active', function (): void {
-    $cart = app(CartManager::class)->currentCart($this->team, app('session.store'));
+it(
+    'assigns null promotion_stack_id when no stack is active',
+    function (): void {
+        $cart = app(CartManager::class)->currentCart(
+            $this->team,
+            app('session.store'),
+        );
 
-    expect($cart->promotion_stack_id)->toBeNull();
-});
+        expect($cart->promotion_stack_id)->toBeNull();
+    },
+);
 
 function createDirectPromotion(Team $team, string $name): Promotion
 {

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Services\Lattice;
 
-use App\Models\PromotionLayer;
+use App\Models\Promotions\PromotionLayer;
 use App\Services\Lattice\Stacks\LatticeLayerOutputFactory;
 use Lattice\Stack\Layer as LatticeLayer;
 use Lattice\Stack\LayerOutput as LatticeLayerOutput;

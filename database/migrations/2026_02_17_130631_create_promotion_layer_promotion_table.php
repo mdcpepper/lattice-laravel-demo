@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Promotions\Promotion;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -20,7 +21,7 @@ return new class extends Migration
                 ->constrained('promotion_layers')
                 ->cascadeOnDelete();
             $table
-                ->foreignIdFor(\App\Models\Promotion::class)
+                ->foreignIdFor(Promotion::class)
                 ->constrained()
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();

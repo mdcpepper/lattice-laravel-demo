@@ -6,8 +6,8 @@ namespace App\Services\Lattice\Stacks;
 
 use App\Enums\PromotionLayerOutputMode;
 use App\Enums\PromotionLayerOutputTargetMode;
-use App\Models\PromotionLayer as PromotionLayerModel;
-use App\Models\PromotionStack as PromotionStackModel;
+use App\Models\Promotions\PromotionLayer;
+use App\Models\Promotions\PromotionStack;
 use Illuminate\Database\Eloquent\Collection;
 use Lattice\Stack\Layer as LatticeLayer;
 use Lattice\Stack\LayerOutput as LatticeLayerOutput;
@@ -22,12 +22,12 @@ class PromotionStackStrategy implements LatticeStackStrategy
         private readonly LatticeLayerOutputFactory $latticeLayerOutputFactory,
     ) {}
 
-    public function supports(PromotionStackModel $stack): bool
+    public function supports(PromotionStack $stack): bool
     {
         return true;
     }
 
-    public function make(PromotionStackModel $stack): LatticeStack
+    public function make(PromotionStack $stack): LatticeStack
     {
         if (! $stack->relationLoaded('layers')) {
             $stack->load([
@@ -35,7 +35,7 @@ class PromotionStackStrategy implements LatticeStackStrategy
             ]);
         }
 
-        /** @var Collection<int, PromotionLayerModel> $layers */
+        /** @var Collection<int, PromotionLayer> $layers */
         $layers = $stack->layers->sortBy('sort_order')->values();
 
         if ($layers->isEmpty()) {
@@ -44,7 +44,7 @@ class PromotionStackStrategy implements LatticeStackStrategy
 
         if (
             $layers->contains(
-                fn (PromotionLayerModel $layer): bool => ! $layer->relationLoaded(
+                fn (PromotionLayer $layer): bool => ! $layer->relationLoaded(
                     'promotions',
                 ),
             )
@@ -60,7 +60,7 @@ class PromotionStackStrategy implements LatticeStackStrategy
         if (
             $layers->contains(
                 fn (
-                    PromotionLayerModel $layer,
+                    PromotionLayer $layer,
                 ): bool => $this->requiresPassThroughSink($layer),
             )
         ) {
@@ -129,12 +129,12 @@ class PromotionStackStrategy implements LatticeStackStrategy
     }
 
     /**
-     * @param  Collection<int, PromotionLayerModel>  $layers
+     * @param  Collection<int, PromotionLayer>  $layers
      */
     private function resolveRootLayer(
-        PromotionStackModel $stack,
+        PromotionStack $stack,
         Collection $layers,
-    ): PromotionLayerModel {
+    ): PromotionLayer {
         $configuredRootReference = trim(
             (string) ($stack->root_layer_reference ?? ''),
         );
@@ -144,11 +144,11 @@ class PromotionStackStrategy implements LatticeStackStrategy
         }
 
         $rootLayer = $layers->first(
-            fn (PromotionLayerModel $layer): bool => $layer->reference ===
+            fn (PromotionLayer $layer): bool => $layer->reference ===
                 $configuredRootReference,
         );
 
-        if ($rootLayer instanceof PromotionLayerModel) {
+        if ($rootLayer instanceof PromotionLayer) {
             return $rootLayer;
         }
 
@@ -160,7 +160,7 @@ class PromotionStackStrategy implements LatticeStackStrategy
         );
     }
 
-    private function requiresPassThroughSink(PromotionLayerModel $layer): bool
+    private function requiresPassThroughSink(PromotionLayer $layer): bool
     {
         if ($this->outputMode($layer) !== PromotionLayerOutputMode::Split) {
             return false;
@@ -173,7 +173,7 @@ class PromotionStackStrategy implements LatticeStackStrategy
     }
 
     private function outputMode(
-        PromotionLayerModel $layer,
+        PromotionLayer $layer,
     ): ?PromotionLayerOutputMode {
         $outputMode = $layer->output_mode;
 

@@ -3,8 +3,8 @@
 namespace Database\Seeders;
 
 use App\Events\CartRecalculationRequested;
-use App\Models\Cart;
-use App\Models\CartItem;
+use App\Models\Cart\Cart;
+use App\Models\Cart\CartItem;
 use App\Models\Customer;
 use App\Models\Product;
 use App\Models\Team;

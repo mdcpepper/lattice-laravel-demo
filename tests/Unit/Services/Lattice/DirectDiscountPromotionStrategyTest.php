@@ -7,10 +7,10 @@ namespace Tests\Unit\Services\Lattice;
 use App\Enums\QualificationOp;
 use App\Enums\QualificationRuleKind;
 use App\Enums\SimpleDiscountKind;
-use App\Models\DirectDiscountPromotion;
-use App\Models\MixAndMatchPromotion;
-use App\Models\Promotion;
-use App\Models\SimpleDiscount;
+use App\Models\Promotions\DirectDiscountPromotion;
+use App\Models\Promotions\MixAndMatchPromotion;
+use App\Models\Promotions\Promotion;
+use App\Models\Promotions\SimpleDiscount;
 use App\Services\Lattice\Promotions\DirectDiscountPromotionStrategy;
 use RuntimeException;
 

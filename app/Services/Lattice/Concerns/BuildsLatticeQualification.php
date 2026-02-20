@@ -6,9 +6,9 @@ namespace App\Services\Lattice\Concerns;
 
 use App\Enums\QualificationOp;
 use App\Enums\QualificationRuleKind;
-use App\Models\Promotion as PromotionModel;
-use App\Models\Qualification as QualificationModel;
-use App\Models\QualificationRule as QualificationRuleModel;
+use App\Models\Promotions\Promotion;
+use App\Models\Promotions\Qualification;
+use App\Models\Promotions\QualificationRule;
 use Illuminate\Support\Collection;
 use Lattice\Qualification as LatticeQualification;
 use Lattice\Qualification\BoolOp as LatticeBoolOp;
@@ -21,14 +21,14 @@ trait BuildsLatticeQualification
      * @param  Collection<int, QualificationModel>  $qualificationIndex
      */
     protected function makeQualification(
-        QualificationModel $qualification,
+        Qualification $qualification,
         Collection $qualificationIndex,
     ): LatticeQualification {
         $rules = $qualification->rules->sortBy('sort_order')->values()->all();
 
         /** @var LatticeRule[] $latticeRules */
         $latticeRules = array_map(
-            fn (QualificationRuleModel $rule): LatticeRule => $this->makeRule(
+            fn (QualificationRule $rule): LatticeRule => $this->makeRule(
                 $rule,
                 $qualificationIndex,
             ),
@@ -45,7 +45,7 @@ trait BuildsLatticeQualification
      * @param  Collection<int, QualificationModel>  $qualificationIndex
      */
     protected function makeRule(
-        QualificationRuleModel $rule,
+        QualificationRule $rule,
         Collection $qualificationIndex,
     ): LatticeRule {
         $kind =
@@ -79,9 +79,9 @@ trait BuildsLatticeQualification
      * @param  Collection<int, QualificationModel>  $qualificationIndex
      */
     protected function resolveGroupedQualification(
-        QualificationRuleModel $rule,
+        QualificationRule $rule,
         Collection $qualificationIndex,
-    ): QualificationModel {
+    ): Qualification {
         $groupQualificationId = $rule->group_qualification_id;
 
         if (is_null($groupQualificationId)) {
@@ -94,13 +94,13 @@ trait BuildsLatticeQualification
             (int) $groupQualificationId,
         );
 
-        if ($groupQualification instanceof QualificationModel) {
+        if ($groupQualification instanceof Qualification) {
             return $groupQualification;
         }
 
         if (
             $rule->relationLoaded('groupQualification') &&
-            $rule->groupQualification instanceof QualificationModel
+            $rule->groupQualification instanceof Qualification
         ) {
             return $rule->groupQualification;
         }
@@ -116,7 +116,7 @@ trait BuildsLatticeQualification
     /**
      * @return string[]
      */
-    protected function ruleTags(QualificationRuleModel $rule): array
+    protected function ruleTags(QualificationRule $rule): array
     {
         return $rule->tags
             ->map(fn ($tag): string => (string) $tag->name)
@@ -138,10 +138,10 @@ trait BuildsLatticeQualification
     /**
      * @return Collection<int, QualificationModel>
      */
-    protected function qualificationIndex(PromotionModel $promotion): Collection
+    protected function qualificationIndex(Promotion $promotion): Collection
     {
         return $promotion->qualifications
             ->keyBy('id')
-            ->map(fn ($qualification): QualificationModel => $qualification);
+            ->map(fn ($qualification): Qualification => $qualification);
     }
 }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Services;
 
-use App\Models\Promotion;
+use App\Models\Promotions\Promotion;
 use App\Services\PromotionDiscount\PromotionDiscountFormatter;
 use App\Services\PromotionDiscount\PromotionDiscountStrategy;
 use Closure;

@@ -8,16 +8,16 @@ use App\Enums\QualificationOp;
 use App\Enums\QualificationRuleKind;
 use App\Enums\SimpleDiscountKind;
 use App\Enums\TieredThresholdDiscountKind;
-use App\Models\DirectDiscountPromotion;
-use App\Models\MixAndMatchDiscount;
-use App\Models\MixAndMatchPromotion;
-use App\Models\PositionalDiscountPromotion;
 use App\Models\Product;
-use App\Models\Promotion;
-use App\Models\SimpleDiscount;
+use App\Models\Promotions\DirectDiscountPromotion;
+use App\Models\Promotions\MixAndMatchDiscount;
+use App\Models\Promotions\MixAndMatchPromotion;
+use App\Models\Promotions\PositionalDiscountPromotion;
+use App\Models\Promotions\Promotion;
+use App\Models\Promotions\SimpleDiscount;
+use App\Models\Promotions\TieredThresholdDiscount;
+use App\Models\Promotions\TieredThresholdPromotion;
 use App\Models\Team;
-use App\Models\TieredThresholdDiscount;
-use App\Models\TieredThresholdPromotion;
 use App\Services\ProductQualificationChecker;
 
 beforeEach(function (): void {
@@ -216,8 +216,10 @@ it('returns empty array when there are no promotions', function (): void {
 });
 
 // AND(has_all([eligible]), group(OR(has_any([vip]), has_none([blocked]))))
-function buildDirectDiscountPromotion(string $name = '10% Off', ?Team $team = null): Promotion
-{
+function buildDirectDiscountPromotion(
+    string $name = '10% Off',
+    ?Team $team = null,
+): Promotion {
     $team ??= Team::factory()->create();
     $discount = SimpleDiscount::query()->create([
         'kind' => SimpleDiscountKind::PercentageOff,
@@ -346,8 +348,10 @@ function buildPositionalDiscountPromotion(
     return $promotion;
 }
 
-function buildMixAndMatchPromotion(string $name = 'Buy 2 Get 1', ?Team $team = null): Promotion
-{
+function buildMixAndMatchPromotion(
+    string $name = 'Buy 2 Get 1',
+    ?Team $team = null,
+): Promotion {
     $team ??= Team::factory()->create();
     $discount = MixAndMatchDiscount::query()->create([
         'kind' => MixAndMatchDiscountKind::PercentageOffAllItems,
@@ -398,8 +402,10 @@ function buildMixAndMatchPromotion(string $name = 'Buy 2 Get 1', ?Team $team = n
     return $promotion;
 }
 
-function buildTieredThresholdPromotion(string $name = 'Tiered Deal', ?Team $team = null): Promotion
-{
+function buildTieredThresholdPromotion(
+    string $name = 'Tiered Deal',
+    ?Team $team = null,
+): Promotion {
     $team ??= Team::factory()->create();
     $tieredThreshold = TieredThresholdPromotion::query()->create();
 

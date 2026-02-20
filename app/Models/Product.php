@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Jobs\DispatchCartRecalculationRequest;
+use App\Models\Cart\CartItem;
 use App\Models\Concerns\BelongsToCurrentTeam;
 use App\Models\Concerns\HasRouteUlid;
 use ArrayAccess;

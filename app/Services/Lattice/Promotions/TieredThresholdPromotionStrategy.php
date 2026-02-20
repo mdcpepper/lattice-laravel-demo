@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Services\Lattice\Promotions;
 
 use App\Enums\TieredThresholdDiscountKind;
-use App\Models\Promotion as PromotionModel;
-use App\Models\Qualification as QualificationModel;
-use App\Models\TieredThresholdDiscount as TieredThresholdDiscountModel;
-use App\Models\TieredThresholdPromotion as TieredThresholdPromotionModel;
-use App\Models\TieredThresholdTier as TieredThresholdTierModel;
+use App\Models\Promotions\Promotion;
+use App\Models\Promotions\Qualification;
+use App\Models\Promotions\TieredThresholdDiscount;
+use App\Models\Promotions\TieredThresholdPromotion;
+use App\Models\Promotions\TieredThresholdTier;
 use App\Services\Lattice\Concerns\BuildsLatticeBudget;
 use App\Services\Lattice\Concerns\BuildsLatticeDiscountValues;
 use App\Services\Lattice\Concerns\BuildsLatticeQualification;
@@ -29,16 +29,16 @@ class TieredThresholdPromotionStrategy implements LatticePromotionStrategy
     use BuildsLatticeQualification;
     use HandlesUnsupportedPromotionableType;
 
-    public function supports(PromotionModel $promotion): bool
+    public function supports(Promotion $promotion): bool
     {
-        return $promotion->promotionable instanceof TieredThresholdPromotionModel;
+        return $promotion->promotionable instanceof TieredThresholdPromotion;
     }
 
-    public function make(PromotionModel $promotion): ?LatticePromotion
+    public function make(Promotion $promotion): ?LatticePromotion
     {
         $promotionable = $promotion->promotionable;
 
-        if (! $promotionable instanceof TieredThresholdPromotionModel) {
+        if (! $promotionable instanceof TieredThresholdPromotion) {
             throw $this->unsupportedPromotionableType($promotion);
         }
 
@@ -53,13 +53,13 @@ class TieredThresholdPromotionStrategy implements LatticePromotionStrategy
         $tiers = $promotionable->tiers
             ->sortBy('sort_order')
             ->values()
-            ->map(function (TieredThresholdTierModel $tier) use (
+            ->map(function (TieredThresholdTier $tier) use (
                 $promotion,
                 $qualificationIndex,
             ): LatticeTieredThresholdTier {
                 $discount = $tier->discount;
 
-                if (! $discount instanceof \App\Models\TieredThresholdDiscount) {
+                if (! $discount instanceof TieredThresholdDiscount) {
                     throw new RuntimeException(
                         sprintf(
                             'Tiered threshold tier [%d] is missing its discount relation.',
@@ -96,25 +96,25 @@ class TieredThresholdPromotionStrategy implements LatticePromotionStrategy
     }
 
     private function resolveTierQualification(
-        PromotionModel $promotion,
-        TieredThresholdTierModel $tier,
-    ): QualificationModel {
+        Promotion $promotion,
+        TieredThresholdTier $tier,
+    ): Qualification {
         $tierQualification = $tier->relationLoaded('qualification')
             ? $tier->qualification
             : null;
 
-        if ($tierQualification instanceof QualificationModel) {
+        if ($tierQualification instanceof Qualification) {
             return $tierQualification;
         }
 
         $qualification = $promotion->qualifications->first(
-            fn (QualificationModel $candidate): bool => $candidate->context ===
+            fn (Qualification $candidate): bool => $candidate->context ===
                 'primary' &&
                 $candidate->qualifiable_type === $tier->getMorphClass() &&
                 (int) $candidate->qualifiable_id === (int) $tier->getKey(),
         );
 
-        if ($qualification instanceof QualificationModel) {
+        if ($qualification instanceof Qualification) {
             return $qualification;
         }
 
@@ -127,7 +127,7 @@ class TieredThresholdPromotionStrategy implements LatticePromotionStrategy
     }
 
     private function makeLowerThreshold(
-        TieredThresholdTierModel $tier,
+        TieredThresholdTier $tier,
     ): LatticeTieredThresholdThreshold {
         return $this->makeThreshold(
             $tier->lower_monetary_threshold_minor,
@@ -141,7 +141,7 @@ class TieredThresholdPromotionStrategy implements LatticePromotionStrategy
     }
 
     private function makeUpperThreshold(
-        TieredThresholdTierModel $tier,
+        TieredThresholdTier $tier,
     ): ?LatticeTieredThresholdThreshold {
         $upperMonetaryThreshold = $tier->upper_monetary_threshold_minor;
         $upperItemCountThreshold = $tier->upper_item_count_threshold;
@@ -199,7 +199,7 @@ class TieredThresholdPromotionStrategy implements LatticePromotionStrategy
     }
 
     private function makeTieredThresholdDiscount(
-        TieredThresholdDiscountModel $discount,
+        TieredThresholdDiscount $discount,
     ): LatticeTieredThresholdDiscount {
         $kind =
             $discount->kind instanceof TieredThresholdDiscountKind

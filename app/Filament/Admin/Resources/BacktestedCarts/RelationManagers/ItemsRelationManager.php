@@ -2,7 +2,7 @@
 
 namespace App\Filament\Admin\Resources\BacktestedCarts\RelationManagers;
 
-use App\Models\BacktestedCartItem;
+use App\Models\Backtests\BacktestedCartItem;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;

@@ -3,8 +3,8 @@
 namespace App\Filament\Admin\Resources\Backtests\RelationManagers;
 
 use App\Filament\Admin\Resources\BacktestedCarts\BacktestedCartResource;
-use App\Models\BacktestedCart;
-use App\Models\BacktestedCartItem;
+use App\Models\Backtests\BacktestedCart;
+use App\Models\Backtests\BacktestedCartItem;
 use App\Services\NanosecondDurationFormatter;
 use Filament\Actions\ViewAction;
 use Filament\Resources\RelationManagers\RelationManager;

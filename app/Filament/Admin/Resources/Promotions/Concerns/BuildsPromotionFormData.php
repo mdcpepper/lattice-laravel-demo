@@ -7,11 +7,11 @@ use App\Enums\QualificationContext;
 use App\Enums\QualificationRuleKind;
 use App\Enums\SimpleDiscountKind;
 use App\Enums\TieredThresholdDiscountKind;
-use App\Models\MixAndMatchDiscount;
-use App\Models\Promotion;
-use App\Models\Qualification;
-use App\Models\SimpleDiscount;
-use App\Models\TieredThresholdDiscount;
+use App\Models\Promotions\MixAndMatchDiscount;
+use App\Models\Promotions\Promotion;
+use App\Models\Promotions\Qualification;
+use App\Models\Promotions\SimpleDiscount;
+use App\Models\Promotions\TieredThresholdDiscount;
 
 trait BuildsPromotionFormData
 {

@@ -2,13 +2,13 @@
 
 namespace Tests\Feature\Cart;
 
-use App\Models\Cart;
-use App\Models\CartItem;
+use App\Models\Cart\Cart;
+use App\Models\Cart\CartItem;
 use App\Models\Category;
 use App\Models\Product;
-use App\Models\Promotion;
-use App\Models\PromotionRedemption;
-use App\Models\PromotionStack;
+use App\Models\Promotions\Promotion;
+use App\Models\Promotions\PromotionRedemption;
+use App\Models\Promotions\PromotionStack;
 use App\Models\Team;
 
 test(

@@ -2,12 +2,12 @@
 
 namespace App\Filament\Admin\Resources\Promotions\Tables;
 
-use App\Models\CartItem;
-use App\Models\DirectDiscountPromotion;
-use App\Models\MixAndMatchPromotion;
-use App\Models\PositionalDiscountPromotion;
-use App\Models\Promotion;
-use App\Models\TieredThresholdPromotion;
+use App\Models\Cart\CartItem;
+use App\Models\Promotions\DirectDiscountPromotion;
+use App\Models\Promotions\MixAndMatchPromotion;
+use App\Models\Promotions\PositionalDiscountPromotion;
+use App\Models\Promotions\Promotion;
+use App\Models\Promotions\TieredThresholdPromotion;
 use App\Services\PromotionDiscount\PromotionDiscountFormatter;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;

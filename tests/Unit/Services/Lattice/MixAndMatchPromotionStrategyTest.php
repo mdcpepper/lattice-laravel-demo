@@ -6,11 +6,11 @@ namespace Tests\Unit\Services\Lattice;
 
 use App\Enums\MixAndMatchDiscountKind;
 use App\Enums\QualificationRuleKind;
-use App\Models\DirectDiscountPromotion;
-use App\Models\MixAndMatchDiscount;
-use App\Models\MixAndMatchPromotion;
-use App\Models\MixAndMatchSlot;
-use App\Models\Promotion;
+use App\Models\Promotions\DirectDiscountPromotion;
+use App\Models\Promotions\MixAndMatchDiscount;
+use App\Models\Promotions\MixAndMatchPromotion;
+use App\Models\Promotions\MixAndMatchSlot;
+use App\Models\Promotions\Promotion;
 use App\Services\Lattice\Promotions\MixAndMatchPromotionStrategy;
 use RuntimeException;
 

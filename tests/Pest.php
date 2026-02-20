@@ -3,9 +3,9 @@
 use App\Enums\QualificationOp;
 use App\Enums\QualificationRuleKind;
 use App\Enums\SimpleDiscountKind;
-use App\Models\DirectDiscountPromotion;
-use App\Models\Promotion;
-use App\Models\SimpleDiscount;
+use App\Models\Promotions\DirectDiscountPromotion;
+use App\Models\Promotions\Promotion;
+use App\Models\Promotions\SimpleDiscount;
 use App\Models\Team;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 

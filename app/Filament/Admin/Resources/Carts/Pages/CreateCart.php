@@ -3,7 +3,7 @@
 namespace App\Filament\Admin\Resources\Carts\Pages;
 
 use App\Filament\Admin\Resources\Carts\CartResource;
-use App\Models\PromotionStack;
+use App\Models\Promotions\PromotionStack;
 use Filament\Facades\Filament;
 use Filament\Resources\Pages\CreateRecord;
 

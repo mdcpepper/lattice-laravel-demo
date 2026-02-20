@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\PromotionDiscount;
 
-use App\Models\Promotion;
-use App\Models\TieredThresholdPromotion;
+use App\Models\Promotions\Promotion;
+use App\Models\Promotions\TieredThresholdPromotion;
 
 class TieredThresholdStrategy implements PromotionDiscountStrategy
 {

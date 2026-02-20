@@ -2,7 +2,7 @@
 
 namespace App\Filament\Admin\Resources\BacktestedCarts\Widgets;
 
-use App\Models\BacktestedCart;
+use App\Models\Backtests\BacktestedCart;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 

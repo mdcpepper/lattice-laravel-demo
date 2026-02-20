@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Services\Lattice;
 
-use App\Models\PromotionStack;
+use App\Models\Promotions\PromotionStack;
 use App\Services\Lattice\Stacks\LatticeStackFactory;
 use Lattice\Stack\Stack as LatticeStack;
 use RuntimeException;
@@ -53,7 +53,7 @@ test('throws when no strategy supports the stack', function (): void {
 
     expect(fn (): LatticeStack => $factory->make($stack))->toThrow(
         RuntimeException::class,
-        "Unsupported stack type [App\Models\PromotionStack].",
+        "Unsupported stack type [App\Models\Promotions\PromotionStack].",
     );
 });
 

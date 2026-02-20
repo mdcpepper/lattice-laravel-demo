@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Cart;
 
 use App\Http\Controllers\Controller;
-use App\Models\CartItem;
+use App\Models\Cart\CartItem;
 use App\Services\CartManager;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;

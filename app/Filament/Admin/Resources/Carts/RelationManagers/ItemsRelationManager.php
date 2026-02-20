@@ -4,8 +4,8 @@ namespace App\Filament\Admin\Resources\Carts\RelationManagers;
 
 use App\Events\CartRecalculationRequested;
 use App\Filament\Admin\Resources\Carts\Tables\ProductSelectionTable;
-use App\Models\Cart;
-use App\Models\CartItem;
+use App\Models\Cart\Cart;
+use App\Models\Cart\CartItem;
 use App\Models\Product;
 use App\Services\CartManager;
 use Filament\Actions\Action;

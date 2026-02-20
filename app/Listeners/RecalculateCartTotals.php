@@ -3,7 +3,7 @@
 namespace App\Listeners;
 
 use App\Events\CartRecalculationRequested;
-use App\Models\Cart;
+use App\Models\Cart\Cart;
 use App\Services\CartRecalculator;
 
 class RecalculateCartTotals

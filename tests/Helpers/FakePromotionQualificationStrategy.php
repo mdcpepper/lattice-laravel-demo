@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Helpers;
 
-use App\Models\Promotion;
+use App\Models\Promotions\Promotion;
 use App\Services\PromotionQualification\PromotionQualificationStrategy;
 use Closure;
 

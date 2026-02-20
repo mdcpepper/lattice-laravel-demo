@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Services\PromotionQualification;
 
-use App\Models\DirectDiscountPromotion;
-use App\Models\MixAndMatchPromotion;
-use App\Models\Promotion;
-use App\Models\Qualification;
+use App\Models\Promotions\DirectDiscountPromotion;
+use App\Models\Promotions\MixAndMatchPromotion;
+use App\Models\Promotions\Promotion;
+use App\Models\Promotions\Qualification;
 use App\Services\PromotionQualification\DirectDiscountStrategy;
 use App\Services\PromotionQualification\QualificationEvaluator;
 use Illuminate\Support\Collection;

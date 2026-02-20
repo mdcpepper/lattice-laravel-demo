@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\PromotionLayer;
-use App\Models\PromotionStack;
+use App\Models\Promotions\PromotionLayer;
+use App\Models\Promotions\PromotionStack;
 use App\Models\Team;
 use Illuminate\Database\Seeder;
 

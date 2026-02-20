@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Lattice\Stacks;
 
-use App\Models\PromotionStack as PromotionStackModel;
+use App\Models\Promotions\PromotionStack;
 use Lattice\Stack\Stack as LatticeStack;
 use RuntimeException;
 
@@ -17,7 +17,7 @@ class LatticeStackFactory
         private readonly array $latticeStackStrategies,
     ) {}
 
-    public function make(PromotionStackModel $stack): LatticeStack
+    public function make(PromotionStack $stack): LatticeStack
     {
         $strategy = collect($this->latticeStackStrategies)->first(
             fn (LatticeStackStrategy $strategy): bool => $strategy->supports(
@@ -33,7 +33,7 @@ class LatticeStackFactory
     }
 
     private function unsupportedStackType(
-        PromotionStackModel $stack,
+        PromotionStack $stack,
     ): RuntimeException {
         return new RuntimeException(
             sprintf('Unsupported stack type [%s].', get_debug_type($stack)),

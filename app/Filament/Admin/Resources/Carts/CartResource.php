@@ -10,7 +10,7 @@ use App\Filament\Admin\Resources\Carts\RelationManagers\ItemsRelationManager;
 use App\Filament\Admin\Resources\Carts\Schemas\CartForm;
 use App\Filament\Admin\Resources\Carts\Tables\CartsTable;
 use App\Filament\Admin\Resources\Carts\Widgets\CartStatsWidget;
-use App\Models\Cart;
+use App\Models\Cart\Cart;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;

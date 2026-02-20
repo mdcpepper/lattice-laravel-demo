@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Lattice\Stacks;
 
 use App\Enums\PromotionLayerOutputMode;
-use App\Models\PromotionLayer as PromotionLayerModel;
+use App\Models\Promotions\PromotionLayer as PromotionLayerModel;
 use Lattice\Stack\Layer as LatticeLayer;
 use Lattice\Stack\LayerOutput as LatticeLayerOutput;
 

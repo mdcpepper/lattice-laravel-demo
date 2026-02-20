@@ -4,7 +4,7 @@ namespace App\Filament\Admin\Resources\PromotionStacks\Pages;
 
 use App\Filament\Admin\Resources\PromotionStacks\Concerns\InteractsWithPromotionStackLayers;
 use App\Filament\Admin\Resources\PromotionStacks\PromotionStackResource;
-use App\Models\PromotionStack;
+use App\Models\Promotions\PromotionStack;
 use Filament\Resources\Pages\CreateRecord;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;

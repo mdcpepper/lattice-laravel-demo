@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Services\Lattice;
 
-use App\Models\PromotionLayer;
+use App\Models\Promotions\PromotionLayer;
 use App\Services\Lattice\Stacks\LatticeLayerFactory;
 use Lattice\Stack\Layer as LatticeLayer;
 use Lattice\Stack\LayerOutput;
@@ -65,7 +65,7 @@ test('throws when no strategy supports the layer', function (): void {
 
     expect(fn (): LatticeLayer => $factory->make($layer))->toThrow(
         RuntimeException::class,
-        "Unsupported layer type [App\Models\PromotionLayer].",
+        "Unsupported layer type [App\Models\Promotions\PromotionLayer].",
     );
 });
 

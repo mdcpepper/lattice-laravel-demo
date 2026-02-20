@@ -3,10 +3,10 @@
 namespace App\Services;
 
 use App\Events\CartRecalculationRequested;
-use App\Models\Cart;
-use App\Models\CartItem;
+use App\Models\Cart\Cart;
+use App\Models\Cart\CartItem;
 use App\Models\Product;
-use App\Models\PromotionStack;
+use App\Models\Promotions\PromotionStack;
 use App\Models\Team;
 use Illuminate\Contracts\Session\Session;
 

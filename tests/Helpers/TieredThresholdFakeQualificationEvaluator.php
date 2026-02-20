@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Helpers;
 
-use App\Models\Qualification;
+use App\Models\Promotions\Qualification;
 use App\Services\PromotionQualification\QualificationEvaluator;
 use Illuminate\Support\Collection;
 

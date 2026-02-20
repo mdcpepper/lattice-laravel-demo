@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\Cart;
+use App\Models\Cart\Cart;
 use App\Models\Customer;
 use App\Models\Team;
 

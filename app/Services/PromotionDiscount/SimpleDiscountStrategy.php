@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Services\PromotionDiscount;
 
 use App\Enums\SimpleDiscountKind;
-use App\Models\Promotion;
-use App\Models\SimpleDiscount;
+use App\Models\Promotions\Promotion;
+use App\Models\Promotions\SimpleDiscount;
 
 trait SimpleDiscountStrategy
 {

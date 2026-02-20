@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Services;
 
 use App\Models\Product;
-use App\Models\Promotion;
+use App\Models\Promotions\Promotion;
 use App\Services\ProductQualificationChecker;
 use Illuminate\Support\Collection;
 use Tests\Helpers\FakePromotionQualificationStrategy;

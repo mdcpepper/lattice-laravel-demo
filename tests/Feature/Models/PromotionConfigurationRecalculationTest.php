@@ -3,11 +3,11 @@
 namespace Tests\Feature\Models;
 
 use App\Jobs\DispatchCartRecalculationRequest;
-use App\Models\Cart;
-use App\Models\CartItem;
+use App\Models\Cart\Cart;
+use App\Models\Cart\CartItem;
 use App\Models\Product;
-use App\Models\PromotionLayer;
-use App\Models\PromotionStack;
+use App\Models\Promotions\PromotionLayer;
+use App\Models\Promotions\PromotionStack;
 use App\Models\Team;
 use Illuminate\Support\Facades\Queue;
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\Lattice\Promotions;
 
-use App\Models\Promotion as PromotionModel;
+use App\Models\Promotions\Promotion;
 use Lattice\Promotion\PromotionInterface as LatticePromotion;
 use RuntimeException;
 
@@ -17,7 +17,7 @@ class LatticePromotionFactory
         private readonly array $latticePromotionStrategies,
     ) {}
 
-    public function make(PromotionModel $promotion): ?LatticePromotion
+    public function make(Promotion $promotion): ?LatticePromotion
     {
         $strategy = collect($this->latticePromotionStrategies)->first(
             fn (LatticePromotionStrategy $strategy): bool => $strategy->supports(
@@ -33,7 +33,7 @@ class LatticePromotionFactory
     }
 
     private function unsupportedPromotionableType(
-        PromotionModel $promotion,
+        Promotion $promotion,
     ): RuntimeException {
         $promotionable = $promotion->relationLoaded('promotionable')
             ? $promotion->getRelation('promotionable')

@@ -6,11 +6,11 @@ namespace Tests\Unit\Services\Lattice;
 
 use App\Enums\QualificationRuleKind;
 use App\Enums\TieredThresholdDiscountKind;
-use App\Models\MixAndMatchPromotion;
-use App\Models\Promotion;
-use App\Models\TieredThresholdDiscount;
-use App\Models\TieredThresholdPromotion;
-use App\Models\TieredThresholdTier;
+use App\Models\Promotions\MixAndMatchPromotion;
+use App\Models\Promotions\Promotion;
+use App\Models\Promotions\TieredThresholdDiscount;
+use App\Models\Promotions\TieredThresholdPromotion;
+use App\Models\Promotions\TieredThresholdTier;
 use App\Services\Lattice\Promotions\TieredThresholdPromotionStrategy;
 use RuntimeException;
 
@@ -304,8 +304,8 @@ function tieredLatticeQualification(
     string $context = 'primary',
     ?string $qualifiableType = null,
     ?int $qualifiableId = null,
-): \App\Models\Qualification {
-    $qualification = new \App\Models\Qualification;
+): \App\Models\Promotions\Qualification {
+    $qualification = new \App\Models\Promotions\Qualification;
     $qualification->id = $id;
     $qualification->context = $context;
     $qualification->qualifiable_type = $qualifiableType;
@@ -325,8 +325,8 @@ function tieredLatticeQualificationRule(
     int $sortOrder,
     ?int $groupQualificationId = null,
     array $tags = [],
-): \App\Models\QualificationRule {
-    $rule = new \App\Models\QualificationRule;
+): \App\Models\Promotions\QualificationRule {
+    $rule = new \App\Models\Promotions\QualificationRule;
     $rule->id = $id;
     $rule->kind = $kind;
     $rule->sort_order = $sortOrder;

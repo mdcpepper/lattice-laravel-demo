@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Helpers;
 
-use App\Models\PromotionLayer;
+use App\Models\Promotions\PromotionLayer;
 use App\Services\Lattice\Stacks\LatticeLayerOutputStrategy;
 use Closure;
 use Lattice\Stack\Layer as LatticeLayer;

@@ -9,9 +9,9 @@ use App\Enums\QualificationRuleKind;
 use App\Enums\SimpleDiscountKind;
 use App\Filament\Admin\Resources\Promotions\Pages\CreatePromotion;
 use App\Filament\Admin\Resources\Promotions\Pages\EditPromotion;
-use App\Models\DirectDiscountPromotion;
-use App\Models\Promotion;
-use App\Models\SimpleDiscount;
+use App\Models\Promotions\DirectDiscountPromotion;
+use App\Models\Promotions\Promotion;
+use App\Models\Promotions\SimpleDiscount;
 use App\Models\Team;
 use App\Models\User;
 use Filament\Facades\Filament;
@@ -440,7 +440,7 @@ it(
             ->assertHasNoFormErrors();
 
         $this->assertDatabaseMissing('taggables', [
-            'taggable_type' => \App\Models\QualificationRule::class,
+            'taggable_type' => \App\Models\Promotions\QualificationRule::class,
             'taggable_id' => $oldRuleId,
         ]);
     },

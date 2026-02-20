@@ -2,10 +2,10 @@
 
 namespace App\Services;
 
-use App\Models\Cart;
-use App\Models\CartItem;
-use App\Models\PromotionRedemption;
-use App\Models\PromotionStack;
+use App\Models\Cart\Cart;
+use App\Models\Cart\CartItem;
+use App\Models\Promotions\PromotionRedemption;
+use App\Models\Promotions\PromotionStack;
 use App\Services\Lattice\Stacks\LatticeStackFactory;
 use Illuminate\Support\Collection;
 use Lattice\Item as LatticeItem;

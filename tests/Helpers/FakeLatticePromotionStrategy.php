@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Helpers;
 
-use App\Models\Promotion;
+use App\Models\Promotions\Promotion;
 use App\Services\Lattice\Promotions\LatticePromotionStrategy;
 use Closure;
 use Lattice\Promotion\PromotionInterface as LatticePromotion;
@@ -17,6 +17,7 @@ class FakeLatticePromotionStrategy implements LatticePromotionStrategy
     /**
      * @param  Closure(Promotion): bool  $supports
      * @param  Closure(Promotion): ?LatticePromotion  $make
+     * @param  Closure(): void  $make
      */
     public function __construct(
         private readonly Closure $supports,

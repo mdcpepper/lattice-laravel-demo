@@ -9,17 +9,17 @@ use App\Enums\SimpleDiscountKind;
 use App\Enums\TieredThresholdDiscountKind;
 use App\Filament\Admin\Resources\Promotions\Pages\EditPromotion;
 use App\Filament\Admin\Resources\Promotions\Pages\ListPromotions;
-use App\Models\CartItem;
-use App\Models\DirectDiscountPromotion;
-use App\Models\MixAndMatchDiscount;
-use App\Models\MixAndMatchPromotion;
-use App\Models\Promotion;
-use App\Models\PromotionRedemption;
-use App\Models\PromotionStack;
-use App\Models\SimpleDiscount;
+use App\Models\Cart\CartItem;
+use App\Models\Promotions\DirectDiscountPromotion;
+use App\Models\Promotions\MixAndMatchDiscount;
+use App\Models\Promotions\MixAndMatchPromotion;
+use App\Models\Promotions\Promotion;
+use App\Models\Promotions\PromotionRedemption;
+use App\Models\Promotions\PromotionStack;
+use App\Models\Promotions\SimpleDiscount;
+use App\Models\Promotions\TieredThresholdDiscount;
+use App\Models\Promotions\TieredThresholdPromotion;
 use App\Models\Team;
-use App\Models\TieredThresholdDiscount;
-use App\Models\TieredThresholdPromotion;
 use App\Models\User;
 use Filament\Facades\Filament;
 use Livewire\Livewire;
@@ -122,111 +122,120 @@ it('shows formatted discount configuration in the table', function (): void {
         ->assertSee('Tiered Threshold: 1 tier');
 });
 
-it('shows budget usage as redeemed over budget in the application budget column', function (): void {
-    $discount = SimpleDiscount::query()->create([
-        'kind' => SimpleDiscountKind::PercentageOff,
-        'percentage' => 10.0,
-    ]);
-
-    $direct = DirectDiscountPromotion::query()->create([
-        'simple_discount_id' => $discount->id,
-    ]);
-
-    $promotion = Promotion::query()->create([
-        'name' => 'Budget Promo',
-        'team_id' => $this->team->id,
-        'promotionable_type' => $direct->getMorphClass(),
-        'promotionable_id' => $direct->id,
-        'application_budget' => 10,
-    ]);
-
-    $stack = PromotionStack::factory()->for($this->team)->create();
-
-    foreach (range(1, 3) as $_) {
-        PromotionRedemption::query()->create([
-            'promotion_id' => $promotion->id,
-            'promotion_stack_id' => $stack->id,
-            'redeemable_type' => CartItem::class,
-            'original_price' => 500,
-            'original_price_currency' => 'GBP',
-            'final_price' => 450,
-            'final_price_currency' => 'GBP',
+it(
+    'shows budget usage as redeemed over budget in the application budget column',
+    function (): void {
+        $discount = SimpleDiscount::query()->create([
+            'kind' => SimpleDiscountKind::PercentageOff,
+            'percentage' => 10.0,
         ]);
-    }
 
-    Livewire::test(ListPromotions::class)->assertSee('3 / 10');
-});
-
-it('shows infinity symbol when there is no application budget', function (): void {
-    $discount = SimpleDiscount::query()->create([
-        'kind' => SimpleDiscountKind::PercentageOff,
-        'percentage' => 10.0,
-    ]);
-
-    $direct = DirectDiscountPromotion::query()->create([
-        'simple_discount_id' => $discount->id,
-    ]);
-
-    $promotion = Promotion::query()->create([
-        'name' => 'Unlimited Promo',
-        'team_id' => $this->team->id,
-        'promotionable_type' => $direct->getMorphClass(),
-        'promotionable_id' => $direct->id,
-    ]);
-
-    $stack = PromotionStack::factory()->for($this->team)->create();
-
-    foreach (range(1, 2) as $_) {
-        PromotionRedemption::query()->create([
-            'promotion_id' => $promotion->id,
-            'promotion_stack_id' => $stack->id,
-            'redeemable_type' => CartItem::class,
-            'original_price' => 500,
-            'original_price_currency' => 'GBP',
-            'final_price' => 450,
-            'final_price_currency' => 'GBP',
+        $direct = DirectDiscountPromotion::query()->create([
+            'simple_discount_id' => $discount->id,
         ]);
-    }
 
-    Livewire::test(ListPromotions::class)->assertSee('2 / ∞');
-});
-
-it('shows monetary redeemed over budget in the monetary budget column', function (): void {
-    $discount = SimpleDiscount::query()->create([
-        'kind' => SimpleDiscountKind::PercentageOff,
-        'percentage' => 10.0,
-    ]);
-
-    $direct = DirectDiscountPromotion::query()->create([
-        'simple_discount_id' => $discount->id,
-    ]);
-
-    // monetary_budget = £5.00 (stored as 500 pence)
-    $promotion = Promotion::query()->create([
-        'name' => 'Money Promo',
-        'team_id' => $this->team->id,
-        'promotionable_type' => $direct->getMorphClass(),
-        'promotionable_id' => $direct->id,
-        'monetary_budget' => 500,
-    ]);
-
-    $stack = PromotionStack::factory()->for($this->team)->create();
-
-    // 3 redemptions × (500 - 450) = 150 pence = £1.50 redeemed
-    foreach (range(1, 3) as $_) {
-        PromotionRedemption::query()->create([
-            'promotion_id' => $promotion->id,
-            'promotion_stack_id' => $stack->id,
-            'redeemable_type' => CartItem::class,
-            'original_price' => 500,
-            'original_price_currency' => 'GBP',
-            'final_price' => 450,
-            'final_price_currency' => 'GBP',
+        $promotion = Promotion::query()->create([
+            'name' => 'Budget Promo',
+            'team_id' => $this->team->id,
+            'promotionable_type' => $direct->getMorphClass(),
+            'promotionable_id' => $direct->id,
+            'application_budget' => 10,
         ]);
-    }
 
-    Livewire::test(ListPromotions::class)->assertSee('£1.50 / £5.00');
-});
+        $stack = PromotionStack::factory()->for($this->team)->create();
+
+        foreach (range(1, 3) as $_) {
+            PromotionRedemption::query()->create([
+                'promotion_id' => $promotion->id,
+                'promotion_stack_id' => $stack->id,
+                'redeemable_type' => CartItem::class,
+                'original_price' => 500,
+                'original_price_currency' => 'GBP',
+                'final_price' => 450,
+                'final_price_currency' => 'GBP',
+            ]);
+        }
+
+        Livewire::test(ListPromotions::class)->assertSee('3 / 10');
+    },
+);
+
+it(
+    'shows infinity symbol when there is no application budget',
+    function (): void {
+        $discount = SimpleDiscount::query()->create([
+            'kind' => SimpleDiscountKind::PercentageOff,
+            'percentage' => 10.0,
+        ]);
+
+        $direct = DirectDiscountPromotion::query()->create([
+            'simple_discount_id' => $discount->id,
+        ]);
+
+        $promotion = Promotion::query()->create([
+            'name' => 'Unlimited Promo',
+            'team_id' => $this->team->id,
+            'promotionable_type' => $direct->getMorphClass(),
+            'promotionable_id' => $direct->id,
+        ]);
+
+        $stack = PromotionStack::factory()->for($this->team)->create();
+
+        foreach (range(1, 2) as $_) {
+            PromotionRedemption::query()->create([
+                'promotion_id' => $promotion->id,
+                'promotion_stack_id' => $stack->id,
+                'redeemable_type' => CartItem::class,
+                'original_price' => 500,
+                'original_price_currency' => 'GBP',
+                'final_price' => 450,
+                'final_price_currency' => 'GBP',
+            ]);
+        }
+
+        Livewire::test(ListPromotions::class)->assertSee('2 / ∞');
+    },
+);
+
+it(
+    'shows monetary redeemed over budget in the monetary budget column',
+    function (): void {
+        $discount = SimpleDiscount::query()->create([
+            'kind' => SimpleDiscountKind::PercentageOff,
+            'percentage' => 10.0,
+        ]);
+
+        $direct = DirectDiscountPromotion::query()->create([
+            'simple_discount_id' => $discount->id,
+        ]);
+
+        // monetary_budget = £5.00 (stored as 500 pence)
+        $promotion = Promotion::query()->create([
+            'name' => 'Money Promo',
+            'team_id' => $this->team->id,
+            'promotionable_type' => $direct->getMorphClass(),
+            'promotionable_id' => $direct->id,
+            'monetary_budget' => 500,
+        ]);
+
+        $stack = PromotionStack::factory()->for($this->team)->create();
+
+        // 3 redemptions × (500 - 450) = 150 pence = £1.50 redeemed
+        foreach (range(1, 3) as $_) {
+            PromotionRedemption::query()->create([
+                'promotion_id' => $promotion->id,
+                'promotion_stack_id' => $stack->id,
+                'redeemable_type' => CartItem::class,
+                'original_price' => 500,
+                'original_price_currency' => 'GBP',
+                'final_price' => 450,
+                'final_price_currency' => 'GBP',
+            ]);
+        }
+
+        Livewire::test(ListPromotions::class)->assertSee('£1.50 / £5.00');
+    },
+);
 
 it('shows infinity symbol when there is no monetary budget', function (): void {
     $discount = SimpleDiscount::query()->create([
@@ -263,110 +272,120 @@ it('shows infinity symbol when there is no monetary budget', function (): void {
     Livewire::test(ListPromotions::class)->assertSee('£1.50 / ∞');
 });
 
-it('cannot set application budget below already redeemed count', function (): void {
-    $discount = SimpleDiscount::query()->create([
-        'kind' => SimpleDiscountKind::PercentageOff,
-        'percentage' => 10.0,
-    ]);
-
-    $direct = DirectDiscountPromotion::query()->create([
-        'simple_discount_id' => $discount->id,
-    ]);
-
-    $promotion = Promotion::query()->create([
-        'name' => 'Capped Promo',
-        'team_id' => $this->team->id,
-        'promotionable_type' => $direct->getMorphClass(),
-        'promotionable_id' => $direct->id,
-        'application_budget' => 10,
-    ]);
-
-    $direct->qualification()->create([
-        'promotion_id' => $promotion->id,
-        'context' => QualificationContext::Primary->value,
-        'op' => QualificationOp::And,
-        'sort_order' => 0,
-    ]);
-
-    $stack = PromotionStack::factory()->for($this->team)->create();
-
-    foreach (range(1, 5) as $_) {
-        PromotionRedemption::query()->create([
-            'promotion_id' => $promotion->id,
-            'promotion_stack_id' => $stack->id,
-            'redeemable_type' => CartItem::class,
-            'original_price' => 500,
-            'original_price_currency' => 'GBP',
-            'final_price' => 450,
-            'final_price_currency' => 'GBP',
+it(
+    'cannot set application budget below already redeemed count',
+    function (): void {
+        $discount = SimpleDiscount::query()->create([
+            'kind' => SimpleDiscountKind::PercentageOff,
+            'percentage' => 10.0,
         ]);
-    }
 
-    Livewire::test(EditPromotion::class, ['record' => $promotion->getRouteKey()])
-        ->fillForm([
+        $direct = DirectDiscountPromotion::query()->create([
+            'simple_discount_id' => $discount->id,
+        ]);
+
+        $promotion = Promotion::query()->create([
             'name' => 'Capped Promo',
-            'promotion_type' => 'direct_discount',
-            'application_budget' => 3,
-            'discount_kind' => SimpleDiscountKind::PercentageOff->value,
-            'discount_percentage' => 10.0,
-            'qualification_op' => QualificationOp::And->value,
-            'qualification_rules' => [],
-        ])
-        ->call('save')
-        ->assertHasFormErrors(['application_budget' => 'min']);
-});
-
-it('cannot set monetary budget below already redeemed amount', function (): void {
-    $discount = SimpleDiscount::query()->create([
-        'kind' => SimpleDiscountKind::PercentageOff,
-        'percentage' => 10.0,
-    ]);
-
-    $direct = DirectDiscountPromotion::query()->create([
-        'simple_discount_id' => $discount->id,
-    ]);
-
-    // monetary_budget = £10.00 (1000 pence)
-    $promotion = Promotion::query()->create([
-        'name' => 'Money Cap Promo',
-        'team_id' => $this->team->id,
-        'promotionable_type' => $direct->getMorphClass(),
-        'promotionable_id' => $direct->id,
-        'monetary_budget' => 1000,
-    ]);
-
-    $direct->qualification()->create([
-        'promotion_id' => $promotion->id,
-        'context' => QualificationContext::Primary->value,
-        'op' => QualificationOp::And,
-        'sort_order' => 0,
-    ]);
-
-    $stack = PromotionStack::factory()->for($this->team)->create();
-
-    // 4 redemptions × 50p = 200p = £2.00 redeemed
-    foreach (range(1, 4) as $_) {
-        PromotionRedemption::query()->create([
-            'promotion_id' => $promotion->id,
-            'promotion_stack_id' => $stack->id,
-            'redeemable_type' => CartItem::class,
-            'original_price' => 500,
-            'original_price_currency' => 'GBP',
-            'final_price' => 450,
-            'final_price_currency' => 'GBP',
+            'team_id' => $this->team->id,
+            'promotionable_type' => $direct->getMorphClass(),
+            'promotionable_id' => $direct->id,
+            'application_budget' => 10,
         ]);
-    }
 
-    Livewire::test(EditPromotion::class, ['record' => $promotion->getRouteKey()])
-        ->fillForm([
-            'name' => 'Money Cap Promo',
-            'promotion_type' => 'direct_discount',
-            'monetary_budget' => '1.00',
-            'discount_kind' => SimpleDiscountKind::PercentageOff->value,
-            'discount_percentage' => 10.0,
-            'qualification_op' => QualificationOp::And->value,
-            'qualification_rules' => [],
+        $direct->qualification()->create([
+            'promotion_id' => $promotion->id,
+            'context' => QualificationContext::Primary->value,
+            'op' => QualificationOp::And,
+            'sort_order' => 0,
+        ]);
+
+        $stack = PromotionStack::factory()->for($this->team)->create();
+
+        foreach (range(1, 5) as $_) {
+            PromotionRedemption::query()->create([
+                'promotion_id' => $promotion->id,
+                'promotion_stack_id' => $stack->id,
+                'redeemable_type' => CartItem::class,
+                'original_price' => 500,
+                'original_price_currency' => 'GBP',
+                'final_price' => 450,
+                'final_price_currency' => 'GBP',
+            ]);
+        }
+
+        Livewire::test(EditPromotion::class, [
+            'record' => $promotion->getRouteKey(),
         ])
-        ->call('save')
-        ->assertHasFormErrors(['monetary_budget' => 'min']);
-});
+            ->fillForm([
+                'name' => 'Capped Promo',
+                'promotion_type' => 'direct_discount',
+                'application_budget' => 3,
+                'discount_kind' => SimpleDiscountKind::PercentageOff->value,
+                'discount_percentage' => 10.0,
+                'qualification_op' => QualificationOp::And->value,
+                'qualification_rules' => [],
+            ])
+            ->call('save')
+            ->assertHasFormErrors(['application_budget' => 'min']);
+    },
+);
+
+it(
+    'cannot set monetary budget below already redeemed amount',
+    function (): void {
+        $discount = SimpleDiscount::query()->create([
+            'kind' => SimpleDiscountKind::PercentageOff,
+            'percentage' => 10.0,
+        ]);
+
+        $direct = DirectDiscountPromotion::query()->create([
+            'simple_discount_id' => $discount->id,
+        ]);
+
+        // monetary_budget = £10.00 (1000 pence)
+        $promotion = Promotion::query()->create([
+            'name' => 'Money Cap Promo',
+            'team_id' => $this->team->id,
+            'promotionable_type' => $direct->getMorphClass(),
+            'promotionable_id' => $direct->id,
+            'monetary_budget' => 1000,
+        ]);
+
+        $direct->qualification()->create([
+            'promotion_id' => $promotion->id,
+            'context' => QualificationContext::Primary->value,
+            'op' => QualificationOp::And,
+            'sort_order' => 0,
+        ]);
+
+        $stack = PromotionStack::factory()->for($this->team)->create();
+
+        // 4 redemptions × 50p = 200p = £2.00 redeemed
+        foreach (range(1, 4) as $_) {
+            PromotionRedemption::query()->create([
+                'promotion_id' => $promotion->id,
+                'promotion_stack_id' => $stack->id,
+                'redeemable_type' => CartItem::class,
+                'original_price' => 500,
+                'original_price_currency' => 'GBP',
+                'final_price' => 450,
+                'final_price_currency' => 'GBP',
+            ]);
+        }
+
+        Livewire::test(EditPromotion::class, [
+            'record' => $promotion->getRouteKey(),
+        ])
+            ->fillForm([
+                'name' => 'Money Cap Promo',
+                'promotion_type' => 'direct_discount',
+                'monetary_budget' => '1.00',
+                'discount_kind' => SimpleDiscountKind::PercentageOff->value,
+                'discount_percentage' => 10.0,
+                'qualification_op' => QualificationOp::And->value,
+                'qualification_rules' => [],
+            ])
+            ->call('save')
+            ->assertHasFormErrors(['monetary_budget' => 'min']);
+    },
+);
