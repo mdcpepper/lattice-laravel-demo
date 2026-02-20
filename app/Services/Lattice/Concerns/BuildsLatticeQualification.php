@@ -26,7 +26,6 @@ trait BuildsLatticeQualification
     ): LatticeQualification {
         $rules = $qualification->rules->sortBy('sort_order')->values()->all();
 
-        /** @var LatticeRule[] $latticeRules */
         $latticeRules = array_map(
             fn (QualificationRule $rule): LatticeRule => $this->makeRule(
                 $rule,

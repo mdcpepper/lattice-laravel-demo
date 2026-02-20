@@ -352,7 +352,7 @@ it(
         PromotionRedemption::query()->create([
             'promotion_id' => $promotion->id,
             'promotion_stack_id' => $stack->id,
-            'redeemable_type' => CartItem::class,
+            'redeemable_type' => CartItem::getMorphString(),
             'redeemable_id' => $item->id,
             'sort_order' => 0,
             'original_price' => 199,

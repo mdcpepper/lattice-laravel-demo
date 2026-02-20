@@ -4,7 +4,7 @@ namespace App\Services;
 
 use App\Models\Team;
 
-class CurrentTeam
+readonly class CurrentTeam
 {
-    public function __construct(public readonly Team $team) {}
+    public function __construct(public Team $team) {}
 }

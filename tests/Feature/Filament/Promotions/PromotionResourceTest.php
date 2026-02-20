@@ -148,7 +148,7 @@ it(
             PromotionRedemption::query()->create([
                 'promotion_id' => $promotion->id,
                 'promotion_stack_id' => $stack->id,
-                'redeemable_type' => CartItem::class,
+                'redeemable_type' => CartItem::getMorphString(),
                 'original_price' => 500,
                 'original_price_currency' => 'GBP',
                 'final_price' => 450,
@@ -185,7 +185,7 @@ it(
             PromotionRedemption::query()->create([
                 'promotion_id' => $promotion->id,
                 'promotion_stack_id' => $stack->id,
-                'redeemable_type' => CartItem::class,
+                'redeemable_type' => CartItem::getMorphString(),
                 'original_price' => 500,
                 'original_price_currency' => 'GBP',
                 'final_price' => 450,
@@ -225,7 +225,7 @@ it(
             PromotionRedemption::query()->create([
                 'promotion_id' => $promotion->id,
                 'promotion_stack_id' => $stack->id,
-                'redeemable_type' => CartItem::class,
+                'redeemable_type' => CartItem::getMorphString(),
                 'original_price' => 500,
                 'original_price_currency' => 'GBP',
                 'final_price' => 450,
@@ -261,7 +261,7 @@ it('shows infinity symbol when there is no monetary budget', function (): void {
         PromotionRedemption::query()->create([
             'promotion_id' => $promotion->id,
             'promotion_stack_id' => $stack->id,
-            'redeemable_type' => CartItem::class,
+            'redeemable_type' => CartItem::getMorphString(),
             'original_price' => 500,
             'original_price_currency' => 'GBP',
             'final_price' => 450,
@@ -305,7 +305,7 @@ it(
             PromotionRedemption::query()->create([
                 'promotion_id' => $promotion->id,
                 'promotion_stack_id' => $stack->id,
-                'redeemable_type' => CartItem::class,
+                'redeemable_type' => CartItem::getMorphString(),
                 'original_price' => 500,
                 'original_price_currency' => 'GBP',
                 'final_price' => 450,
@@ -365,7 +365,7 @@ it(
             PromotionRedemption::query()->create([
                 'promotion_id' => $promotion->id,
                 'promotion_stack_id' => $stack->id,
-                'redeemable_type' => CartItem::class,
+                'redeemable_type' => CartItem::getMorphString(),
                 'original_price' => 500,
                 'original_price_currency' => 'GBP',
                 'final_price' => 450,

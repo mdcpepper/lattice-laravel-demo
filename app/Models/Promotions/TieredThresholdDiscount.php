@@ -8,7 +8,7 @@ use App\Casts\PercentageBasisPointsCast;
 use App\Contracts\Discount as DiscountContract;
 use App\Enums\TieredThresholdDiscountKind;
 use App\Models\Concerns\HasRouteUlid;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class TieredThresholdDiscount extends Model implements DiscountContract
@@ -22,6 +22,11 @@ class TieredThresholdDiscount extends Model implements DiscountContract
         'percentage' => PercentageBasisPointsCast::class,
         'amount' => 'integer',
     ];
+
+    public function getMorphClass(): string
+    {
+        return 'tiered_threshold_discount';
+    }
 
     /**
      * @return HasMany<TieredThresholdTier, TieredThresholdDiscount>

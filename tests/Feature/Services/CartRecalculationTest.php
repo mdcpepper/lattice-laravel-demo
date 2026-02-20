@@ -71,7 +71,7 @@ it(
         $this->assertDatabaseHas('promotion_redemptions', [
             'promotion_id' => $promotion->id,
             'promotion_stack_id' => $stack->id,
-            'redeemable_type' => CartItem::class,
+            'redeemable_type' => CartItem::getMorphString(),
             'redeemable_id' => $cartItem->id,
             'sort_order' => 0,
             'original_price' => 500,
@@ -127,7 +127,7 @@ it(
 
         expect(
             PromotionRedemption::query()
-                ->where('redeemable_type', CartItem::class)
+                ->where('redeemable_type', CartItem::getMorphString())
                 ->where('redeemable_id', $cartItem->id)
                 ->count(),
         )->toBe(1);
@@ -154,7 +154,7 @@ it(
 
         expect(
             PromotionRedemption::query()
-                ->where('redeemable_type', CartItem::class)
+                ->where('redeemable_type', CartItem::getMorphString())
                 ->where('redeemable_id', $cartItem->id)
                 ->count(),
         )->toBe(0);
@@ -232,7 +232,7 @@ it(
         $this->assertDatabaseHas('promotion_redemptions', [
             'promotion_id' => $promotion->id,
             'promotion_stack_id' => $stack->id,
-            'redeemable_type' => CartItem::class,
+            'redeemable_type' => CartItem::getMorphString(),
             'redeemable_id' => $cartOneItem->id,
         ]);
 
@@ -249,7 +249,7 @@ it(
         $this->assertDatabaseMissing('promotion_redemptions', [
             'promotion_id' => $promotion->id,
             'promotion_stack_id' => $stack->id,
-            'redeemable_type' => CartItem::class,
+            'redeemable_type' => CartItem::getMorphString(),
             'redeemable_id' => $cartTwoItem->id,
         ]);
     },

@@ -4,17 +4,20 @@ namespace Database\Factories\Promotions;
 
 use App\Enums\SimpleDiscountKind;
 use App\Models\Promotions\DirectDiscountPromotion;
+use App\Models\Promotions\Promotion;
 use App\Models\Promotions\SimpleDiscount;
 use App\Models\Team;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Promotions\Promotion>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<Promotion>
  */
 class PromotionFactory extends Factory
 {
     /**
      * @return array<string, mixed>
+     *
+     * @throws \Exception
      */
     public function definition(): array
     {

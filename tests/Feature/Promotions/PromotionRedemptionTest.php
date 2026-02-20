@@ -16,6 +16,7 @@ use App\Models\Team;
 use App\Services\Lattice\Promotions\LatticePromotionFactory;
 use Lattice\Item;
 use Lattice\Money;
+use Lattice\Product;
 use Lattice\Stack\Layer;
 use Lattice\Stack\LayerOutput;
 use Lattice\Stack\StackBuilder;
@@ -76,7 +77,7 @@ it('saves promotion redemptions from a Lattice receipt', function (): void {
 
     $latticePromotion = app(LatticePromotionFactory::class)->make($promotion);
 
-    $latticeProduct = new \Lattice\Product(
+    $latticeProduct = new Product(
         reference: $product,
         name: $product->name,
         price: new Money((int) $product->price->getAmount(), 'GBP'),
@@ -137,7 +138,7 @@ it('saves promotion redemptions from a Lattice receipt', function (): void {
     $this->assertDatabaseHas('promotion_redemptions', [
         'promotion_id' => $promotion->id,
         'promotion_stack_id' => $stack->id,
-        'redeemable_type' => CartItem::class,
+        'redeemable_type' => CartItem::getMorphString(),
         'redeemable_id' => $cartItem->id,
         'sort_order' => 0,
         'original_price' => 500,

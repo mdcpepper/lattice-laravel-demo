@@ -6,7 +6,7 @@ namespace App\Models\Promotions;
 
 use App\Enums\QualificationOp;
 use App\Models\Concerns\HasRouteUlid;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
@@ -29,6 +29,11 @@ class Qualification extends Model
         'op' => QualificationOp::class,
         'sort_order' => 'integer',
     ];
+
+    public function getMorphClass(): string
+    {
+        return 'qualification';
+    }
 
     /**
      * @return BelongsTo<Promotion, Qualification>

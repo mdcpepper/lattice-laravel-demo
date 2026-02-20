@@ -4,11 +4,12 @@ namespace Database\Factories\Promotions;
 
 use App\Enums\PromotionLayerOutputMode;
 use App\Enums\PromotionLayerOutputTargetMode;
+use App\Models\Promotions\PromotionLayer;
 use App\Models\Promotions\PromotionStack;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Promotions\PromotionLayer>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<PromotionLayer>
  */
 class PromotionLayerFactory extends Factory
 {

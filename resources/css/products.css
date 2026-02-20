@@ -23,6 +23,25 @@
     --button-font-size: var(--step--2);
 }
 
+.product-card-promotions {
+    margin: var(--space-2xs) 0 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3xs);
+}
+
+.product-card-promotion-badge {
+    background: var(--promotion-badge-bg);
+    display: inline-block;
+    padding: 0.15em 0.5em;
+    border-radius: var(--space-3xs);
+    border: 1px solid var(--promotion-badge-border);
+    font-size: var(--step--2);
+    line-height: 1.4;
+}
+
 .product-card-image {
     aspect-ratio: auto;
     width: 100%;

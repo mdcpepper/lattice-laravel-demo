@@ -4,18 +4,19 @@ namespace App\Models\Backtests;
 
 use App\Models\Cart\CartItem;
 use App\Models\Concerns\HasRouteUlid;
+use App\Models\Model;
 use App\Models\Product;
 use App\Models\Promotions\PromotionRedemption;
 use Cknow\Money\Casts\MoneyIntegerCast;
+use Database\Factories\BacktestedCartItemFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class BacktestedCartItem extends Model
 {
-    /** @use HasFactory<\Database\Factories\BacktestedCartItemFactory> */
+    /** @use HasFactory<BacktestedCartItemFactory> */
     use HasFactory;
 
     use HasRouteUlid;
@@ -41,6 +42,11 @@ class BacktestedCartItem extends Model
             'price' => MoneyIntegerCast::class.':GBP',
             'offer_price' => MoneyIntegerCast::class.':GBP',
         ];
+    }
+
+    public function getMorphClass(): string
+    {
+        return 'backtested_cart_item';
     }
 
     /**

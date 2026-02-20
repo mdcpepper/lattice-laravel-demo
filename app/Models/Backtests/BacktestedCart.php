@@ -5,16 +5,17 @@ namespace App\Models\Backtests;
 use App\Models\Cart\Cart;
 use App\Models\Concerns\HasRouteUlid;
 use App\Models\Customer;
+use App\Models\Model;
 use App\Models\Team;
 use Cknow\Money\Casts\MoneyIntegerCast;
+use Database\Factories\BacktestedCartFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class BacktestedCart extends Model
 {
-    /** @use HasFactory<\Database\Factories\BacktestedCartFactory> */
+    /** @use HasFactory<BacktestedCartFactory> */
     use HasFactory;
 
     use HasRouteUlid;
@@ -42,6 +43,11 @@ class BacktestedCart extends Model
             'subtotal' => MoneyIntegerCast::class.':GBP',
             'total' => MoneyIntegerCast::class.':GBP',
         ];
+    }
+
+    public function getMorphClass(): string
+    {
+        return 'backtested_cart';
     }
 
     /**

@@ -15,6 +15,13 @@
 
     <h2 class="card-title product-card-title">{{ $name() }}</h2>
     <p class="product-card-price">{{ $price() }}</p>
+    @if ($hasPromotions())
+        <ul class="product-card-promotions" aria-label="Qualifying promotions">
+            @foreach ($promotions() as $promotion)
+                <li class="product-card-promotion-badge">{{ $promotion->name }}</li>
+            @endforeach
+        </ul>
+    @endif
     <p class="card-meta product-card-meta">{{ $description() }}</p>
 
     <form

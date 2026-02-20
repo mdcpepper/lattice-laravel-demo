@@ -9,9 +9,8 @@ use App\Models\Promotions\MixAndMatchPromotion;
 use App\Models\Promotions\Promotion;
 use App\Models\Promotions\Qualification;
 use App\Services\PromotionQualification\DirectDiscountStrategy;
-use App\Services\PromotionQualification\QualificationEvaluator;
-use Illuminate\Support\Collection;
 use RuntimeException;
+use Tests\Helpers\FakeQualificationEvaluator;
 
 test('supports direct discount promotions only', function (): void {
     $strategy = new DirectDiscountStrategy(new FakeQualificationEvaluator([]));
@@ -114,36 +113,4 @@ function qualification(
     $qualification->setRelation('rules', collect());
 
     return $qualification;
-}
-
-class FakeQualificationEvaluator extends QualificationEvaluator
-{
-    /** @var array<int, bool> */
-    private array $results;
-
-    /** @var int[] */
-    public array $seenQualificationIds = [];
-
-    /**
-     * @param  array<int, bool>  $results
-     */
-    public function __construct(array $results)
-    {
-        $this->results = $results;
-    }
-
-    /**
-     * @param  string[]  $productTagNames
-     * @param  Collection<int, Qualification>  $qualificationIndex
-     */
-    public function evaluateQualification(
-        Qualification $qualification,
-        array $productTagNames,
-        Collection $qualificationIndex,
-    ): bool {
-        $qualificationId = (int) $qualification->id;
-        $this->seenQualificationIds[] = $qualificationId;
-
-        return $this->results[$qualificationId] ?? false;
-    }
 }

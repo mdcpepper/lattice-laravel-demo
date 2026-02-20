@@ -4,7 +4,7 @@ namespace App\Models\Promotions;
 
 use App\Enums\QualificationContext;
 use App\Models\Concerns\HasRouteUlid;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 
@@ -24,6 +24,11 @@ class MixAndMatchSlot extends Model
         'max' => 'integer',
         'sort_order' => 'integer',
     ];
+
+    public function getMorphClass(): string
+    {
+        return 'mix_and_match_slot';
+    }
 
     /**
      * @return BelongsTo<MixAndMatchPromotion, MixAndMatchSlot>

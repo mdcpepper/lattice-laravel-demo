@@ -3,11 +3,12 @@
 namespace Database\Factories\Promotions;
 
 use App\Models\Promotions\Promotion;
+use App\Models\Promotions\PromotionRedemption;
 use App\Models\Promotions\PromotionStack;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Promotions\PromotionRedemption>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<PromotionRedemption>
  */
 class PromotionRedemptionFactory extends Factory
 {

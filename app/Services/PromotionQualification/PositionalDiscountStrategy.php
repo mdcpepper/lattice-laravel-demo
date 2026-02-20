@@ -8,10 +8,10 @@ use App\Models\Promotions\Promotion;
 use App\Models\Promotions\Qualification;
 use RuntimeException;
 
-class PositionalDiscountStrategy implements PromotionQualificationStrategy
+readonly class PositionalDiscountStrategy implements PromotionQualificationStrategy
 {
     public function __construct(
-        private readonly QualificationEvaluator $qualificationEvaluator,
+        private QualificationEvaluator $qualificationEvaluator,
     ) {}
 
     public function supports(Promotion $promotion): bool

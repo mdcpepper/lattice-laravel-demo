@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Models\Promotions;
 
 use App\Models\Concerns\HasRouteUlid;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
@@ -27,6 +27,11 @@ class PositionalDiscountPosition extends Model
         'position' => 'integer',
         'sort_order' => 'integer',
     ];
+
+    public function getMorphClass(): string
+    {
+        return 'positional_discount_position';
+    }
 
     /**
      * @return BelongsTo<PositionalDiscountPromotion, PositionalDiscountPosition>

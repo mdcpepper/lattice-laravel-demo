@@ -5,16 +5,17 @@ namespace App\Models\Promotions;
 use App\Jobs\DispatchCartRecalculationRequest;
 use App\Models\Cart\Cart;
 use App\Models\Concerns\HasRouteUlid;
+use App\Models\Model;
 use App\Models\Team;
+use Database\Factories\PromotionStackFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class PromotionStack extends Model
 {
-    /** @use HasFactory<\Database\Factories\PromotionStackFactory> */
+    /** @use HasFactory<PromotionStackFactory> */
     use HasFactory;
 
     use HasRouteUlid;
@@ -43,6 +44,11 @@ class PromotionStack extends Model
             'active_from' => 'date',
             'active_to' => 'date',
         ];
+    }
+
+    public function getMorphClass(): string
+    {
+        return 'promotion_stack';
     }
 
     public static function activeForTeam(int $teamId): ?self

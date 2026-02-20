@@ -3,13 +3,31 @@
 namespace App\View\Components;
 
 use App\Models\Product;
+use App\Models\Promotions\Promotion;
 use Closure;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Collection;
 use Illuminate\View\Component;
 
 class ProductCard extends Component
 {
-    public function __construct(private Product $product) {}
+    public function __construct(
+        private Product $product,
+        private Collection $promotions = new Collection,
+    ) {}
+
+    /**
+     * @return Collection<int, Promotion>
+     */
+    public function promotions(): Collection
+    {
+        return $this->promotions;
+    }
+
+    public function hasPromotions(): bool
+    {
+        return $this->promotions->isNotEmpty();
+    }
 
     public function name(): string
     {

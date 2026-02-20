@@ -36,6 +36,9 @@
     --card-background: #ffffff;
     --card-border: #d8dce2;
 
+    --promotion-badge-bg: oklch(97.3% 0.071 103.193);
+    --promotion-badge-border: oklch(90.5% 0.182 98.111);
+
     --button-focus-outline: #9ca3af;
     --button-primary-bg: #111111;
     --button-primary-border: #111111;

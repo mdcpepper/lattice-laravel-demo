@@ -18,6 +18,11 @@ class Customer extends Authenticatable
 
     protected $fillable = ['team_id', 'name', 'email'];
 
+    public function getMorphClass(): string
+    {
+        return 'customer';
+    }
+
     /**
      * @return BelongsTo<Team, Customer>
      */

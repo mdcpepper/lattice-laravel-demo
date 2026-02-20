@@ -6,8 +6,7 @@ namespace Tests\Unit\Services;
 
 use App\Models\Promotions\Promotion;
 use App\Services\PromotionDiscount\PromotionDiscountFormatter;
-use App\Services\PromotionDiscount\PromotionDiscountStrategy;
-use Closure;
+use Tests\Helpers\FakePromotionDiscountStrategy;
 
 test(
     'delegates discount formatting to the first supporting strategy',
@@ -50,30 +49,3 @@ test('returns null when no strategy supports the promotion', function (): void {
 
     expect($formatter->format($promotion))->toBeNull();
 });
-
-class FakePromotionDiscountStrategy implements PromotionDiscountStrategy
-{
-    /** @var list<string> */
-    public array $formattedPromotionNames = [];
-
-    /**
-     * @param  Closure(Promotion): bool  $supports
-     * @param  Closure(Promotion): ?string  $format
-     */
-    public function __construct(
-        private readonly Closure $supports,
-        private readonly Closure $format,
-    ) {}
-
-    public function supports(Promotion $promotion): bool
-    {
-        return ($this->supports)($promotion);
-    }
-
-    public function format(Promotion $promotion): ?string
-    {
-        $this->formattedPromotionNames[] = (string) $promotion->name;
-
-        return ($this->format)($promotion);
-    }
-}

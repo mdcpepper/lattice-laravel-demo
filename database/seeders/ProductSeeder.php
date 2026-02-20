@@ -8,12 +8,15 @@ use App\Models\Team;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use JsonException;
 use RuntimeException;
 use Spatie\Tags\Tag;
+use Throwable;
 
 class ProductSeeder extends Seeder
 {
@@ -59,12 +62,14 @@ class ProductSeeder extends Seeder
 
     /**
      * @return Collection<int, array{slug: string, name: string}>
+     *
+     * @throws GuzzleException
+     * @throws JsonException
      */
     private function fetchCategories(Client $client): Collection
     {
         $response = $client->request('GET', 'products/categories');
 
-        /** @var mixed $payload */
         $payload = json_decode(
             $response->getBody()->getContents(),
             true,
@@ -151,6 +156,9 @@ class ProductSeeder extends Seeder
 
     /**
      * @return array<int, array<string, mixed>>
+     *
+     * @throws GuzzleException
+     * @throws JsonException
      */
     private function fetchProducts(Client $client): array
     {
@@ -315,7 +323,7 @@ class ProductSeeder extends Seeder
 
         try {
             return CarbonImmutable::parse($value);
-        } catch (\Throwable) {
+        } catch (Throwable) {
             return null;
         }
     }
@@ -431,7 +439,7 @@ class ProductSeeder extends Seeder
         $productIds = $seedableProducts->pluck('product.id')->values()->all();
 
         DB::table('taggables')
-            ->where('taggable_type', Product::class)
+            ->where('taggable_type', Product::getMorphString())
             ->whereIn('taggable_id', $productIds)
             ->delete();
 
@@ -521,7 +529,7 @@ class ProductSeeder extends Seeder
                         fn (string $tag): array => [
                             'tag_id' => $tagIdsByName[$tag],
                             'taggable_id' => $productId,
-                            'taggable_type' => Product::class,
+                            'taggable_type' => Product::getMorphString(),
                         ],
                     )
                     ->all();

@@ -8,13 +8,13 @@ use App\Models\Promotions\PromotionStack;
 use Lattice\Stack\Stack as LatticeStack;
 use RuntimeException;
 
-class LatticeStackFactory
+readonly class LatticeStackFactory
 {
     /**
      * @param  array<int, LatticeStackStrategy>  $latticeStackStrategies
      */
     public function __construct(
-        private readonly array $latticeStackStrategies,
+        private array $latticeStackStrategies,
     ) {}
 
     public function make(PromotionStack $stack): LatticeStack

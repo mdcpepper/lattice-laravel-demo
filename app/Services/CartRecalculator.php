@@ -11,11 +11,12 @@ use Illuminate\Support\Collection;
 use Lattice\Item as LatticeItem;
 use Lattice\Money as LatticeMoney;
 use Lattice\Product as LatticeProduct;
+use Lattice\Receipt;
 
-class CartRecalculator
+readonly class CartRecalculator
 {
     public function __construct(
-        private readonly LatticeStackFactory $stackFactory,
+        private LatticeStackFactory $stackFactory,
     ) {}
 
     public function recalculate(Cart $cart): void
@@ -40,7 +41,7 @@ class CartRecalculator
             ->transaction(function () use ($cart, $items, $latticeItems): void {
                 $this->deleteExistingCartItemRedemptions($cart);
 
-                /** @var \Lattice\Receipt|null $receipt */
+                /** @var Receipt|null $receipt */
                 $receipt = null;
 
                 /** @var array<int, list<\Lattice\PromotionRedemption>> $redemptionsByCartItemId */

@@ -6,6 +6,7 @@ use App\Enums\PromotionLayerOutputMode;
 use App\Enums\PromotionLayerOutputTargetMode;
 use App\Models\Promotions\PromotionLayer;
 use App\Models\Promotions\PromotionStack;
+use BackedEnum;
 use Filament\Facades\Filament;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Validation\ValidationException;
@@ -362,7 +363,7 @@ trait InteractsWithPromotionStackLayers
 
     private function enumValue(mixed $value, string $fallback): string
     {
-        if ($value instanceof \BackedEnum) {
+        if ($value instanceof BackedEnum) {
             return (string) $value->value;
         }
 

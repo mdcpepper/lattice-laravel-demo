@@ -45,11 +45,11 @@ trait BuildsLatticeBudget
 
         $remainingRedemptionBudget = is_null($redemptionBudget)
             ? null
-            : max(0, (int) $redemptionBudget - (int) $consumedRedemptionBudget);
+            : max(0, (int) $redemptionBudget - $consumedRedemptionBudget);
 
         $remainingMonetaryBudget = is_null($monetaryBudget)
             ? null
-            : max(0, (int) $monetaryBudget - (int) $consumedMonetaryBudget);
+            : max(0, (int) $monetaryBudget - $consumedMonetaryBudget);
 
         if (
             $remainingRedemptionBudget === 0 ||

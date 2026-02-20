@@ -3,12 +3,13 @@
 namespace Database\Factories\Backtests;
 
 use App\Models\Backtests\Backtest;
+use App\Models\Backtests\BacktestedCart;
 use App\Models\Cart\Cart;
 use App\Models\Team;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Backtests\BacktestedCart>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<BacktestedCart>
  */
 class BacktestedCartFactory extends Factory
 {

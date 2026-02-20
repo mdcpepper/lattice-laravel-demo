@@ -3,13 +3,15 @@
 namespace App\Models\Concerns;
 
 use App\Services\CurrentTeam;
+use Closure;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Scope;
 
 trait BelongsToCurrentTeam
 {
     /**
-     * @param  \Illuminate\Database\Eloquent\Scope|\Closure|string  $scope
-     * @param  \Closure|string|null  $implementation
+     * @param  Scope|Closure|string  $scope
+     * @param  Closure|string|null  $implementation
      * @return void
      */
     abstract public static function addGlobalScope(

@@ -3,11 +3,12 @@
 namespace Database\Factories\Backtests;
 
 use App\Enums\BacktestStatus;
+use App\Models\Backtests\Backtest;
 use App\Models\Promotions\PromotionStack;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Backtests\Backtest>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<Backtest>
  */
 class BacktestFactory extends Factory
 {

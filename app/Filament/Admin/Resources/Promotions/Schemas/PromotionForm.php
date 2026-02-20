@@ -21,6 +21,8 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Spatie\Tags\Tag;
 
+use function in_array;
+
 class PromotionForm
 {
     public static function configure(Schema $schema): Schema
@@ -96,7 +98,7 @@ class PromotionForm
                                             )
                                             ->where(
                                                 'redeemable_type',
-                                                CartItem::class,
+                                                CartItem::getMorphString(),
                                             )
                                             ->toBase()
                                             ->selectRaw(
@@ -152,6 +154,7 @@ class PromotionForm
                 ->schema([
                     Select::make('kind')
                         ->options(QualificationRuleKind::asSelectOptions())
+                        ->default(QualificationRuleKind::HasAny->value)
                         ->columnSpan([
                             'default' => 1,
                             'md' => 1,
@@ -341,7 +344,7 @@ class PromotionForm
                     ->numeric()
                     ->suffix('%')
                     ->visible(
-                        fn (Get $get): bool => \in_array(
+                        fn (Get $get): bool => in_array(
                             $get('discount_kind'),
                             MixAndMatchDiscountKind::percentageTypes(),
                         ),
@@ -361,7 +364,7 @@ class PromotionForm
                     ->prefix('£')
                     ->step(0.01)
                     ->visible(
-                        fn (Get $get): bool => \in_array(
+                        fn (Get $get): bool => in_array(
                             $get('discount_kind'),
                             MixAndMatchDiscountKind::amountTypes(),
                         ),
@@ -523,7 +526,7 @@ class PromotionForm
                                     ->numeric()
                                     ->suffix('%')
                                     ->visible(
-                                        fn (Get $get): bool => \in_array(
+                                        fn (Get $get): bool => in_array(
                                             $get('discount_kind'),
                                             TieredThresholdDiscountKind::percentageTypes(),
                                             true,
@@ -544,7 +547,7 @@ class PromotionForm
                                     ->prefix('£')
                                     ->step(0.01)
                                     ->visible(
-                                        fn (Get $get): bool => \in_array(
+                                        fn (Get $get): bool => in_array(
                                             $get('discount_kind'),
                                             TieredThresholdDiscountKind::amountTypes(),
                                             true,

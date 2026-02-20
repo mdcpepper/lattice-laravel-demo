@@ -15,6 +15,7 @@ use App\Services\Lattice\Concerns\BuildsLatticeDiscountValues;
 use App\Services\Lattice\Concerns\BuildsLatticeQualification;
 use App\Services\Lattice\Concerns\HandlesUnsupportedPromotionableType;
 use Lattice\Discount\Percentage;
+use Lattice\Money;
 use Lattice\Promotion\PromotionInterface as LatticePromotion;
 use Lattice\Promotion\TieredThreshold\Discount as LatticeTieredThresholdDiscount;
 use Lattice\Promotion\TieredThreshold\Threshold as LatticeTieredThresholdThreshold;
@@ -176,7 +177,7 @@ class TieredThresholdPromotionStrategy implements LatticePromotionStrategy
 
         if ($monetaryThresholdMinor !== null && $itemCountThreshold !== null) {
             return LatticeTieredThresholdThreshold::withBothThresholds(
-                monetary_threshold: new \Lattice\Money(
+                monetary_threshold: new Money(
                     $monetaryThresholdMinor,
                     $monetaryThresholdCurrency ?? $this->defaultCurrency(),
                 ),
@@ -186,7 +187,7 @@ class TieredThresholdPromotionStrategy implements LatticePromotionStrategy
 
         if ($monetaryThresholdMinor !== null) {
             return LatticeTieredThresholdThreshold::withMonetaryThreshold(
-                monetary_threshold: new \Lattice\Money(
+                monetary_threshold: new Money(
                     $monetaryThresholdMinor,
                     $monetaryThresholdCurrency ?? $this->defaultCurrency(),
                 ),

@@ -4,7 +4,7 @@ namespace App\Models\Promotions;
 
 use App\Enums\QualificationContext;
 use App\Models\Concerns\HasRouteUlid;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
@@ -17,6 +17,11 @@ class MixAndMatchPromotion extends Model
     use HasRouteUlid;
 
     protected $fillable = ['mix_and_match_discount_id'];
+
+    public function getMorphClass(): string
+    {
+        return 'mix_and_match_promotion';
+    }
 
     /**
      * @return BelongsTo<MixAndMatchDiscount, MixAndMatchPromotion>

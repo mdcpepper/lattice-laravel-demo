@@ -256,7 +256,7 @@ class PromotionStackForm
         foreach ($layerRows as $layer) {
             $reference = trim((string) ($layer['reference'] ?? ''));
 
-            if ($reference === '' || $reference === $excludedReference) {
+            if ($reference === '' || $reference === null) {
                 continue;
             }
 

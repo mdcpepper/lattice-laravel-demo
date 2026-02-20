@@ -8,11 +8,13 @@ use App\Models\Cart\Cart;
 use App\Models\Cart\CartItem;
 use App\Models\Concerns\BelongsToCurrentTeam;
 use App\Models\Concerns\HasRouteUlid;
+use App\Models\Model;
 use App\Models\Team;
 use Cknow\Money\Casts\MoneyIntegerCast;
+use Database\Factories\PromotionFactory;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -23,7 +25,7 @@ class Promotion extends Model
 {
     use BelongsToCurrentTeam;
 
-    /** @use HasFactory<\Database\Factories\PromotionFactory> */
+    /** @use HasFactory<PromotionFactory> */
     use HasFactory;
 
     use HasRouteUlid;
@@ -33,6 +35,11 @@ class Promotion extends Model
         static::saved(function (self $promotion): void {
             $promotion->queueRecalculationsForLinkedCarts();
         });
+    }
+
+    public function getMorphClass(): string
+    {
+        return 'promotion';
     }
 
     protected $casts = [
@@ -61,7 +68,11 @@ class Promotion extends Model
             'qualifications.parent',
             'qualifications.children',
             'qualifications.rules.tags',
-        ]);
+        ])->afterQuery(function (Collection $promotions): void {
+            $promotions->each(
+                fn (self $promotion) => $promotion->hydratePromotionableQualifications(),
+            );
+        });
     }
 
     /**
@@ -72,20 +83,17 @@ class Promotion extends Model
         return [
             DirectDiscountPromotion::class => [
                 'discount',
-                'qualification.rules.tags',
             ],
             PositionalDiscountPromotion::class => [
                 'discount',
-                'qualification.rules.tags',
                 'positions',
             ],
             MixAndMatchPromotion::class => [
                 'discount',
-                'slots.qualification.rules.tags',
+                'slots',
             ],
             TieredThresholdPromotion::class => [
                 'tiers.discount',
-                'tiers.qualification.rules.tags',
             ],
         ];
     }
@@ -137,13 +145,63 @@ class Promotion extends Model
 
     /**
      * @return HasMany<PromotionRedemption, Promotion>
+     *
+     * @throws \Exception
      */
     public function redemptions(): HasMany
     {
         return $this->hasMany(PromotionRedemption::class)->where(
             'redeemable_type',
-            CartItem::class,
+            CartItem::getMorphString(),
         );
+    }
+
+    public function hydratePromotionableQualifications(): void
+    {
+        if (! $this->relationLoaded('qualifications') || ! $this->relationLoaded('promotionable')) {
+            return;
+        }
+
+        $promotionable = $this->promotionable;
+
+        if (! $promotionable instanceof Model) {
+            return;
+        }
+
+        $qualifications = $this->qualifications;
+
+        $this->hydrateQualificationOn($promotionable, $qualifications);
+
+        if ($promotionable instanceof MixAndMatchPromotion && $promotionable->relationLoaded('slots')) {
+            foreach ($promotionable->slots as $slot) {
+                $this->hydrateQualificationOn($slot, $qualifications);
+            }
+        }
+
+        if ($promotionable instanceof TieredThresholdPromotion && $promotionable->relationLoaded('tiers')) {
+            foreach ($promotionable->tiers as $tier) {
+                $this->hydrateQualificationOn($tier, $qualifications);
+            }
+        }
+    }
+
+    /**
+     * @param  Collection<int, Qualification>  $qualifications
+     */
+    private function hydrateQualificationOn(Model $model, Collection $qualifications): void
+    {
+        $morphClass = $model->getMorphClass();
+        $modelKey = $model->getKey();
+
+        $qualification = $qualifications->first(
+            fn (Qualification $q): bool => $q->qualifiable_type === $morphClass
+                && $q->qualifiable_id == $modelKey
+                && $q->context === QualificationContext::Primary->value,
+        );
+
+        if ($qualification instanceof Qualification) {
+            $model->setRelation('qualification', $qualification);
+        }
     }
 
     private function queueRecalculationsForLinkedCarts(): void

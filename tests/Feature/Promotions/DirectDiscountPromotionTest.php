@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\DB;
 use Lattice\Item;
 use Lattice\Money;
 use Lattice\Product;
+use Lattice\Promotion\Direct;
 use Lattice\Stack\Layer;
 use Lattice\Stack\LayerOutput;
 use Lattice\Stack\StackBuilder;
@@ -181,10 +182,8 @@ it('can be fetched efficiently', function (): void {
         ->toBeInstanceOf(DirectDiscountPromotion::class)
         ->and($promotion->promotionable->relationLoaded('discount'))
         ->toBeTrue()
-        ->and($promotion->promotionable->relationLoaded('qualification'))
-        ->toBeTrue()
         ->and(
-            $promotion->promotionable->qualification->rules->every(
+            $promotion->qualifications->flatMap->rules->every(
                 fn ($rule): bool => $rule->relationLoaded('tags'),
             ),
         )
@@ -197,7 +196,7 @@ it('can be turned into a Lattice Graph', function (): void {
     $latticePromotion = app(LatticePromotionFactory::class)->make($promotion);
 
     expect($latticePromotion)
-        ->toBeInstanceOf(\Lattice\Promotion\Direct::class)
+        ->toBeInstanceOf(Direct::class)
         ->and($latticePromotion->reference)
         ->toBeInstanceOf(Promotion::class)
         ->and($latticePromotion->reference->is($promotion))

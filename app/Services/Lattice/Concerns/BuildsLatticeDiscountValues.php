@@ -20,7 +20,7 @@ trait BuildsLatticeDiscountValues
             );
         }
 
-        return ((float) $percentage) / 100;
+        return $percentage / 100;
     }
 
     protected function discountAmount(DiscountContract $discount): LatticeMoney
@@ -34,6 +34,6 @@ trait BuildsLatticeDiscountValues
             );
         }
 
-        return new LatticeMoney((int) $amount, (string) $currency);
+        return new LatticeMoney($amount, $currency);
     }
 }

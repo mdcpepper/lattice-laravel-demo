@@ -38,6 +38,8 @@ class EditPromotionStack extends EditRecord
 
     /**
      * @param  array<string, mixed>  $data
+     *
+     * @throws \Throwable
      */
     protected function handleRecordUpdate(Model $record, array $data): Model
     {

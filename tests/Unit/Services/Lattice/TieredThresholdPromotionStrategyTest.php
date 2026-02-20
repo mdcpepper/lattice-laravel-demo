@@ -8,6 +8,8 @@ use App\Enums\QualificationRuleKind;
 use App\Enums\TieredThresholdDiscountKind;
 use App\Models\Promotions\MixAndMatchPromotion;
 use App\Models\Promotions\Promotion;
+use App\Models\Promotions\Qualification;
+use App\Models\Promotions\QualificationRule;
 use App\Models\Promotions\TieredThresholdDiscount;
 use App\Models\Promotions\TieredThresholdPromotion;
 use App\Models\Promotions\TieredThresholdTier;
@@ -304,8 +306,8 @@ function tieredLatticeQualification(
     string $context = 'primary',
     ?string $qualifiableType = null,
     ?int $qualifiableId = null,
-): \App\Models\Promotions\Qualification {
-    $qualification = new \App\Models\Promotions\Qualification;
+): Qualification {
+    $qualification = new Qualification;
     $qualification->id = $id;
     $qualification->context = $context;
     $qualification->qualifiable_type = $qualifiableType;
@@ -325,8 +327,8 @@ function tieredLatticeQualificationRule(
     int $sortOrder,
     ?int $groupQualificationId = null,
     array $tags = [],
-): \App\Models\Promotions\QualificationRule {
-    $rule = new \App\Models\Promotions\QualificationRule;
+): QualificationRule {
+    $rule = new QualificationRule;
     $rule->id = $id;
     $rule->kind = $kind;
     $rule->sort_order = $sortOrder;

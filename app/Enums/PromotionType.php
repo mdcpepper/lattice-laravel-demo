@@ -28,8 +28,6 @@ enum PromotionType: string
         return match ($value) {
             self::DirectDiscount->value,
             self::PositionalDiscount->value => true,
-            self::MixAndMatch->value => false,
-            self::TieredThreshold->value => false,
             default => false,
         };
     }
