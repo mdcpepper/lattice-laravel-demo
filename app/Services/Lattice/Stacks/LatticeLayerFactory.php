@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Lattice\Stacks;
 
 use App\Models\PromotionLayer as PromotionLayerModel;
-use Lattice\Layer as LatticeLayer;
+use Lattice\Stack\Layer as LatticeLayer;
 use RuntimeException;
 
 class LatticeLayerFactory

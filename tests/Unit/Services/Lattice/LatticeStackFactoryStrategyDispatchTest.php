@@ -6,7 +6,7 @@ namespace Tests\Unit\Services\Lattice;
 
 use App\Models\PromotionStack;
 use App\Services\Lattice\Stacks\LatticeStackFactory;
-use Lattice\Stack as LatticeStack;
+use Lattice\Stack\Stack as LatticeStack;
 use RuntimeException;
 use Tests\Helpers\FakeLatticeStackStrategy;
 

@@ -1,6 +1,10 @@
 fmt:
     docker compose run --rm app ./vendor/bin/pint
 
+rebuild lattice-tag='latest':
+    docker compose build --pull --no-cache --build-arg LATTICE_EXT_TAG={{ lattice-tag }} app
+    docker compose up -d --no-deps --force-recreate app
+
 composer *args='':
     docker compose run --rm app composer {{ args }}
 

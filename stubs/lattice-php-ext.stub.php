@@ -73,140 +73,6 @@ if (! class_exists(Item::class)) {
     }
 }
 
-if (! class_exists(LayerOutput::class)) {
-    class LayerOutput
-    {
-        private ?Layer $participating;
-
-        private ?Layer $nonParticipating;
-
-        public function __construct() {}
-
-        public static function passThrough(): self {}
-
-        public static function split(
-            Layer $participating,
-            Layer $nonParticipating,
-        ): self {}
-    }
-}
-
-if (! class_exists(Layer::class)) {
-    class Layer
-    {
-        public mixed $reference;
-
-        public LayerOutput $output;
-
-        /** @var Promotions\Promotion[] */
-        public array $promotions;
-
-        /**
-         * @param  Promotions\Promotion[]|null  $promotions
-         */
-        public function __construct(
-            mixed $reference,
-            LayerOutput $output,
-            ?array $promotions = [],
-        ) {}
-    }
-}
-
-if (! class_exists(Stack::class)) {
-    class Stack
-    {
-        /** @var Layer[] */
-        public array $layers;
-
-        /**
-         * @param  Layer[]|null  $layers
-         */
-        public function __construct(?array $layers = []) {}
-
-        public function validateGraph(): bool {}
-
-        /**
-         * @param  Item[]  $items
-         */
-        public function process(array $items): Receipt {}
-    }
-}
-
-if (! class_exists(StackBuilder::class)) {
-    class StackBuilder
-    {
-        /** @var Layer[] */
-        public array $layers;
-
-        public ?Layer $rootLayer;
-
-        public function __construct() {}
-
-        public function addLayer(Layer $layer): Layer {}
-
-        public function setRoot(Layer $layer): void {}
-
-        public function build(): Stack {}
-    }
-}
-
-if (! class_exists(PromotionRedemption::class)) {
-    class PromotionRedemption
-    {
-        public Promotions\Promotion $promotion;
-
-        public Item $item;
-
-        public int $bundleId;
-
-        public Money $originalPrice;
-
-        public Money $finalPrice;
-
-        public function __construct(
-            Promotions\Promotion $promotion,
-            Item $item,
-            int $bundle_id,
-            Money $original_price,
-            Money $final_price,
-        ) {}
-    }
-}
-
-if (! class_exists(Receipt::class)) {
-    class Receipt
-    {
-        public Money $subtotal;
-
-        public Money $total;
-
-        /** @var Item[] */
-        public array $fullPriceItems;
-
-        /** @var PromotionRedemption[] */
-        public array $promotionRedemptions;
-
-        /**
-         * @param  Item[]  $full_price_items
-         * @param  PromotionRedemption[]  $promotion_applications
-         */
-        public function __construct(
-            Money $subtotal,
-            Money $total,
-            array $full_price_items,
-            array $promotion_applications,
-        ) {}
-    }
-}
-
-namespace Lattice\Stack;
-
-if (! class_exists(InvalidStackException::class)) {
-    class InvalidStackException extends \Exception {}
-}
-
-namespace Lattice;
-
 if (! class_exists(Qualification::class)) {
     class Qualification
     {
@@ -237,9 +103,58 @@ if (! class_exists(Qualification::class)) {
     }
 }
 
+if (! class_exists(PromotionRedemption::class)) {
+    class PromotionRedemption
+    {
+        public Promotion\PromotionInterface $promotion;
+
+        public Item $item;
+
+        public int $redemptionIdx;
+
+        public Money $originalPrice;
+
+        public Money $finalPrice;
+
+        public function __construct(
+            Promotion\PromotionInterface $promotion,
+            Item $item,
+            int $redemption_idx,
+            Money $original_price,
+            Money $final_price,
+        ) {}
+    }
+}
+
+if (! class_exists(Receipt::class)) {
+    class Receipt
+    {
+        public Money $subtotal;
+
+        public Money $total;
+
+        /** @var Item[] */
+        public array $fullPriceItems;
+
+        /** @var PromotionRedemption[] */
+        public array $promotionRedemptions;
+
+        /**
+         * @param  Item[]  $full_price_items
+         * @param  PromotionRedemption[]  $promotion_redemptions
+         */
+        public function __construct(
+            Money $subtotal,
+            Money $total,
+            array $full_price_items,
+            array $promotion_redemptions,
+        ) {}
+    }
+}
+
 namespace Lattice\Qualification;
 
-if (! class_exists(BoolOp::class)) {
+if (! enum_exists(BoolOp::class)) {
     enum BoolOp: string
     {
         case AndOp = 'and';
@@ -247,7 +162,7 @@ if (! class_exists(BoolOp::class)) {
     }
 }
 
-if (! class_exists(RuleKind::class)) {
+if (! enum_exists(RuleKind::class)) {
     enum RuleKind: string
     {
         case HasAll = 'has_all';
@@ -320,16 +235,12 @@ if (! class_exists(Percentage::class)) {
 
         public static function fromDecimal(float $value): self {}
 
-        public static function fromNormalized(float $value): self {}
-
-        public static function validateNormalized(float $value): void {}
-
         public function value(): float {}
     }
 }
 
-if (! enum_exists(DiscountKind::class)) {
-    enum DiscountKind: string
+if (! enum_exists(Kind::class)) {
+    enum Kind: string
     {
         case PercentageOff = 'percentage_off';
         case AmountOverride = 'amount_override';
@@ -337,10 +248,10 @@ if (! enum_exists(DiscountKind::class)) {
     }
 }
 
-if (! class_exists(SimpleDiscount::class)) {
-    class SimpleDiscount
+if (! class_exists(Simple::class)) {
+    class Simple
     {
-        public DiscountKind $kind;
+        public Kind $kind;
 
         public ?Percentage $percentage;
 
@@ -356,14 +267,98 @@ if (! class_exists(SimpleDiscount::class)) {
     }
 }
 
-namespace Lattice\Promotions;
+namespace Lattice\Stack;
 
-use Lattice\Discount\SimpleDiscount;
+if (! class_exists(InvalidStackException::class)) {
+    class InvalidStackException extends \Exception {}
+}
+
+if (! class_exists(LayerOutput::class)) {
+    class LayerOutput
+    {
+        private ?Layer $participating;
+
+        private ?Layer $nonParticipating;
+
+        public function __construct() {}
+
+        public static function passThrough(): self {}
+
+        public static function split(
+            Layer $participating,
+            Layer $nonParticipating,
+        ): self {}
+    }
+}
+
+if (! class_exists(Layer::class)) {
+    class Layer
+    {
+        public mixed $reference;
+
+        public LayerOutput $output;
+
+        /** @var Contract[] */
+        public array $promotions;
+
+        /**
+         * @param  Contract[]|null  $promotions
+         */
+        public function __construct(
+            mixed $reference,
+            LayerOutput $output,
+            ?array $promotions = [],
+        ) {}
+    }
+}
+
+if (! class_exists(StackBuilder::class)) {
+    class StackBuilder
+    {
+        /** @var Layer[] */
+        public array $layers;
+
+        public ?Layer $rootLayer;
+
+        public function __construct() {}
+
+        public function addLayer(Layer $layer): Layer {}
+
+        public function setRoot(Layer $layer): void {}
+
+        public function build(): Stack {}
+    }
+}
+
+if (! class_exists(Stack::class)) {
+    class Stack
+    {
+        /** @var Layer[] */
+        public array $layers;
+
+        /**
+         * @param  Layer[]|null  $layers
+         */
+        public function __construct(?array $layers = []) {}
+
+        public function validateGraph(): bool {}
+
+        /**
+         * @param  \Lattice\Item[]  $items
+         */
+        public function process(array $items): \Lattice\Receipt {}
+    }
+}
+
+namespace Lattice\Promotion;
+
+use Lattice\Discount\Simple;
 use Lattice\Money;
-use Lattice\Promotions\MixAndMatch\Discount as MixAndMatchDiscountConfig;
-use Lattice\Promotions\MixAndMatch\Slot as MixAndMatchSlot;
-use Lattice\Promotions\TieredThreshold\Tier as TieredThresholdTier;
 use Lattice\Qualification;
+
+if (! interface_exists(PromotionInterface::class)) {
+    interface PromotionInterface {}
+}
 
 if (! class_exists(Budget::class)) {
     class Budget
@@ -381,38 +376,34 @@ if (! class_exists(Budget::class)) {
         public static function withMonetaryLimit(Money $limit): self {}
 
         public static function withBothLimits(
-            int $application,
+            int $redemption,
             Money $monetary,
         ): self {}
     }
 }
 
-if (! interface_exists(Promotion::class)) {
-    interface Promotion {}
-}
-
-if (! class_exists(DirectDiscountPromotion::class)) {
-    class DirectDiscountPromotion implements Promotion
+if (! class_exists(Direct::class)) {
+    class Direct implements PromotionInterface
     {
         public mixed $reference;
 
         public Qualification $qualification;
 
-        public SimpleDiscount $discount;
+        public Simple $discount;
 
         public Budget $budget;
 
         public function __construct(
             mixed $reference,
             Qualification $qualification,
-            SimpleDiscount $discount,
+            Simple $discount,
             Budget $budget,
         ) {}
     }
 }
 
-if (! class_exists(PositionalDiscountPromotion::class)) {
-    class PositionalDiscountPromotion implements Promotion
+if (! class_exists(Positional::class)) {
+    class Positional implements PromotionInterface
     {
         public mixed $reference;
 
@@ -423,7 +414,7 @@ if (! class_exists(PositionalDiscountPromotion::class)) {
         /** @var int[] */
         public array $positions;
 
-        public SimpleDiscount $discount;
+        public Simple $discount;
 
         public Budget $budget;
 
@@ -432,64 +423,21 @@ if (! class_exists(PositionalDiscountPromotion::class)) {
          */
         public function __construct(
             mixed $reference,
-            Qualification $qualification,
             int $size,
             array $positions,
-            SimpleDiscount $discount,
+            Qualification $qualification,
+            Simple $discount,
             Budget $budget,
         ) {}
     }
 }
 
-if (! class_exists(MixAndMatchPromotion::class)) {
-    class MixAndMatchPromotion implements Promotion
-    {
-        public mixed $reference;
-
-        /** @var MixAndMatchSlot[] */
-        public array $slots;
-
-        public MixAndMatchDiscountConfig $discount;
-
-        public Budget $budget;
-
-        /**
-         * @param  MixAndMatchSlot[]  $slots
-         */
-        public function __construct(
-            mixed $reference,
-            array $slots,
-            MixAndMatchDiscountConfig $discount,
-            Budget $budget,
-        ) {}
-    }
-}
-
-if (! class_exists(TieredThreshold::class)) {
-    class TieredThreshold implements Promotion
-    {
-        public mixed $reference;
-
-        /** @var TieredThresholdTier[] */
-        public array $tiers;
-
-        public Budget $budget;
-
-        /**
-         * @param  TieredThresholdTier[]  $tiers
-         */
-        public function __construct(
-            mixed $reference,
-            array $tiers,
-            Budget $budget,
-        ) {}
-    }
-}
-
-namespace Lattice\Promotions\MixAndMatch;
+namespace Lattice\Promotion\MixAndMatch;
 
 use Lattice\Discount\Percentage;
 use Lattice\Money;
+use Lattice\Promotion\Budget;
+use Lattice\Promotion\PromotionInterface;
 use Lattice\Qualification;
 
 if (! enum_exists(DiscountKind::class)) {
@@ -556,10 +504,36 @@ if (! class_exists(Slot::class)) {
     }
 }
 
-namespace Lattice\Promotions\TieredThreshold;
+if (! class_exists(MixAndMatch::class)) {
+    class MixAndMatch implements PromotionInterface
+    {
+        public mixed $reference;
+
+        /** @var Slot[] */
+        public array $slots;
+
+        public Discount $discount;
+
+        public Budget $budget;
+
+        /**
+         * @param  Slot[]  $slots
+         */
+        public function __construct(
+            mixed $reference,
+            array $slots,
+            Discount $discount,
+            Budget $budget,
+        ) {}
+    }
+}
+
+namespace Lattice\Promotion\TieredThreshold;
 
 use Lattice\Discount\Percentage;
 use Lattice\Money;
+use Lattice\Promotion\Budget;
+use Lattice\Promotion\PromotionInterface;
 use Lattice\Qualification;
 
 if (! enum_exists(DiscountKind::class)) {
@@ -614,8 +588,8 @@ if (! class_exists(Threshold::class)) {
         public ?int $itemCountThreshold;
 
         public function __construct(
-            ?Money $monetary_threshold,
-            ?int $item_count_threshold,
+            ?Money $monetary_threshold = null,
+            ?int $item_count_threshold = null,
         ) {}
 
         public static function withMonetaryThreshold(
@@ -652,6 +626,27 @@ if (! class_exists(Tier::class)) {
             Qualification $contribution_qualification,
             Qualification $discount_qualification,
             Discount $discount,
+        ) {}
+    }
+}
+
+if (! class_exists(TieredThreshold::class)) {
+    class TieredThreshold implements PromotionInterface
+    {
+        public mixed $reference;
+
+        /** @var Tier[] */
+        public array $tiers;
+
+        public Budget $budget;
+
+        /**
+         * @param  Tier[]  $tiers
+         */
+        public function __construct(
+            mixed $reference,
+            array $tiers,
+            Budget $budget,
         ) {}
     }
 }

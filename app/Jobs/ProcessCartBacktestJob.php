@@ -12,8 +12,8 @@ use App\Models\PromotionRedemption;
 use App\Services\Lattice\Stacks\LatticeStackFactory;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
-use Lattice\Item;
-use Lattice\Money;
+use Lattice\Item as LatticeItem;
+use Lattice\Money as LatticeMoney;
 use Lattice\Product as LatticeProduct;
 
 class ProcessCartBacktestJob implements ShouldQueue
@@ -50,7 +50,10 @@ class ProcessCartBacktestJob implements ShouldQueue
                 $latticeProductsByProductId[$product->id] = new LatticeProduct(
                     reference: $product,
                     name: $product->name,
-                    price: new Money((int) $product->price->getAmount(), 'GBP'),
+                    price: new LatticeMoney(
+                        (int) $product->price->getAmount(),
+                        'GBP',
+                    ),
                     tags: $product->tags_array,
                 );
             }
@@ -58,7 +61,7 @@ class ProcessCartBacktestJob implements ShouldQueue
 
         $latticeItems = $cart->items
             ->map(
-                fn (CartItem $item): Item => Item::fromProduct(
+                fn (CartItem $item): LatticeItem => LatticeItem::fromProduct(
                     reference: $item,
                     product: $latticeProductsByProductId[$item->product->id],
                 ),

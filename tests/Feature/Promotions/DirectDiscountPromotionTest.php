@@ -17,11 +17,11 @@ use App\Models\Team;
 use App\Services\Lattice\Promotions\LatticePromotionFactory;
 use Illuminate\Support\Facades\DB;
 use Lattice\Item;
-use Lattice\Layer;
-use Lattice\LayerOutput;
 use Lattice\Money;
 use Lattice\Product;
-use Lattice\StackBuilder;
+use Lattice\Stack\Layer;
+use Lattice\Stack\LayerOutput;
+use Lattice\Stack\StackBuilder;
 
 beforeEach(function (): void {
     $this->team = Team::factory()->create();
@@ -197,7 +197,7 @@ it('can be turned into a Lattice Graph', function (): void {
     $latticePromotion = app(LatticePromotionFactory::class)->make($promotion);
 
     expect($latticePromotion)
-        ->toBeInstanceOf(\Lattice\Promotions\DirectDiscountPromotion::class)
+        ->toBeInstanceOf(\Lattice\Promotion\Direct::class)
         ->and($latticePromotion->reference)
         ->toBeInstanceOf(Promotion::class)
         ->and($latticePromotion->reference->is($promotion))

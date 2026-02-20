@@ -7,7 +7,7 @@ namespace Tests\Helpers;
 use App\Models\PromotionStack;
 use App\Services\Lattice\Stacks\LatticeStackStrategy;
 use Closure;
-use Lattice\Stack as LatticeStack;
+use Lattice\Stack\Stack as LatticeStack;
 
 class FakeLatticeStackStrategy implements LatticeStackStrategy
 {

@@ -7,9 +7,9 @@ namespace App\Services\Lattice\Stacks;
 use App\Models\Promotion;
 use App\Models\PromotionLayer as PromotionLayerModel;
 use App\Services\Lattice\Promotions\LatticePromotionFactory;
-use Lattice\Layer as LatticeLayer;
-use Lattice\LayerOutput as LatticeLayerOutput;
-use Lattice\Promotions\Promotion as LatticePromotion;
+use Lattice\Promotion\PromotionInterface as LatticePromotion;
+use Lattice\Stack\Layer as LatticeLayer;
+use Lattice\Stack\LayerOutput as LatticeLayerOutput;
 
 class PromotionLayerStrategy implements LatticeLayerStrategy
 {

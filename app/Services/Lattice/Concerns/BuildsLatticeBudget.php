@@ -7,18 +7,18 @@ namespace App\Services\Lattice\Concerns;
 use App\Models\CartItem;
 use App\Models\Promotion as PromotionModel;
 use App\Models\PromotionRedemption;
-use Lattice\Money;
-use Lattice\Promotions\Budget;
+use Lattice\Money as LatticeMoney;
+use Lattice\Promotion\Budget as LatticeBudget;
 
 trait BuildsLatticeBudget
 {
-    protected function makeBudget(PromotionModel $promotion): ?Budget
+    protected function makeBudget(PromotionModel $promotion): ?LatticeBudget
     {
         $redemptionBudget = $promotion->application_budget;
         $monetaryBudget = $promotion->getRawOriginal('monetary_budget');
 
         if (is_null($redemptionBudget) && is_null($monetaryBudget)) {
-            return Budget::unlimited();
+            return LatticeBudget::unlimited();
         }
 
         $consumedRedemptionBudget = 0;
@@ -62,21 +62,29 @@ trait BuildsLatticeBudget
             ! is_null($remainingRedemptionBudget) &&
             is_null($remainingMonetaryBudget)
         ) {
-            return Budget::withRedemptionLimit($remainingRedemptionBudget);
+            return LatticeBudget::withRedemptionLimit(
+                $remainingRedemptionBudget,
+            );
         }
 
         if (
             is_null($remainingRedemptionBudget) &&
             ! is_null($remainingMonetaryBudget)
         ) {
-            return Budget::withMonetaryLimit(
-                new Money($remainingMonetaryBudget, $this->defaultCurrency()),
+            return LatticeBudget::withMonetaryLimit(
+                new LatticeMoney(
+                    $remainingMonetaryBudget,
+                    $this->defaultCurrency(),
+                ),
             );
         }
 
-        return Budget::withBothLimits(
+        return LatticeBudget::withBothLimits(
             $remainingRedemptionBudget,
-            new Money($remainingMonetaryBudget, $this->defaultCurrency()),
+            new LatticeMoney(
+                $remainingMonetaryBudget,
+                $this->defaultCurrency(),
+            ),
         );
     }
 

@@ -15,11 +15,11 @@ use App\Services\Lattice\Concerns\BuildsLatticeDiscountValues;
 use App\Services\Lattice\Concerns\BuildsLatticeQualification;
 use App\Services\Lattice\Concerns\HandlesUnsupportedPromotionableType;
 use Lattice\Discount\Percentage;
-use Lattice\Promotions\Promotion as LatticePromotion;
-use Lattice\Promotions\TieredThreshold as LatticeTieredThresholdPromotion;
-use Lattice\Promotions\TieredThreshold\Discount as LatticeTieredThresholdDiscount;
-use Lattice\Promotions\TieredThreshold\Threshold as LatticeTieredThresholdThreshold;
-use Lattice\Promotions\TieredThreshold\Tier as LatticeTieredThresholdTier;
+use Lattice\Promotion\PromotionInterface as LatticePromotion;
+use Lattice\Promotion\TieredThreshold\Discount as LatticeTieredThresholdDiscount;
+use Lattice\Promotion\TieredThreshold\Threshold as LatticeTieredThresholdThreshold;
+use Lattice\Promotion\TieredThreshold\Tier as LatticeTieredThresholdTier;
+use Lattice\Promotion\TieredThreshold\TieredThreshold as LatticeTieredThresholdPromotion;
 use RuntimeException;
 
 class TieredThresholdPromotionStrategy implements LatticePromotionStrategy

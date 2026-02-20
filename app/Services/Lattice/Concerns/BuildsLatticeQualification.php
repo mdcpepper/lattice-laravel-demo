@@ -10,9 +10,9 @@ use App\Models\Promotion as PromotionModel;
 use App\Models\Qualification as QualificationModel;
 use App\Models\QualificationRule as QualificationRuleModel;
 use Illuminate\Support\Collection;
-use Lattice\Qualification;
-use Lattice\Qualification\BoolOp;
-use Lattice\Qualification\Rule;
+use Lattice\Qualification as LatticeQualification;
+use Lattice\Qualification\BoolOp as LatticeBoolOp;
+use Lattice\Qualification\Rule as LatticeRule;
 use RuntimeException;
 
 trait BuildsLatticeQualification
@@ -23,19 +23,19 @@ trait BuildsLatticeQualification
     protected function makeQualification(
         QualificationModel $qualification,
         Collection $qualificationIndex,
-    ): Qualification {
+    ): LatticeQualification {
         $rules = $qualification->rules->sortBy('sort_order')->values()->all();
 
-        /** @var Rule[] $latticeRules */
+        /** @var LatticeRule[] $latticeRules */
         $latticeRules = array_map(
-            fn (QualificationRuleModel $rule): Rule => $this->makeRule(
+            fn (QualificationRuleModel $rule): LatticeRule => $this->makeRule(
                 $rule,
                 $qualificationIndex,
             ),
             $rules,
         );
 
-        return new Qualification(
+        return new LatticeQualification(
             op: $this->mapQualificationOp($qualification->op),
             rules: $latticeRules,
         );
@@ -47,23 +47,23 @@ trait BuildsLatticeQualification
     protected function makeRule(
         QualificationRuleModel $rule,
         Collection $qualificationIndex,
-    ): Rule {
+    ): LatticeRule {
         $kind =
             $rule->kind instanceof QualificationRuleKind
                 ? $rule->kind
                 : QualificationRuleKind::from((string) $rule->kind);
 
         return match ($kind) {
-            QualificationRuleKind::HasAll => Rule::hasAll(
+            QualificationRuleKind::HasAll => LatticeRule::hasAll(
                 $this->ruleTags($rule),
             ),
-            QualificationRuleKind::HasAny => Rule::hasAny(
+            QualificationRuleKind::HasAny => LatticeRule::hasAny(
                 $this->ruleTags($rule),
             ),
-            QualificationRuleKind::HasNone => Rule::hasNone(
+            QualificationRuleKind::HasNone => LatticeRule::hasNone(
                 $this->ruleTags($rule),
             ),
-            QualificationRuleKind::Group => Rule::group(
+            QualificationRuleKind::Group => LatticeRule::group(
                 $this->makeQualification(
                     $this->resolveGroupedQualification(
                         $rule,
@@ -124,13 +124,14 @@ trait BuildsLatticeQualification
             ->all();
     }
 
-    protected function mapQualificationOp(QualificationOp|string $op): BoolOp
-    {
+    protected function mapQualificationOp(
+        QualificationOp|string $op,
+    ): LatticeBoolOp {
         $op = $op instanceof QualificationOp ? $op : QualificationOp::from($op);
 
         return match ($op) {
-            QualificationOp::And => BoolOp::AndOp,
-            QualificationOp::Or => BoolOp::OrOp,
+            QualificationOp::And => LatticeBoolOp::AndOp,
+            QualificationOp::Or => LatticeBoolOp::OrOp,
         };
     }
 

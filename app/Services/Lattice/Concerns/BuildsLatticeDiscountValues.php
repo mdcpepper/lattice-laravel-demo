@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Services\Lattice\Concerns;
 
 use App\Contracts\Discount as DiscountContract;
-use Lattice\Money;
+use Lattice\Money as LatticeMoney;
 use RuntimeException;
 
 trait BuildsLatticeDiscountValues
@@ -23,7 +23,7 @@ trait BuildsLatticeDiscountValues
         return ((float) $percentage) / 100;
     }
 
-    protected function discountAmount(DiscountContract $discount): Money
+    protected function discountAmount(DiscountContract $discount): LatticeMoney
     {
         $amount = $discount->discountAmount();
         $currency = $discount->discountAmountCurrency();
@@ -34,6 +34,6 @@ trait BuildsLatticeDiscountValues
             );
         }
 
-        return new Money((int) $amount, (string) $currency);
+        return new LatticeMoney((int) $amount, (string) $currency);
     }
 }

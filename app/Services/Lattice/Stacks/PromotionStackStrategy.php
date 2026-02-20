@@ -9,10 +9,10 @@ use App\Enums\PromotionLayerOutputTargetMode;
 use App\Models\PromotionLayer as PromotionLayerModel;
 use App\Models\PromotionStack as PromotionStackModel;
 use Illuminate\Database\Eloquent\Collection;
-use Lattice\Layer as LatticeLayer;
-use Lattice\LayerOutput as LatticeLayerOutput;
-use Lattice\Stack as LatticeStack;
-use Lattice\StackBuilder;
+use Lattice\Stack\Layer as LatticeLayer;
+use Lattice\Stack\LayerOutput as LatticeLayerOutput;
+use Lattice\Stack\Stack as LatticeStack;
+use Lattice\Stack\StackBuilder as LatticeStackBuilder;
 use RuntimeException;
 
 class PromotionStackStrategy implements LatticeStackStrategy
@@ -54,7 +54,7 @@ class PromotionStackStrategy implements LatticeStackStrategy
             ]);
         }
 
-        $stackBuilder = new StackBuilder;
+        $stackBuilder = new LatticeStackBuilder;
         $passThroughLayer = null;
 
         if (
